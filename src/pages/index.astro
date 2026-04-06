@@ -37,7 +37,7 @@ const postHref = '#';
             </div>
             </div>
             <div class="section-text">
-              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
+              <a href={postHref} class="limbo-cta">Lancar ao limbo</a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
               <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
@@ -65,7 +65,7 @@ const postHref = '#';
             </div>
             </div>
             <div class="section-text">
-              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
+              <a href={postHref} class="limbo-cta">Lancar ao limbo</a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
               <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
@@ -93,7 +93,7 @@ const postHref = '#';
             </div>
             </div>
             <div class="section-text">
-              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
+              <a href={postHref} class="limbo-cta">Lancar ao limbo</a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
               <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
@@ -121,7 +121,7 @@ const postHref = '#';
             </div>
             </div>
             <div class="section-text">
-              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
+              <a href={postHref} class="limbo-cta">Lancar ao limbo</a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
               <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
@@ -175,8 +175,7 @@ const postHref = '#';
       border: 1px outset #00d4e8;
       border-radius: 8px;
       overflow: hidden;
-      background: rgba(2, 11, 24, 0.82);
-      backdrop-filter: blur(6px);
+      background: transparent;
       transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
     }
 
@@ -186,8 +185,8 @@ const postHref = '#';
       margin: 15px;
       padding: 5px;
       border-radius: 6px;
-      background: rgba(0, 212, 232, 0.05);
-      border-right: 1px solid rgba(0, 212, 232, 0.2);
+      background: transparent;
+      border: 1px outset #00d4e8;
       box-sizing: border-box;
     }
 
@@ -231,13 +230,6 @@ const postHref = '#';
       font-family: monospace;
       transform: translateY(-4px);
       transition: color 0.3s ease, transform 0.35s ease, opacity 0.35s ease;
-    }
-
-    .limbo-cta-icon {
-      width: 12px;
-      height: 12px;
-      object-fit: contain;
-      flex: 0 0 auto;
     }
 
     .limbo-cta:hover {
@@ -437,8 +429,6 @@ const postHref = '#';
         flex: 0 0 auto;
         margin: 14px 14px 0;
         min-height: 200px;
-        border-right: 0;
-        border-bottom: 1px solid rgba(0, 212, 232, 0.2);
       }
 
       .section-text {
@@ -473,11 +463,6 @@ const postHref = '#';
 
       .limbo-cta {
         margin: -4px -2px 10px 0;
-      }
-
-      .limbo-cta-icon {
-        width: 10px;
-        height: 10px;
       }
 
       .content-section h2 {
