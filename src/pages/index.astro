@@ -21,6 +21,7 @@ const postHref = '#';
             <div class="section-info">
               <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
+              <span class="post-topic">Tema: Aleatoriedades</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S.02 4.88.02 3.5 1.13 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.84v2.18h.05C12.69 8.75 14.37 8 16.5 8c4.24 0 5.02 2.79 5.02 6.42V24h-4v-8.73c0-2.08-.04-4.76-2.9-4.76-2.9 0-3.34 2.27-3.34 4.61V24H8V8z"/></svg>
@@ -49,6 +50,7 @@ const postHref = '#';
             <div class="section-info">
               <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
+              <span class="post-topic">Tema: Aleatoriedades</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S.02 4.88.02 3.5 1.13 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.84v2.18h.05C12.69 8.75 14.37 8 16.5 8c4.24 0 5.02 2.79 5.02 6.42V24h-4v-8.73c0-2.08-.04-4.76-2.9-4.76-2.9 0-3.34 2.27-3.34 4.61V24H8V8z"/></svg>
@@ -77,6 +79,7 @@ const postHref = '#';
             <div class="section-info">
               <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
+              <span class="post-topic">Tema: Aleatoriedades</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S.02 4.88.02 3.5 1.13 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.84v2.18h.05C12.69 8.75 14.37 8 16.5 8c4.24 0 5.02 2.79 5.02 6.42V24h-4v-8.73c0-2.08-.04-4.76-2.9-4.76-2.9 0-3.34 2.27-3.34 4.61V24H8V8z"/></svg>
@@ -105,6 +108,7 @@ const postHref = '#';
             <div class="section-info">
               <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
+              <span class="post-topic">Tema: Aleatoriedades</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S.02 4.88.02 3.5 1.13 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7.5 0h3.84v2.18h.05C12.69 8.75 14.37 8 16.5 8c4.24 0 5.02 2.79 5.02 6.42V24h-4v-8.73c0-2.08-.04-4.76-2.9-4.76-2.9 0-3.34 2.27-3.34 4.61V24H8V8z"/></svg>
@@ -397,6 +401,14 @@ const postHref = '#';
       font-size: 0.75rem;
       color: #5a8a94;
       font-family: monospace;
+      margin-bottom: 6px;
+    }
+
+    .post-topic {
+      display: block;
+      font-size: 0.72rem;
+      color: #7bc7d2;
+      font-family: monospace;
       margin-bottom: 12px;
     }
 
@@ -448,13 +460,7 @@ const postHref = '#';
       }
 
       .section-image {
-        flex: 0 0 auto;
-        margin: 14px 14px 0;
-        min-height: 200px;
-      }
-
-      .section-text {
-        flex-basis: auto;
+        display: none;
       }
     }
 
@@ -497,6 +503,10 @@ const postHref = '#';
 
       .post-meta {
         font-size: 0.7rem;
+      }
+
+      .post-topic {
+        font-size: 0.68rem;
       }
 
       .post-actions {
@@ -680,7 +690,7 @@ const postHref = '#';
       window.requestAnimationFrame(frame);
     }
 
-    document.querySelectorAll('.limbo-cta').forEach((cta) => {
+    document.querySelectorAll('.limbo-cta, .cta-read').forEach((cta) => {
       cta.addEventListener('click', (event) => {
         event.preventDefault();
         const section = (cta as HTMLElement).closest('.content-section') as HTMLElement | null;
