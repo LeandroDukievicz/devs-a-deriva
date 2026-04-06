@@ -1,5 +1,7 @@
 ---
 import BlackHole from '../components/BlackHole.astro';
+
+const postHref = '#';
 ---
 
 <html lang="pt-BR">
@@ -9,15 +11,15 @@ import BlackHole from '../components/BlackHole.astro';
     <title>Devs à Deriva</title>
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
   </head>
-  <body class="m-0 p-0 bg-[#020b18] overflow-hidden">
+  <body class="m-0 p-0 bg-[#020b18] overflow-x-hidden">
     <BlackHole />
     <main class="page-overlay">
       <div id="sections-container" class="sections-container">
-        <div class="content-section">
+        <div class="content-section" data-section-id="section-1">
           <div class="section-image"></div>
           <div class="section-body">
             <div class="section-info">
-              <h2>Lorem Ipsum Dolor</h2>
+              <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
@@ -35,16 +37,17 @@ import BlackHole from '../components/BlackHole.astro';
             </div>
             </div>
             <div class="section-text">
+              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-              <a href="#" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+              <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
           </div>
         </div>
-        <div class="content-section">
+        <div class="content-section" data-section-id="section-2">
           <div class="section-image"></div>
           <div class="section-body">
             <div class="section-info">
-              <h2>Lorem Ipsum Dolor</h2>
+              <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
@@ -62,16 +65,17 @@ import BlackHole from '../components/BlackHole.astro';
             </div>
             </div>
             <div class="section-text">
+              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-              <a href="#" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+              <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
           </div>
         </div>
-        <div class="content-section">
+        <div class="content-section" data-section-id="section-3">
           <div class="section-image"></div>
           <div class="section-body">
             <div class="section-info">
-              <h2>Lorem Ipsum Dolor</h2>
+              <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
@@ -89,16 +93,17 @@ import BlackHole from '../components/BlackHole.astro';
             </div>
             </div>
             <div class="section-text">
+              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-              <a href="#" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+              <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
           </div>
         </div>
-        <div class="content-section">
+        <div class="content-section" data-section-id="section-4">
           <div class="section-image"></div>
           <div class="section-body">
             <div class="section-info">
-              <h2>Lorem Ipsum Dolor</h2>
+              <h2><a href={postHref} class="title-link">Lorem Ipsum Dolor</a></h2>
               <span class="post-meta">Por: Autor &nbsp;·&nbsp; 06 abr 2026</span>
               <div class="post-actions">
               <a class="cta-btn" href="#" aria-label="Compartilhar no LinkedIn">
@@ -116,8 +121,9 @@ import BlackHole from '../components/BlackHole.astro';
             </div>
             </div>
             <div class="section-text">
+              <a href={postHref} class="limbo-cta">Lancar ao limbo <img src="/blackhole.png" alt="" class="limbo-cta-icon" /></a>
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-              <a href="#" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+              <a href={postHref} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             </div>
           </div>
         </div>
@@ -126,44 +132,57 @@ import BlackHole from '../components/BlackHole.astro';
   </body>
 
   <style>
+    :global(html) {
+      background: #020b18;
+    }
+
+    :global(body) {
+      margin: 0;
+      overflow-x: hidden;
+      background: #020b18;
+      color: #a0c4cc;
+    }
+
     .page-overlay {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
+      position: relative;
       z-index: 10;
       display: flex;
-      align-items: flex-start;
-      padding-top: 100px;
       justify-content: center;
+      margin-top: -100vh;
+      min-height: 100vh;
+      padding: clamp(72px, 9vw, 100px) 24px 48px;
       pointer-events: none;
     }
 
     .sections-container {
-      width: 60%;
-      height: 115vh;
+      width: min(1100px, 100%);
+      min-height: calc(100vh - clamp(72px, 9vw, 100px));
       display: flex;
       flex-direction: column;
       gap: 50px;
-      transform: translateX(-100px);
+      transform: translate3d(-72px, 0, 0);
       opacity: 0;
-      transition: opacity 1.2s ease-in-out;
+      transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
       pointer-events: auto;
     }
 
     .content-section {
-      flex: 1;
+      position: relative;
       display: flex;
       flex-direction: row;
+      min-height: 220px;
       box-sizing: border-box;
       border: 1px outset #00d4e8;
       border-radius: 8px;
       overflow: hidden;
-      transition: border-color 0.3s ease;
+      background: rgba(2, 11, 24, 0.82);
+      backdrop-filter: blur(6px);
+      transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
     }
 
     .section-image {
-      flex: 0 0 35%;
+      flex: 0 0 32%;
+      min-height: 180px;
       margin: 15px;
       padding: 5px;
       border-radius: 6px;
@@ -176,6 +195,7 @@ import BlackHole from '../components/BlackHole.astro';
       flex: 1;
       display: flex;
       flex-direction: row;
+      min-width: 0;
     }
 
     .section-info {
@@ -183,14 +203,46 @@ import BlackHole from '../components/BlackHole.astro';
       padding: 20px 24px;
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
 
     .section-text {
       flex: 0 0 50%;
       padding: 20px 16px;
-      overflow-y: auto;
       display: flex;
       flex-direction: column;
+      min-width: 0;
+    }
+
+    .limbo-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-end;
+      margin: -8px -4px 10px 0;
+      padding: 0;
+      color: #00d4e8;
+      opacity: 0;
+      visibility: hidden;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.462rem;
+      font-family: monospace;
+      transform: translateY(-4px);
+      transition: color 0.3s ease, transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    .limbo-cta-icon {
+      width: 12px;
+      height: 12px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+
+    .limbo-cta:hover {
+      color: #e800d4;
+      transform: translateY(-1px);
     }
 
     .cta-read {
@@ -220,14 +272,102 @@ import BlackHole from '../components/BlackHole.astro';
 
     .content-section:hover {
       border-color: #e800d4;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+      transform: translateY(-2px);
+    }
+
+    .content-section:hover .limbo-cta {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .content-section.is-vanishing {
+      pointer-events: none;
+      transform-origin: center center;
+      animation: section-spaghettify 960ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .content-section.is-vanishing .section-image,
+    .content-section.is-vanishing .section-info,
+    .content-section.is-vanishing .section-text {
+      transform-origin: center center;
+      animation: section-stretch 960ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes section-spaghettify {
+      0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1, 1);
+        filter: blur(0);
+      }
+      55% {
+        opacity: 1;
+        transform: translate3d(calc(var(--limbo-x) * 0.24), calc(var(--limbo-y) * 0.24), 0) scale(1.02, 0.96);
+        filter: blur(0.4px);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(calc(var(--limbo-x) * 0.94), calc(var(--limbo-y) * 0.94), 0) scale(1.08, 0.08);
+        filter: blur(4px);
+      }
+    }
+
+    @keyframes section-stretch {
+      0% {
+        opacity: 1;
+        transform: scale(1, 1);
+      }
+      58% {
+        opacity: 1;
+        transform: scale(1.06, 0.9);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.26, 0.06);
+      }
+    }
+
+    .limbo-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    .limbo-slice {
+      position: fixed;
+      left: 0;
+      top: 0;
+      overflow: hidden;
+      will-change: transform, opacity, filter;
+    }
+
+    .limbo-slice-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      transform-origin: center center;
     }
 
     .content-section h2 {
       margin: 0 0 8px;
       font-size: 1rem;
       font-weight: 600;
-      color: #00d4e8;
       font-family: monospace;
+    }
+
+    .title-link {
+      color: #00d4e8;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .title-link:hover {
+      color: #e800d4;
     }
 
     .content-section p {
@@ -274,12 +414,136 @@ import BlackHole from '../components/BlackHole.astro';
       border-color: #e800d4;
       background: rgba(232, 0, 212, 0.08);
     }
+
+    @media (max-width: 1024px) {
+      .page-overlay {
+        padding-inline: 20px;
+      }
+
+      .sections-container {
+        gap: 32px;
+        transform: translate3d(0, 24px, 0);
+      }
+
+      .content-section {
+        min-height: 0;
+      }
+
+      .section-body {
+        flex-direction: column;
+      }
+
+      .section-image {
+        flex: 0 0 auto;
+        margin: 14px 14px 0;
+        min-height: 200px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(0, 212, 232, 0.2);
+      }
+
+      .section-text {
+        flex-basis: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-overlay {
+        margin-top: -100svh;
+        padding: 56px 16px 32px;
+      }
+
+      .sections-container {
+        min-height: auto;
+        gap: 24px;
+      }
+
+      .content-section {
+        border-radius: 10px;
+      }
+
+      .section-image {
+        min-height: 160px;
+        margin: 12px 12px 0;
+      }
+
+      .section-info,
+      .section-text {
+        padding: 16px;
+      }
+
+      .limbo-cta {
+        margin: -4px -2px 10px 0;
+      }
+
+      .limbo-cta-icon {
+        width: 10px;
+        height: 10px;
+      }
+
+      .content-section h2 {
+        font-size: 0.95rem;
+      }
+
+      .content-section p {
+        font-size: 0.78rem;
+      }
+
+      .post-meta {
+        font-size: 0.7rem;
+      }
+
+      .post-actions {
+        gap: 10px;
+      }
+
+      .cta-btn {
+        width: 30px;
+        height: 30px;
+      }
+
+      .cta-read {
+        align-self: flex-start;
+        margin-top: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-overlay {
+        padding-top: 40px;
+      }
+
+      .sections-container {
+        gap: 18px;
+      }
+
+      .section-image {
+        min-height: 128px;
+      }
+
+      .section-info,
+      .section-text {
+        padding: 14px;
+      }
+
+      .limbo-cta {
+        margin-top: 0;
+        margin-right: 0;
+        align-self: flex-end;
+      }
+
+      .post-actions {
+        gap: 8px;
+      }
+    }
   </style>
 
   <script>
     window.addEventListener('animationComplete', () => {
       const container = document.getElementById('sections-container');
-      if (container) container.style.opacity = '1';
+      if (container) {
+        container.style.opacity = '1';
+        container.style.transform = 'translate3d(0, 0, 0)';
+      }
     });
 
     document.querySelectorAll('.copy-btn').forEach(btn => {
@@ -289,6 +553,132 @@ import BlackHole from '../components/BlackHole.astro';
           btn.textContent = 'Copiado!';
           setTimeout(() => { if (original) btn.textContent = original; }, 2000);
         });
+      });
+    });
+
+    const LIMBO_SLICE_COUNT = 36;
+    let activeLimboSection: HTMLElement | null = null;
+
+    function easeInCubic(x: number) {
+      return x * x * x;
+    }
+
+    function easeInQuint(x: number) {
+      return x * x * x * x * x;
+    }
+
+    function createSliceClone(section: HTMLElement, rect: DOMRect, sliceTop: number, sliceHeight: number) {
+      const slice = document.createElement('div');
+      slice.className = 'limbo-slice';
+      slice.style.left = `${rect.left}px`;
+      slice.style.top = `${sliceTop}px`;
+      slice.style.width = `${rect.width}px`;
+      slice.style.height = `${sliceHeight}px`;
+
+      const content = document.createElement('div');
+      content.className = 'limbo-slice-content';
+      content.style.width = `${rect.width}px`;
+      content.style.height = `${rect.height}px`;
+      content.style.top = `${-(sliceTop - rect.top)}px`;
+
+      const clone = section.cloneNode(true) as HTMLElement;
+      clone.classList.remove('is-vanishing');
+      clone.style.margin = '0';
+      clone.style.width = `${rect.width}px`;
+      clone.style.height = `${rect.height}px`;
+      clone.style.transform = 'none';
+      clone.style.boxShadow = getComputedStyle(section).boxShadow;
+      clone.querySelectorAll('a, button').forEach((el) => {
+        (el as HTMLElement).setAttribute('tabindex', '-1');
+      });
+
+      content.appendChild(clone);
+      slice.appendChild(content);
+      return { slice, content };
+    }
+
+    function vanishSection(section: HTMLElement) {
+      if (activeLimboSection || section.classList.contains('is-vanishing')) return;
+
+      activeLimboSection = section;
+      const rect = section.getBoundingClientRect();
+      const overlay = document.createElement('div');
+      overlay.className = 'limbo-overlay';
+
+      const targetX = window.innerWidth * 0.94;
+      const targetY = window.innerHeight * 0.08;
+      const sectionCenterX = rect.left + rect.width / 2;
+      const sectionCenterY = rect.top + rect.height / 2;
+      const dx = targetX - sectionCenterX;
+      const dy = targetY - sectionCenterY;
+      const len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+      const ny = dy / len;
+      const sliceHeight = rect.height / LIMBO_SLICE_COUNT;
+      const slices: Array<{
+        slice: HTMLDivElement;
+        content: HTMLDivElement;
+        centerY: number;
+      }> = [];
+
+      for (let i = 0; i < LIMBO_SLICE_COUNT; i++) {
+        const sliceTop = rect.top + sliceHeight * i;
+        const sliceData = createSliceClone(section, rect, sliceTop, sliceHeight + 1);
+        overlay.appendChild(sliceData.slice);
+        slices.push({
+          ...sliceData,
+          centerY: sliceTop + sliceHeight * 0.5,
+        });
+      }
+
+      document.body.appendChild(overlay);
+      section.style.setProperty('--limbo-x', `${dx}px`);
+      section.style.setProperty('--limbo-y', `${dy}px`);
+      section.classList.add('is-vanishing');
+
+      const startTime = performance.now();
+      const duration = 960;
+
+      function frame(now: number) {
+        const p = Math.min(1, (now - startTime) / duration);
+        const globalFade = Math.max(0, 1 - easeInQuint(Math.max(0, (p - 0.78) / 0.22)));
+
+        slices.forEach(({ slice, content, centerY }) => {
+          const proj = ((centerY - sectionCenterY) * ny) / Math.max(rect.height / 2, 1);
+          const pullFactor = (proj + 1) / 2;
+          const sliceP = Math.min(1, p * (0.2 + pullFactor * 1.6));
+          const moveX = dx * easeInQuint(sliceP) * 0.94;
+          const moveY = dy * easeInQuint(sliceP) * 0.94;
+          const stretchP = Math.max(0, (sliceP - 0.25) / 0.75);
+          const stretch = 1 + easeInCubic(stretchP) * 9.5;
+          const squish = Math.max(0.015, 1 - easeInCubic(stretchP) * 0.985);
+          const opacity = Math.max(0, 1 - easeInQuint(Math.max(0, (sliceP - 0.55) / 0.45))) * globalFade;
+
+          slice.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
+          slice.style.opacity = `${opacity}`;
+          slice.style.filter = `blur(${(1 - opacity) * 4}px)`;
+          content.style.transform = `scale(${stretch}, ${squish})`;
+          content.style.opacity = `${opacity}`;
+        });
+
+        if (p < 1) {
+          window.requestAnimationFrame(frame);
+          return;
+        }
+
+        overlay.remove();
+        section.remove();
+        activeLimboSection = null;
+      }
+
+      window.requestAnimationFrame(frame);
+    }
+
+    document.querySelectorAll('.limbo-cta').forEach((cta) => {
+      cta.addEventListener('click', (event) => {
+        event.preventDefault();
+        const section = (cta as HTMLElement).closest('.content-section') as HTMLElement | null;
+        if (!section) return;
+        vanishSection(section);
       });
     });
   </script>
