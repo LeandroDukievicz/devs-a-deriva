@@ -183,6 +183,7 @@ function showLogo() {
   if (logoShown) return;
   logoShown = true;
   logoCanvas.style.opacity = '1';
+  window.dispatchEvent(new CustomEvent('animationComplete'));
 }
 
 let animationDone = false;
