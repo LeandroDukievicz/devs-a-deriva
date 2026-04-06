@@ -37,13 +37,20 @@ const logoForCanvas = Buffer.from(
       set:html={svgInline}
     />
   </div>
-  <canvas
-    id="logo-canvas"
-    width="225"
-    height="225"
-    data-logo-svg={`data:image/svg+xml;base64,${logoForCanvas}`}
-    style="position:absolute;top:-20px;left:-20px;width:225px;height:225px;opacity:0;transition:opacity 1.2s ease-in-out;pointer-events:none;"
-  ></canvas>
+  <a
+    id="logo-link"
+    href="/"
+    class="logo-link"
+    aria-label="Ir para a home"
+  >
+    <canvas
+      id="logo-canvas"
+      width="225"
+      height="225"
+      data-logo-svg={`data:image/svg+xml;base64,${logoForCanvas}`}
+      class="logo-canvas"
+    ></canvas>
+  </a>
 </div>
 
 <style>
@@ -65,6 +72,57 @@ const logoForCanvas = Buffer.from(
     0%   { color: #00d4e8; }
     50%  { color: #e800d4; }
     100% { color: #00d4e8; }
+  }
+
+  .logo-link {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    display: block;
+    width: 225px;
+    height: 225px;
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out, transform 0.35s ease;
+    text-decoration: none;
+    outline: none;
+  }
+
+  .logo-canvas {
+    position: relative;
+    display: block;
+    width: 225px;
+    height: 225px;
+    z-index: 1;
+    transition: filter 0.35s ease;
+  }
+
+  .logo-link:hover .logo-canvas,
+  .logo-link:focus-visible .logo-canvas {
+    animation: logo-cyberpunk 2.2s linear infinite, logo-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes logo-cyberpunk {
+    0% {
+      filter: hue-rotate(0deg) saturate(1) brightness(1);
+    }
+    33% {
+      filter: hue-rotate(24deg) saturate(1.35) brightness(1.08);
+    }
+    66% {
+      filter: hue-rotate(-18deg) saturate(1.45) brightness(1.02);
+    }
+    100% {
+      filter: hue-rotate(0deg) saturate(1) brightness(1);
+    }
+  }
+
+  @keyframes logo-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.045);
+    }
   }
 
 </style>
@@ -148,6 +206,7 @@ function easeInCubic(x: number)  { return x * x * x; }
 function easeInQuint(x: number)  { return x * x * x * x * x; }
 
 // ─── Logo canvas ──────────────────────────────────────────────
+const logoLink   = document.getElementById('logo-link') as HTMLAnchorElement;
 const logoCanvas = document.getElementById('logo-canvas') as HTMLCanvasElement;
 const logoCtx    = logoCanvas.getContext('2d')!;
 const logoImage  = new Image();
@@ -182,7 +241,7 @@ let logoShown = false;
 function showLogo() {
   if (logoShown) return;
   logoShown = true;
-  logoCanvas.style.opacity = '1';
+  logoLink.style.opacity = '1';
   window.dispatchEvent(new CustomEvent('animationComplete'));
 }
 
