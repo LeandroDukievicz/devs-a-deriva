@@ -17,6 +17,15 @@ const svgForCanvas = Buffer.from(
     .replace(/width="[^"]*"/, 'width="324"')
     .replace(/height="[^"]*"/, 'height="324"')
 ).toString('base64');
+
+// Logo helmet: remove DOCTYPE e XML declaration, fill branco para source-atop
+const logoRaw = readFileSync(resolve('./public/logohelmet.svg'), 'utf-8');
+const logoForCanvas = Buffer.from(
+  logoRaw
+    .replace(/<\?xml[^?]*\?>\s*/g, '')
+    .replace(/<!DOCTYPE[^>]*>\s*/g, '')
+    .replace(/fill="#000000"/g, 'fill="white"')
+).toString('base64');
 ---
 
 <div class="relative w-full h-screen overflow-hidden bg-[#020b18]">
@@ -28,6 +37,13 @@ const svgForCanvas = Buffer.from(
       set:html={svgInline}
     />
   </div>
+  <canvas
+    id="logo-canvas"
+    width="225"
+    height="225"
+    data-logo-svg={`data:image/svg+xml;base64,${logoForCanvas}`}
+    style="position:absolute;top:-20px;left:-20px;width:225px;height:225px;opacity:0;transition:opacity 1.2s ease-in-out;pointer-events:none;"
+  ></canvas>
 </div>
 
 <style>
@@ -50,6 +66,7 @@ const svgForCanvas = Buffer.from(
     50%  { color: #e800d4; }
     100% { color: #00d4e8; }
   }
+
 </style>
 
 <script>
@@ -130,12 +147,56 @@ function initGlyphs() {
 function easeInCubic(x: number)  { return x * x * x; }
 function easeInQuint(x: number)  { return x * x * x * x * x; }
 
+// ─── Logo canvas ──────────────────────────────────────────────
+const logoCanvas = document.getElementById('logo-canvas') as HTMLCanvasElement;
+const logoCtx    = logoCanvas.getContext('2d')!;
+const logoImage  = new Image();
+logoImage.src    = logoCanvas.dataset.logoSvg!;
+
+logoImage.onload = () => {
+  const S = 225;
+  // Desenha o SVG escalado para 100x100 mantendo proporção
+  const iw = logoImage.naturalWidth  || 1365;
+  const ih = logoImage.naturalHeight || 768;
+  const scale = Math.min(S / iw, S / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  const dx = (S - dw) / 2;
+  const dy = (S - dh) / 2;
+
+  logoCtx.clearRect(0, 0, S, S);
+  logoCtx.drawImage(logoImage, dx, dy, dw, dh);
+
+  // Aplica degradê ciano → magenta sobre os pixels do SVG
+  const grad = logoCtx.createLinearGradient(0, 0, S, S);
+  grad.addColorStop(0, '#00d4e8');
+  grad.addColorStop(1, '#e800d4');
+  logoCtx.globalCompositeOperation = 'source-atop';
+  logoCtx.fillStyle = grad;
+  logoCtx.fillRect(0, 0, S, S);
+  logoCtx.globalCompositeOperation = 'source-over';
+};
+
+let logoShown = false;
+
+function showLogo() {
+  if (logoShown) return;
+  logoShown = true;
+  logoCanvas.style.opacity = '1';
+}
+
+let animationDone = false;
+
 function updateGlyphs() {
+  if (animationDone) return;
   textTimer++;
 
-  const allDone = glyphs.every(g => g.opacity <= 0 && textTimer > g.pullStart + T_PULL);
-  if (allDone && textTimer > totalCycle()) {
-    initGlyphs();
+  if (textTimer >= totalCycle()) {
+    animationDone = true;
+    showLogo();
+    glyphs = [];
+    const hero = document.getElementById('hero') as HTMLElement;
+    if (hero) hero.style.display = 'none';
     return;
   }
 
@@ -506,11 +567,13 @@ function draw() {
 
   ctx.restore();
 
-  drawGlyphs();
+  if (!animationDone) {
+    drawGlyphs();
 
-  if (textTimer >= ASTRO_PULL_START) {
-    const p = Math.min(1, (textTimer - ASTRO_PULL_START) / ASTRO_PULL_DUR);
-    drawAstroSpaghetti(p);
+    if (textTimer >= ASTRO_PULL_START) {
+      const p = Math.min(1, (textTimer - ASTRO_PULL_START) / ASTRO_PULL_DUR);
+      drawAstroSpaghetti(p);
+    }
   }
 }
 
