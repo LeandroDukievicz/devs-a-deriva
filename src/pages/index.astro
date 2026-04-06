@@ -141,6 +141,28 @@ const postHref = '#';
       overflow-x: hidden;
       background: #020b18;
       color: #a0c4cc;
+      scrollbar-color: #00d4e8 rgba(0, 212, 232, 0.08);
+      scrollbar-width: thin;
+    }
+
+    :global(body::-webkit-scrollbar) {
+      width: 8px;
+    }
+
+    :global(body::-webkit-scrollbar-track) {
+      background: rgba(0, 212, 232, 0.04);
+    }
+
+    :global(body::-webkit-scrollbar-thumb) {
+      background: linear-gradient(180deg, #59f3ff 0%, #00d4e8 55%, #00a9ba 100%);
+      border-radius: 999px;
+      border: 1px solid rgba(2, 11, 24, 0.9);
+      box-shadow: 0 0 10px rgba(0, 212, 232, 0.45);
+    }
+
+    :global(body::-webkit-scrollbar-thumb:hover) {
+      background: linear-gradient(180deg, #8ff8ff 0%, #29ecff 55%, #00d4e8 100%);
+      box-shadow: 0 0 14px rgba(41, 236, 255, 0.65);
     }
 
     .page-overlay {
