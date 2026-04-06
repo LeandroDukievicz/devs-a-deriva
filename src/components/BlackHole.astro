@@ -32,7 +32,7 @@ const svgForCanvas = Buffer.from(
 
 <style>
   .astronaut {
-    animation: levitate 4s ease-in-out infinite, colorshift 6s ease-in-out infinite;
+    animation: levitate 3.5s ease-in-out infinite, colorshift 4s ease-in-out infinite;
   }
 
   .astronaut svg {
@@ -78,15 +78,15 @@ const CHARS = TEXT.split('');
 let glyphs: any[]  = [];
 let textTimer = 0;
 
-const T_FADEIN       = 70;
-const T_IDLE         = 324;
-const T_PULL         = 260;
-const T_STAGGER      = 14;
-const T_RESET        = 60;
-const ASTRO_PULL_DUR = 280;
+const T_FADEIN       = 35;
+const T_IDLE         = 40;
+const T_PULL         = 105;
+const T_STAGGER      = 6;
+const T_RESET        = 25;
+const ASTRO_PULL_DUR = 125;
 
 function totalCycle() {
-  return T_FADEIN + T_IDLE + T_PULL + (CHARS.length * T_STAGGER) + 30 + ASTRO_PULL_DUR + T_RESET;
+  return T_FADEIN + T_IDLE + T_PULL + (CHARS.length * T_STAGGER) + 5 + ASTRO_PULL_DUR + T_RESET;
 }
 
 function initGlyphs() {
@@ -314,7 +314,7 @@ function init() {
 }
 
 // ─── Astronaut spaghettification (slice-based) ────────────
-const ASTRO_PULL_START = T_FADEIN + T_IDLE + T_PULL + CHARS.length * T_STAGGER + 30;
+const ASTRO_PULL_START = T_FADEIN + T_IDLE + T_PULL + CHARS.length * T_STAGGER + 5;
 const ASTRO_IMG_SIZE   = 324;
 const ASTRO_SLICES     = 120;
 
