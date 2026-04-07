@@ -1,0 +1,431 @@
+<nav class="navbar">
+  <ul class="nav-links">
+    <li class="has-dropdown">
+      <button class="nav-link nav-btn" id="cat-btn" aria-expanded="false" aria-controls="cat-menu">
+        <span class="nav-prefix">&gt;_</span>Categorias
+      </button>
+      <ul class="dropdown" id="cat-menu" role="menu">
+        <li role="none"><a href="/categorias/aleatoriedades" class="dropdown-link" role="menuitem">Aleatoriedades</a></li>
+        <li role="none"><a href="/categorias/musica"        class="dropdown-link" role="menuitem">Música</a></li>
+        <li role="none"><a href="/categorias/noticias"      class="dropdown-link" role="menuitem">Notícias</a></li>
+        <li role="none"><a href="/categorias/tech"          class="dropdown-link" role="menuitem">Tech</a></li>
+      </ul>
+    </li>
+    <li><a href="/devs" class="nav-link"><span class="nav-prefix">&gt;_</span>Devs</a></li>
+    <li><a href="/manifesto" class="nav-link"><span class="nav-prefix">&gt;_</span>Manifesto</a></li>
+    <li class="has-dropdown">
+      <button class="nav-link nav-btn" id="temas-btn" aria-expanded="false" aria-controls="temas-menu">
+        <span class="nav-prefix">&gt;_</span>Temas
+      </button>
+      <ul class="dropdown" id="temas-menu" role="menu">
+        <li role="none"><button class="dropdown-link dropdown-btn" data-theme="orbita-baixa">Órbita Baixa</button></li>
+        <li role="none"><button class="dropdown-link dropdown-btn" data-theme="espaco-profundo">Espaço Profundo</button></li>
+        <li role="none"><button class="dropdown-link dropdown-btn" data-theme="limbo">Limbo</button></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+<div id="theme-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <svg class="modal-warn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <div id="modal-default-content">
+      <p class="modal-question"><span class="nav-prefix">&gt;_</span> Você tem certeza que deseja mudar pra este tema?</p>
+      <div class="modal-actions">
+        <button id="modal-confirm" class="modal-btn modal-btn--confirm">Confirmar</button>
+        <button id="modal-cancel"  class="modal-btn modal-btn--cancel">Cancelar</button>
+      </div>
+    </div>
+    <p id="modal-bye" class="modal-bye" aria-hidden="true">Bom, eu avisei!</p>
+  </div>
+</div>
+
+<style>
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px;
+    height: 52px;
+    background: transparent;
+  }
+
+  .nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    font-family: monospace;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #00d4e8;
+    text-decoration: none;
+    animation: nav-pulse 3s ease-in-out infinite;
+    transition: color 0.22s ease, text-shadow 0.22s ease;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  li:nth-child(1) .nav-link { animation-delay: 0s; }
+  li:nth-child(2) .nav-link { animation-delay: 0.4s; }
+  li:nth-child(3) .nav-link { animation-delay: 0.8s; }
+
+  @keyframes nav-pulse {
+    0%, 100% { text-shadow: 0 0 6px rgba(0, 212, 232, 0.4); opacity: 1; }
+    50%       { text-shadow: 0 0 14px rgba(0, 212, 232, 0.9); opacity: 0.75; }
+  }
+
+  .nav-prefix {
+    color: #00d4e8;
+    transition: color 0.22s ease;
+    margin-right: 1px;
+  }
+
+  .nav-link:hover {
+    color: #e800d4;
+    animation: none;
+    text-shadow: 0 0 12px rgba(232, 0, 212, 0.6);
+  }
+
+  .nav-link:hover .nav-prefix {
+    color: #e800d4;
+  }
+
+  /* Dropdown */
+  .has-dropdown {
+    position: relative;
+  }
+
+  .dropdown {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    min-width: 180px;
+    background: rgba(2, 11, 24, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(0, 212, 232, 0.18);
+    border-radius: 6px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+  }
+
+  .dropdown.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .dropdown-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 18px;
+    font-family: monospace;
+    font-size: 0.59rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #00d4e8;
+    text-decoration: none;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .dropdown-link:hover {
+    color: #e800d4;
+    background: rgba(232, 0, 212, 0.06);
+  }
+
+  .dropdown-link:hover .nav-prefix {
+    color: #e800d4;
+  }
+
+  .dropdown-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  /* Limbo theme override */
+  :global(body.theme-limbo),
+  :global(body.theme-limbo *) {
+    color: #000 !important;
+  }
+
+  :global(body.theme-limbo) .dropdown {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+  }
+
+  :global(body.theme-limbo) .dropdown-link:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 11, 24, 0.7);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+  }
+
+  .modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-box {
+    background: rgba(2, 11, 24, 0.95);
+    border: 1px solid rgba(0, 212, 232, 0.25);
+    border-radius: 8px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 360px;
+    width: 90%;
+    transform: translateY(8px);
+    transition: transform 0.22s ease;
+  }
+
+  .modal-overlay.is-open .modal-box {
+    transform: translateY(0);
+  }
+
+  .modal-warn {
+    width: 36px;
+    height: 36px;
+    color: #ff2a2a;
+    align-self: center;
+    filter: drop-shadow(0 0 6px rgba(255, 42, 42, 0.7));
+    animation: warn-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes warn-pulse {
+    0%, 100% { opacity: 1;   filter: drop-shadow(0 0 6px rgba(255, 42, 42, 0.7)); }
+    50%       { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(255, 42, 42, 0.2)); }
+  }
+
+  .modal-question {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: #00d4e8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .modal-btn {
+    font-family: monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 10px 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+
+  .modal-btn--confirm {
+    background: transparent;
+    border: 1px outset #00d4e8;
+    color: #00d4e8;
+  }
+
+  .modal-btn--confirm:hover {
+    color: #e800d4;
+    border-color: #e800d4;
+    background: rgba(232, 0, 212, 0.08);
+    box-shadow: 0 0 12px rgba(232, 0, 212, 0.2);
+  }
+
+  .modal-btn--cancel {
+    background: transparent;
+    border: 1px solid rgba(0, 212, 232, 0.2);
+    color: #5a8a94;
+  }
+
+  .modal-btn--cancel:hover {
+    border-color: rgba(0, 212, 232, 0.4);
+    color: #a0c4cc;
+  }
+
+  .modal-bye {
+    display: none;
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ff2a2a;
+    text-align: center;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    animation: warn-pulse 0.8s ease-in-out infinite;
+  }
+
+  @media (max-width: 480px) {
+    .navbar {
+      padding: 0 16px;
+    }
+
+    .nav-links {
+      gap: 18px;
+    }
+
+    .nav-link {
+      font-size: 0.7rem;
+    }
+  }
+</style>
+
+<script>
+  const dropdowns = [
+    { btn: document.getElementById('cat-btn'),   menu: document.getElementById('cat-menu') },
+    { btn: document.getElementById('temas-btn'), menu: document.getElementById('temas-menu') },
+  ];
+
+  function closeAll(except?: Element) {
+    dropdowns.forEach(({ btn, menu }) => {
+      if (menu === except) return;
+      menu?.classList.remove('is-open');
+      btn?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  dropdowns.forEach(({ btn, menu }) => {
+    btn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAll(menu!);
+      const open = menu?.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  });
+
+  document.addEventListener('click', () => closeAll());
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+
+  const themes: Record<string, string> = {
+    'orbita-baixa':    '#020b18',
+    'espaco-profundo': '#000000',
+    'limbo':           '#ffffff',
+  };
+
+  const modal       = document.getElementById('theme-modal')!;
+  const modalConfirm = document.getElementById('modal-confirm')!;
+  const modalCancel  = document.getElementById('modal-cancel')!;
+  let pendingTheme: string | null = null;
+
+  function applyTheme(theme: string) {
+    const color = themes[theme];
+    if (!color) return;
+    (window as any).__bgColor = color;
+    document.documentElement.style.background = color;
+    document.body.style.background = color;
+    const container = document.getElementById('bh-container');
+    if (container) container.style.background = color;
+    // limbo: força todo texto preto; outros temas removem a classe
+    document.body.classList.toggle('theme-limbo', theme === 'limbo');
+  }
+
+  function openModal() {
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    pendingTheme = null;
+  }
+
+  const modalDefaultContent = document.getElementById('modal-default-content')!;
+  const modalBye = document.getElementById('modal-bye')!;
+
+  modalConfirm.addEventListener('click', () => {
+    if (pendingTheme === 'limbo') {
+      modalDefaultContent.style.display = 'none';
+      modalBye.style.display = 'block';
+      modalBye.setAttribute('aria-hidden', 'false');
+      setTimeout(() => {
+        applyTheme('limbo');
+        closeModal();
+        modalDefaultContent.style.display = '';
+        modalBye.style.display = 'none';
+        modalBye.setAttribute('aria-hidden', 'true');
+      }, 1500);
+    } else {
+      if (pendingTheme) applyTheme(pendingTheme);
+      closeModal();
+    }
+  });
+
+  modalCancel.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.theme!;
+      closeAll();
+      if (theme === 'limbo') {
+        pendingTheme = theme;
+        openModal();
+      } else {
+        applyTheme(theme);
+      }
+    });
+  });
+</script>

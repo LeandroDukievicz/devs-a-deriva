@@ -28,7 +28,7 @@ const logoForCanvas = Buffer.from(
 ).toString('base64');
 ---
 
-<div class="relative w-full h-screen overflow-hidden bg-[#020b18]">
+<div id="bh-container" class="relative w-full h-screen overflow-hidden" style="background:#020b18;">
   <canvas id="c" class="block w-full h-full" data-astro-svg={`data:image/svg+xml;base64,${svgForCanvas}`}></canvas>
   <div id="hero" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none select-none" style="gap: 20px;">
     <div
@@ -601,7 +601,7 @@ function update() {
 }
 
 function draw() {
-  ctx.fillStyle = '#020b18';
+  ctx.fillStyle = (window as any).__bgColor ?? '#020b18';
   ctx.fillRect(0, 0, W, H);
 
   ctx.save();
