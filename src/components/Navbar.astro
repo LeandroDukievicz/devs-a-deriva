@@ -57,6 +57,18 @@
     padding: 0 32px;
     height: 52px;
     background: transparent;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s ease;
+  }
+
+  .navbar.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
   }
 
   .nav-links {
@@ -347,6 +359,20 @@
 </style>
 
 <script>
+  const INTRO_KEY = 'intro_last_shown';
+  const TODAY = new Date().toISOString().slice(0, 10);
+  const navbar = document.querySelector('.navbar') as HTMLElement | null;
+
+  function showNavbar() {
+    navbar?.classList.add('is-visible');
+  }
+
+  if (localStorage.getItem(INTRO_KEY) === TODAY) {
+    showNavbar();
+  } else {
+    window.addEventListener('animationComplete', showNavbar, { once: true });
+  }
+
   const dropdowns = [
     { btn: document.getElementById('cat-btn'),   menu: document.getElementById('cat-menu') },
     { btn: document.getElementById('temas-btn'), menu: document.getElementById('temas-menu') },
