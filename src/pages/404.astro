@@ -1,0 +1,48 @@
+---
+import Navbar from '../components/Navbar.astro';
+import ErrorPage from '../components/ErrorPage.astro';
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Erro 404 | Devs à Deriva</title>
+    <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
+  </head>
+  <body class="error-body">
+    <Navbar />
+    <ErrorPage code="404" />
+  </body>
+</html>
+
+<style>
+  :global(html) {
+    background: #020b18;
+  }
+
+  :global(body) {
+    margin: 0;
+    min-height: 100vh;
+    background: #020b18;
+    color: #a0c4cc;
+    overflow-x: hidden;
+    scrollbar-color: #00d4e8 rgba(0, 212, 232, 0.08);
+    scrollbar-width: thin;
+  }
+
+  :global(body::-webkit-scrollbar) {
+    width: 8px;
+  }
+
+  :global(body::-webkit-scrollbar-track) {
+    background: rgba(0, 212, 232, 0.04);
+  }
+
+  :global(body::-webkit-scrollbar-thumb) {
+    background: linear-gradient(180deg, #59f3ff 0%, #00d4e8 55%, #00a9ba 100%);
+    border-radius: 999px;
+    border: 1px solid rgba(2, 11, 24, 0.9);
+    box-shadow: 0 0 10px rgba(0, 212, 232, 0.45);
+  }
+</style>
