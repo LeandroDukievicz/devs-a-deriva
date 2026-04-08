@@ -319,6 +319,30 @@
     .nav-link {
       font-size: 0.7rem;
     }
+
+    .has-dropdown {
+      position: static;
+    }
+
+    .dropdown {
+      top: 44px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-6px);
+      width: min(92vw, 260px);
+      min-width: 0;
+      max-width: calc(100vw - 24px);
+    }
+
+    .dropdown.is-open {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .dropdown-link {
+      padding: 10px 16px;
+      font-size: 0.62rem;
+      white-space: normal;
+      line-height: 1.45;
+    }
   }
 </style>
 
