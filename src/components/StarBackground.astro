@@ -8,13 +8,14 @@
 </div>
 
 <script>
+  const SHIP_W = 40;
+  const SHIP_H = 18;
+  const INTERVAL = 15000;
+
   function spawnShip() {
     const container = document.querySelector('.stars-container');
     if (!container) return;
 
-    const scale  = 0.5 + Math.random() * 0.7;
-    const w = Math.round(80 * scale);
-    const h = Math.round(36 * scale);
     const topPct  = 8  + Math.random() * 78;
     const leftPct = 5  + Math.random() * 80;
     const flipX   = Math.random() > 0.5;
@@ -29,7 +30,7 @@
       filter: drop-shadow(0 0 5px rgba(0,212,232,0.7)) drop-shadow(0 0 2px rgba(232,0,212,0.4));
     `;
     el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 36"
-        width="${w}" height="${h}" style="display:block;transform:scaleX(${flipX ? -1 : 1})">
+        width="${SHIP_W}" height="${SHIP_H}" style="display:block;transform:scaleX(${flipX ? -1 : 1})">
       <ellipse cx="40" cy="15" rx="13" ry="9"
         fill="rgba(0,212,232,0.22)" stroke="#00d4e8" stroke-width="1"/>
       <ellipse cx="40" cy="23" rx="36" ry="10"
@@ -41,21 +42,18 @@
 
     container.appendChild(el);
 
-    // fade in → fica 1s → fade out
     el.animate([
       { opacity: 0 },
-      { opacity: 0.9, offset: 0.15 },
-      { opacity: 0.9, offset: 0.85 },
+      { opacity: 0.9, offset: 0.2 },
+      { opacity: 0.9, offset: 0.8 },
       { opacity: 0 },
     ], { duration: 2000, easing: 'ease-in-out', fill: 'forwards' }).onfinish = () => {
       el.remove();
-      setTimeout(spawnShip, 6000 + Math.random() * 12000);
+      setTimeout(spawnShip, INTERVAL);
     };
   }
 
-  // Dois spawners independentes
-  setTimeout(spawnShip, 2000  + Math.random() * 5000);
-  setTimeout(spawnShip, 10000 + Math.random() * 8000);
+  setTimeout(spawnShip, INTERVAL);
 </script>
 
 <style>
