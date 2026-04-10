@@ -7,6 +7,147 @@
   <div class="stars stars-fast"></div>
 </div>
 
+<script>
+  // ─── SVGs ───────────────────────────────────────────────────────────────────
+
+  function shipSVG(w: number, h: number, flipX: boolean): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 36"
+        width="${w}" height="${h}" style="display:block;transform:scaleX(${flipX ? -1 : 1})">
+      <ellipse cx="40" cy="15" rx="13" ry="9"
+        fill="rgba(0,212,232,0.22)" stroke="#00d4e8" stroke-width="1"/>
+      <ellipse cx="40" cy="23" rx="36" ry="10"
+        fill="rgba(2,18,40,0.88)" stroke="#00d4e8" stroke-width="1"/>
+      <circle cx="22" cy="28" r="2.5" fill="#e800d4" opacity="0.9"/>
+      <circle cx="40" cy="30" r="2.5" fill="#00d4e8" opacity="0.9"/>
+      <circle cx="58" cy="28" r="2.5" fill="#e800d4" opacity="0.9"/>
+    </svg>`;
+  }
+
+  function telescopeSVG(w: number, h: number, flipX: boolean): string {
+    // Corpo principal: cilindro horizontal tipo Hubble + painéis solares
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40"
+        width="${w}" height="${h}" style="display:block;transform:scaleX(${flipX ? -1 : 1})">
+      <!-- painel solar esquerdo -->
+      <rect x="2" y="13" width="22" height="8" rx="1"
+        fill="rgba(0,80,120,0.85)" stroke="#00d4e8" stroke-width="0.7"/>
+      <line x1="8"  y1="13" x2="8"  y2="21" stroke="#00d4e8" stroke-width="0.4" opacity="0.6"/>
+      <line x1="14" y1="13" x2="14" y2="21" stroke="#00d4e8" stroke-width="0.4" opacity="0.6"/>
+      <line x1="20" y1="13" x2="20" y2="21" stroke="#00d4e8" stroke-width="0.4" opacity="0.6"/>
+      <!-- painel solar direito -->
+      <rect x="76" y="13" width="22" height="8" rx="1"
+        fill="rgba(0,80,120,0.85)" stroke="#00d4e8" stroke-width="0.7"/>
+      <line x1="82" y1="13" x2="82" y2="21" stroke="#00d4e8" stroke-width="0.4" opacity="0.6"/>
+      <line x1="88" y1="13" x2="88" y2="21" stroke="#00d4e8" stroke-width="0.4" opacity="0.6"/>
+      <line x1="94" y1="13" x2="94" y2="21" stroke="#00d4e8" stroke-width="0.4" opacity="0.6"/>
+      <!-- corpo principal -->
+      <rect x="24" y="8" width="52" height="18" rx="5"
+        fill="rgba(2,18,40,0.9)" stroke="#00d4e8" stroke-width="0.8"/>
+      <!-- detalhe frontal (lente) -->
+      <ellipse cx="72" cy="17" rx="5" ry="7"
+        fill="rgba(0,212,232,0.15)" stroke="#00d4e8" stroke-width="0.8"/>
+      <!-- detalhe traseiro -->
+      <rect x="24" y="11" width="8" height="12" rx="2"
+        fill="rgba(0,212,232,0.12)" stroke="#00d4e8" stroke-width="0.6"/>
+      <!-- antena -->
+      <line x1="50" y1="8" x2="50" y2="2" stroke="#00d4e8" stroke-width="0.7" opacity="0.7"/>
+      <circle cx="50" cy="2" r="1.2" fill="#00d4e8" opacity="0.8"/>
+    </svg>`;
+  }
+
+  // ─── Spawner genérico ────────────────────────────────────────────────────────
+
+  interface SpawnOptions {
+    svgFn: (w: number, h: number, flip: boolean) => string;
+    viewW: number;
+    viewH: number;
+    scaleMin: number;
+    scaleMax: number;
+    durationMin: number;
+    durationMax: number;
+    nextMin: number;
+    nextMax: number;
+    glowColor: string;
+    driftY: number;
+  }
+
+  function spawn(opts: SpawnOptions) {
+    const container = document.querySelector('.stars-container');
+    if (!container) return;
+
+    const goRight = Math.random() > 0.4;
+    const topPct  = 8 + Math.random() * 72;
+    const scale   = opts.scaleMin + Math.random() * (opts.scaleMax - opts.scaleMin);
+    const dur     = opts.durationMin + Math.random() * (opts.durationMax - opts.durationMin);
+    const drift   = (Math.random() - 0.5) * opts.driftY;
+    const w = Math.round(opts.viewW * scale);
+    const h = Math.round(opts.viewH * scale);
+    const vw = window.innerWidth;
+    const startX = goRight ? -w - 10 : vw + 10;
+    const endX   = goRight ? vw + 10  : -w - 10;
+
+    const el = document.createElement('div');
+    el.setAttribute('aria-hidden', 'true');
+    el.style.cssText = `
+      position:absolute;
+      top:${topPct}%;
+      left:0;
+      pointer-events:none;
+      filter:drop-shadow(0 0 5px ${opts.glowColor});
+    `;
+    el.innerHTML = opts.svgFn(w, h, !goRight);
+    container.appendChild(el);
+
+    el.animate([
+      { transform: `translate(${startX}px, 0px)`,                                        opacity: 0   },
+      { transform: `translate(${startX + (goRight ? 50 : -50)}px, ${drift * 0.05}px)`,  opacity: 0.9, offset: 0.06 },
+      { transform: `translate(${endX   - (goRight ? 50 : -50)}px, ${drift * 0.95}px)`,  opacity: 0.9, offset: 0.94 },
+      { transform: `translate(${endX}px, ${drift}px)`,                                   opacity: 0   },
+    ], { duration: dur, easing: 'linear', fill: 'forwards' }).onfinish = () => {
+      el.remove();
+      setTimeout(() => spawn(opts), opts.nextMin + Math.random() * (opts.nextMax - opts.nextMin));
+    };
+  }
+
+  // ─── Configurações ───────────────────────────────────────────────────────────
+
+  const shipOpts: SpawnOptions = {
+    svgFn:       shipSVG,
+    viewW:       80,
+    viewH:       36,
+    scaleMin:    0.5,
+    scaleMax:    1.2,
+    durationMin: 4000,
+    durationMax: 8000,
+    nextMin:     8000,
+    nextMax:     16000,
+    glowColor:   'rgba(0,212,232,0.7)',
+    driftY:      60,
+  };
+
+  const telescopeOpts: SpawnOptions = {
+    svgFn:       telescopeSVG,
+    viewW:       100,
+    viewH:       40,
+    scaleMin:    0.3,
+    scaleMax:    0.65,
+    durationMin: 9000,
+    durationMax: 16000,
+    nextMin:     30000,
+    nextMax:     70000,
+    glowColor:   'rgba(0,180,200,0.5)',
+    driftY:      30,
+  };
+
+  // ─── Inicialização ───────────────────────────────────────────────────────────
+
+  // Duas naves com delays escalonados
+  setTimeout(() => spawn(shipOpts), 3000  + Math.random() * 7000);
+  setTimeout(() => spawn(shipOpts), 13000 + Math.random() * 8000);
+
+  // Telescópio bem esporádico
+  setTimeout(() => spawn(telescopeOpts), 20000 + Math.random() * 30000);
+</script>
+
 <style>
   .stars-container {
     position: fixed;
@@ -74,11 +215,7 @@
   }
 
   @keyframes stars-drift {
-    from {
-      transform: translate(0, 0);
-    }
-    to {
-      transform: translate(100px, 100px);
-    }
+    from { transform: translate(0, 0); }
+    to   { transform: translate(100px, 100px); }
   }
 </style>
