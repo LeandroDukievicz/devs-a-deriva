@@ -28,7 +28,7 @@ const logoForCanvas = Buffer.from(
 ).toString('base64');
 ---
 
-<div id="bh-container" class="relative w-full h-screen overflow-hidden" style="background:#020b18;">
+<div id="bh-container" class="relative w-full h-screen overflow-hidden" style="background:var(--color-bg);">
   <canvas id="c" class="block w-full h-full" data-astro-svg={`data:image/svg+xml;base64,${svgForCanvas}`}></canvas>
   <div id="hero" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none select-none" style="gap: 20px;">
     <div
@@ -69,9 +69,9 @@ const logoForCanvas = Buffer.from(
   }
 
   @keyframes colorshift {
-    0%   { color: #00d4e8; }
-    50%  { color: #e800d4; }
-    100% { color: #00d4e8; }
+    0%   { color: var(--color-star); }
+    50%  { color: var(--color-accent); }
+    100% { color: var(--color-star); }
   }
 
   .logo-link {
@@ -141,6 +141,12 @@ const logoForCanvas = Buffer.from(
 const INTRO_KEY  = 'intro_last_shown';
 const TODAY      = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
 const skipIntro  = localStorage.getItem(INTRO_KEY) === TODAY;
+
+// Lê as cores do sistema de tokens CSS
+const _css      = getComputedStyle(document.documentElement);
+const COLOR_STAR   = _css.getPropertyValue('--color-star').trim()   || '#00d4e8';
+const COLOR_ACCENT = _css.getPropertyValue('--color-accent').trim() || '#e800d4';
+const COLOR_BG     = _css.getPropertyValue('--color-bg').trim()     || '#020b18';
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -242,8 +248,8 @@ logoImage.onload = () => {
 
   // Aplica degradê ciano → magenta sobre os pixels do SVG
   const grad = logoCtx.createLinearGradient(0, 0, S, S);
-  grad.addColorStop(0, '#00d4e8');
-  grad.addColorStop(1, '#e800d4');
+  grad.addColorStop(0, COLOR_STAR);
+  grad.addColorStop(1, COLOR_ACCENT);
   logoCtx.globalCompositeOperation = 'source-atop';
   logoCtx.fillStyle = grad;
   logoCtx.fillRect(0, 0, S, S);
@@ -340,7 +346,7 @@ function drawGlyphs() {
     ctx.translate(g.x, g.y);
     ctx.transform(g.scaleX, g.skewY, g.skewX, g.scaleY, 0, 0);
     ctx.font = `300 ${g.fontSize}px monospace`;
-    ctx.fillStyle = '#00d4e8';
+    ctx.fillStyle = COLOR_STAR;
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(g.ch, 0, 0);
@@ -597,7 +603,7 @@ function update() {
 }
 
 function draw() {
-  ctx.fillStyle = (window as any).__bgColor ?? '#020b18';
+  ctx.fillStyle = (window as any).__bgColor ?? COLOR_BG;
   ctx.fillRect(0, 0, W, H);
 
   ctx.save();

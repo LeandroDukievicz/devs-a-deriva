@@ -1,0 +1,112 @@
+/* ================================================================
+   Design Tokens — fonte única de verdade para todas as cores.
+   Importe via: import '../styles/tokens.css' (em layouts/Base.astro)
+   ================================================================ */
+
+/* ─── Tema padrão: Órbita Baixa ─────────────────────────────── */
+:root {
+  /* Cores base */
+  --color-bg:          #020b18;
+  --color-star:        #00d4e8;
+  --color-accent:      #e800d4;
+  --color-text:        #e8f4f8;
+  --color-transparent: transparent;
+
+  /* Variantes claras/escuras de star (para gradientes de scrollbar, etc.) */
+  --color-star-light: color-mix(in srgb, var(--color-star) 70%, white);
+  --color-star-dark:  color-mix(in srgb, var(--color-star) 70%, black);
+
+  /* star com opacidade */
+  --color-star-05:  color-mix(in srgb, var(--color-star)  5%, transparent);
+  --color-star-08:  color-mix(in srgb, var(--color-star)  8%, transparent);
+  --color-star-10:  color-mix(in srgb, var(--color-star) 10%, transparent);
+  --color-star-16:  color-mix(in srgb, var(--color-star) 16%, transparent);
+  --color-star-18:  color-mix(in srgb, var(--color-star) 18%, transparent);
+  --color-star-22:  color-mix(in srgb, var(--color-star) 22%, transparent);
+  --color-star-25:  color-mix(in srgb, var(--color-star) 25%, transparent);
+  --color-star-40:  color-mix(in srgb, var(--color-star) 40%, transparent);
+  --color-star-45:  color-mix(in srgb, var(--color-star) 45%, transparent);
+  --color-star-70:  color-mix(in srgb, var(--color-star) 70%, transparent);
+  --color-star-90:  color-mix(in srgb, var(--color-star) 90%, transparent);
+
+  /* accent com opacidade */
+  --color-accent-06: color-mix(in srgb, var(--color-accent)  6%, transparent);
+  --color-accent-08: color-mix(in srgb, var(--color-accent)  8%, transparent);
+  --color-accent-14: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  --color-accent-16: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  --color-accent-18: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  --color-accent-20: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  --color-accent-40: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  --color-accent-60: color-mix(in srgb, var(--color-accent) 60%, transparent);
+
+  /* bg com opacidade */
+  --color-bg-70: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  --color-bg-88: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  --color-bg-90: color-mix(in srgb, var(--color-bg) 90%, transparent);
+  --color-bg-95: color-mix(in srgb, var(--color-bg) 95%, transparent);
+}
+
+/* ─── Espaço Profundo ────────────────────────────────────────── */
+:root[data-theme="espaco-profundo"] {
+  --color-bg: #000000;
+}
+
+/* ─── Limbo ──────────────────────────────────────────────────── */
+:root[data-theme="limbo"] {
+  --color-bg:   #ffffff;
+  --color-star: #1a1a2e;
+  --color-text: #0a0a0a;
+}
+
+/* ================================================================
+   Global base styles
+   ================================================================ */
+
+html,
+body {
+  background-color: var(--color-bg) !important;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--color-text);
+  scrollbar-color: var(--color-star) var(--color-star-08);
+  scrollbar-width: thin;
+}
+
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--color-star-05);
+}
+
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--color-star-light) 0%,
+    var(--color-star)       55%,
+    var(--color-star-dark)  100%
+  );
+  border-radius: 999px;
+  border: 1px solid var(--color-bg-90);
+  box-shadow: 0 0 10px var(--color-star-45);
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--color-star-light) 0%,
+    var(--color-star)       55%,
+    var(--color-star-dark)  100%
+  );
+  box-shadow: 0 0 14px var(--color-star-70);
+}
+
+/* Limbo: força texto escuro em todos os elementos */
+html[data-theme="limbo"] body,
+html[data-theme="limbo"] body * {
+  color: var(--color-text) !important;
+}

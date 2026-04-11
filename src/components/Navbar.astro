@@ -88,7 +88,7 @@
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #00d4e8;
+    color: var(--color-star);
     text-decoration: none;
     animation: nav-pulse 3s ease-in-out infinite;
     transition: color 0.22s ease, text-shadow 0.22s ease;
@@ -106,24 +106,24 @@
   li:nth-child(3) .nav-link { animation-delay: 0.8s; }
 
   @keyframes nav-pulse {
-    0%, 100% { text-shadow: 0 0 6px rgba(0, 212, 232, 0.4); opacity: 1; }
-    50%       { text-shadow: 0 0 14px rgba(0, 212, 232, 0.9); opacity: 0.75; }
+    0%, 100% { text-shadow: 0 0 6px var(--color-star-40); opacity: 1; }
+    50%       { text-shadow: 0 0 14px var(--color-star-90); opacity: 0.75; }
   }
 
   .nav-prefix {
-    color: #00d4e8;
+    color: var(--color-star);
     transition: color 0.22s ease;
     margin-right: 1px;
   }
 
   .nav-link:hover {
-    color: #e800d4;
+    color: var(--color-accent);
     animation: none;
-    text-shadow: 0 0 12px rgba(232, 0, 212, 0.6);
+    text-shadow: 0 0 12px var(--color-accent-60);
   }
 
   .nav-link:hover .nav-prefix {
-    color: #e800d4;
+    color: var(--color-accent);
   }
 
   /* Dropdown */
@@ -140,10 +140,10 @@
     left: 50%;
     transform: translateX(-50%) translateY(-6px);
     min-width: 180px;
-    background: rgba(2, 11, 24, 0.88);
+    background: var(--color-bg-88);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(0, 212, 232, 0.18);
+    border: 1px solid var(--color-star-18);
     border-radius: 6px;
     opacity: 0;
     visibility: hidden;
@@ -166,18 +166,18 @@
     font-size: 0.59rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #00d4e8;
+    color: var(--color-star);
     text-decoration: none;
     transition: color 0.2s ease, background 0.2s ease;
   }
 
   .dropdown-link:hover {
-    color: #e800d4;
-    background: rgba(232, 0, 212, 0.06);
+    color: var(--color-accent);
+    background: var(--color-accent-06);
   }
 
   .dropdown-link:hover .nav-prefix {
-    color: #e800d4;
+    color: var(--color-accent);
   }
 
   .dropdown-btn {
@@ -206,7 +206,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(2, 11, 24, 0.7);
+    background: var(--color-bg-70);
     backdrop-filter: blur(6px);
     opacity: 0;
     visibility: hidden;
@@ -219,8 +219,8 @@
   }
 
   .modal-box {
-    background: rgba(2, 11, 24, 0.95);
-    border: 1px solid rgba(0, 212, 232, 0.25);
+    background: var(--color-bg-95);
+    border: 1px solid var(--color-star-25);
     border-radius: 8px;
     padding: 28px 32px;
     display: flex;
@@ -254,7 +254,7 @@
     margin: 0;
     font-family: monospace;
     font-size: 0.78rem;
-    color: #00d4e8;
+    color: var(--color-star);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     line-height: 1.6;
@@ -280,25 +280,25 @@
 
   .modal-btn--confirm {
     background: transparent;
-    border: 1px outset #00d4e8;
-    color: #00d4e8;
+    border: 1px outset var(--color-star);
+    color: var(--color-star);
   }
 
   .modal-btn--confirm:hover {
-    color: #e800d4;
-    border-color: #e800d4;
-    background: rgba(232, 0, 212, 0.08);
-    box-shadow: 0 0 12px rgba(232, 0, 212, 0.2);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-accent-08);
+    box-shadow: 0 0 12px var(--color-accent-20);
   }
 
   .modal-btn--cancel {
     background: transparent;
-    border: 1px solid rgba(0, 212, 232, 0.2);
+    border: 1px solid var(--color-star-22);
     color: #5a8a94;
   }
 
   .modal-btn--cancel:hover {
-    border-color: rgba(0, 212, 232, 0.4);
+    border-color: var(--color-star-40);
     color: #a0c4cc;
   }
 

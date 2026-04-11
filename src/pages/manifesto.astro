@@ -1,162 +1,139 @@
 ---
-import Navbar from '../components/Navbar.astro';
+import Base from '../layouts/Base.astro';
 import StarBackground from '../components/StarBackground.astro';
-import ThemeProvider from '../components/ThemeProvider.astro';
 ---
 
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Manifesto · Devs à Deriva</title>
-    <style>
-      .astronauts-drift {
-        position: fixed;
-        width: 30vw;
-        max-width: 340px;
-        pointer-events: none;
-        z-index: 1;
-        animation: contorno-shift 4s ease-in-out infinite;
-        will-change: transform, opacity;
-      }
+<Base title="Manifesto · Devs à Deriva">
+  <StarBackground />
 
-      @keyframes contorno-shift {
-        0%, 100% {
-          filter: invert(1)
-                  drop-shadow(0 0 4px #00d4e8)
-                  drop-shadow(0 0 10px rgba(0, 212, 232, 0.4));
-        }
-        50% {
-          filter: invert(1)
-                  drop-shadow(0 0 4px #e800d4)
-                  drop-shadow(0 0 10px rgba(232, 0, 212, 0.4));
-        }
-      }
-    </style>
-    <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
-    <ThemeProvider />
-  </head>
-  <body class="m-0 p-0 overflow-x-hidden">
-    <Navbar />
-    <StarBackground />
-    <img
-      id="astronauts"
-      src="/astronauts.svg"
-      alt="Astronauts"
-      class="astronauts-drift"
-    />
-  </body>
-</html>
+  <main class="manifesto-wrapper">
+    <section class="manifesto-section">
+      <h1 class="manifesto-title">Manifesto - Devs à deriva</h1>
 
-<script>
-  const el = document.getElementById('astronauts') as HTMLImageElement;
+      <p>Calma, eu sei que a palavra <span class="manifesto-highlight">manifesto</span> que você leu aqui pode ter acionando algum gatilho por ai, mas fica tranquilo que não tem nada a ver com nada ágil kkkkk, o objetivo aqui do blog é outro, e o manifesto em sí é mais para falar o porquê e o quê você vai encontrar por aqui.</p>
 
-  const W = () => window.innerWidth;
-  const H = () => window.innerHeight;
+      <p>Bom, o intuíto desse blog não é ser um manual, muito menos um site de tutoriais ou de aulas, embora você possa encontrar isso sim às vezes em alguns posts, mas eu criei esse espaço sem uma promessa de resposta de nada, sem alardes desnecessários, aqui é apenas um espaço de reflexão, um espaço pra liberdade criativa e nada mais.</p>
 
-  // Posição inicial aleatória
-  let cx = W() * 0.2 + Math.random() * W() * 0.6;
-  let cy = H() * 0.2 + Math.random() * H() * 0.6;
+      <p>Se você é estudante e está iniciando a carreira agora ou se já está inserido na área vasta da programação e se assim como eu está saturado da bolha como um todo, de ver IA pra todo lado, de todo mundo falando que já era e de ver promessas de CEOs que pregam diariamente o fim do mundo e da carreira por conta de seus produtos, talvez aqui seja um lugar para você considerar como seu refúgio, a intenção deste blog é "human first " kkkkkkk.</p>
 
-  // Velocidade inicial suave (px/frame a ~60fps)
-  const SPEED = 0.4;
-  let angle  = Math.random() * Math.PI * 2;
-  let vx     = Math.cos(angle) * SPEED;
-  let vy     = Math.sin(angle) * SPEED;
+      <p>Falando sério agora, o objetivo do blog em sí é de ter pessoas criando posts com a sua própria massa cinzenta, sim ainda existe pessoas assim, acredite !! Então você vai com certeza encontrar erros de gramática, erros de português, mas vai ser da hora... Aqui vai ser o espaço que vamos poder se expressar sem mimimi, sem seguir tendência, sem aprovação, apenas um conteúdo de assuntos que achamos relevantes, sendo assuntos técnicos ou aleatoriedades..</p>
 
-  // Rotação visual
-  let rot  = 0;
-  let rotV = (Math.random() - 0.5) * 0.02;
+      <p>Aqui também vai ser um espaço pra questionarmos muita coisa, vamos agir na contramão, sem escala, sem performar, só está sendo criado por que sim, algumas coisas são criadas exatamente por isso, porque no fim eu acredito que deva existir, sem suprir necessidade nenhuma, só porque sim mesmo...Sem destino, sem jornada, sem guia, <span class="manifesto-highlight-accent">TOTALMENTE À DERIVA</span>. Se você busca certezas, bom talvez você esteja no lugar errado, existe muitos outros lugares excelentes pra isso, mas se quer encontrar posts e assuntos da hora no geral, ou questionar algumas coisas junto comigo... então seja Bem vindo por aqui. você também está à deriva !</p>
 
-  // Perturbação de direção: muda levemente a cada ~3s
-  let nudgeTimer = 0;
+      <div class="cta-wrap">
+        <a href="/" class="error-cta">Voltar à órbita inicial</a>
+      </div>
+    </section>
+  </main>
+</Base>
 
-  // Teletransporte
-  let teleportTimer = 1800 + Math.random() * 1800;
-  let isFading = false;
-
-  el.style.top  = '0';
-  el.style.left = '0';
-  el.style.transform = `translate(${cx}px, ${cy}px) rotate(${rot}deg)`;
-
-  function nudgeDirection() {
-    // Gira levemente o vetor de velocidade (não muda a magnitude)
-    const delta = (Math.random() - 0.5) * 0.4; // rad
-    const speed = Math.hypot(vx, vy);
-    const dir   = Math.atan2(vy, vx) + delta;
-    vx = Math.cos(dir) * speed;
-    vy = Math.sin(dir) * speed;
+<style>
+  .manifesto-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
   }
 
-  function teleport() {
-    if (isFading) return;
-    isFading = true;
-    el.style.transition = 'opacity 1s ease';
-    el.style.opacity = '0';
-
-    setTimeout(() => {
-      const margin = 60;
-      const w = el.offsetWidth  || 300;
-      const h = el.offsetHeight || 200;
-      cx = margin + Math.random() * (W() - w - margin * 2);
-      cy = margin + Math.random() * (H() - h - margin * 2);
-
-      // Nova direção aleatória ao reaparecer
-      const dir = Math.random() * Math.PI * 2;
-      vx = Math.cos(dir) * SPEED;
-      vy = Math.sin(dir) * SPEED;
-
-      el.style.transition = 'opacity 1.2s ease';
-      el.style.opacity = '1';
-      isFading = false;
-    }, 1000);
+  .manifesto-section {
+    width: 75%;
+    height: 86.4vh;
+    border: 1px solid var(--color-transparent);
+    border-radius: 16px;
+    padding: 48px 56px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-sizing: border-box;
+    pointer-events: auto;
   }
 
-  function frame() {
-    nudgeTimer++;
-    teleportTimer--;
-
-    // Perturbação suave de direção a cada ~3s
-    if (nudgeTimer >= 180) {
-      nudgeDirection();
-      nudgeTimer = 0;
-    }
-
-    // Teletransporte ocasional
-    if (teleportTimer <= 0) {
-      teleport();
-      teleportTimer = 1800 + Math.random() * 1800;
-    }
-
-    // Manter velocidade constante (sem aceleração)
-    const speed = Math.hypot(vx, vy);
-    if (speed > 0) {
-      vx = (vx / speed) * SPEED;
-      vy = (vy / speed) * SPEED;
-    }
-
-    cx += vx;
-    cy += vy;
-
-    // Reflexão suave nas bordas
-    const w = el.offsetWidth  || 300;
-    const h = el.offsetHeight || 200;
-    const margin = 20;
-
-    if (cx < margin)              { cx = margin;              vx = Math.abs(vx); }
-    if (cx > W() - w - margin)    { cx = W() - w - margin;    vx = -Math.abs(vx); }
-    if (cy < margin)              { cy = margin;              vy = Math.abs(vy); }
-    if (cy > H() - h - margin)    { cy = H() - h - margin;    vy = -Math.abs(vy); }
-
-    // Rotação visual contínua e lenta
-    rotV += (Math.random() - 0.5) * 0.001;
-    rotV  = Math.max(-0.04, Math.min(0.04, rotV));
-    rot  += rotV;
-
-    el.style.transform = `translate(${cx}px, ${cy}px) rotate(${rot}deg)`;
-
-    requestAnimationFrame(frame);
+  .manifesto-title {
+    font-family: monospace;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-star);
+    margin: 0 0 32px;
   }
 
-  requestAnimationFrame(frame);
-</script>
+  .manifesto-section p {
+    font-family: monospace;
+    font-size: 0.88rem;
+    line-height: 1.85;
+    color: var(--color-text);
+    margin: 0 0 20px;
+  }
+
+  .manifesto-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  .manifesto-highlight {
+    color: var(--color-star);
+  }
+
+  .manifesto-highlight-accent {
+    color: var(--color-accent);
+  }
+
+  .cta-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .manifesto-section::-webkit-scrollbar {
+    display: none;
+  }
+
+  .error-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 24px;
+    min-height: 44px;
+    min-width: 208px;
+    padding: 0 29px;
+    border: 1px outset var(--color-star);
+    border-radius: 999px;
+    color: var(--color-star);
+    background: transparent;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-family: monospace;
+    font-size: 0.72rem;
+    transition:
+      color 0.32s ease,
+      border-color 0.32s ease,
+      background 0.32s ease,
+      box-shadow 0.32s ease,
+      transform 0.32s ease;
+  }
+
+  .error-cta:hover,
+  .error-cta:focus-visible {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 14px var(--color-star-16),
+      0 0 26px var(--color-star-10);
+    animation: cta-pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes cta-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 14px var(--color-star-16),
+        0 0 26px var(--color-star-10);
+    }
+    50% {
+      box-shadow:
+        0 0 18px var(--color-star-25),
+        0 0 34px var(--color-star-16);
+    }
+  }
+</style>

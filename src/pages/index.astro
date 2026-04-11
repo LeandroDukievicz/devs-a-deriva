@@ -1,22 +1,12 @@
 ---
+import Base from '../layouts/Base.astro';
 import BlackHole from '../components/BlackHole.astro';
-import Navbar from '../components/Navbar.astro';
-import ThemeProvider from '../components/ThemeProvider.astro';
 
 const postHref = '#';
 ---
 
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Devs à Deriva</title>
-    <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
-    <ThemeProvider />
-  </head>
-  <body class="m-0 p-0 bg-[#020b18] overflow-x-hidden">
-    <Navbar />
-    <BlackHole />
+<Base title="Devs à Deriva">
+  <BlackHole />
     <main class="page-overlay">
       <div id="sections-container" class="sections-container">
         <div class="content-section" data-section-id="section-1">
@@ -214,41 +204,9 @@ const postHref = '#';
         </div>
       </div>
     </main>
-  </body>
+</Base>
 
-  <style>
-    :global(html) {
-      background: #020b18;
-    }
-
-    :global(body) {
-      margin: 0;
-      overflow-x: hidden;
-      background: #020b18;
-      color: #a0c4cc;
-      scrollbar-color: #00d4e8 rgba(0, 212, 232, 0.08);
-      scrollbar-width: thin;
-    }
-
-    :global(body::-webkit-scrollbar) {
-      width: 8px;
-    }
-
-    :global(body::-webkit-scrollbar-track) {
-      background: rgba(0, 212, 232, 0.04);
-    }
-
-    :global(body::-webkit-scrollbar-thumb) {
-      background: linear-gradient(180deg, #59f3ff 0%, #00d4e8 55%, #00a9ba 100%);
-      border-radius: 999px;
-      border: 1px solid rgba(2, 11, 24, 0.9);
-      box-shadow: 0 0 10px rgba(0, 212, 232, 0.45);
-    }
-
-    :global(body::-webkit-scrollbar-thumb:hover) {
-      background: linear-gradient(180deg, #8ff8ff 0%, #29ecff 55%, #00d4e8 100%);
-      box-shadow: 0 0 14px rgba(41, 236, 255, 0.65);
-    }
+<style>
 
     .page-overlay {
       position: relative;
@@ -287,10 +245,10 @@ const postHref = '#';
       justify-content: center;
       min-width: 240px;
       padding: 12px 22px;
-      border: 1px outset #00d4e8;
+      border: 1px outset var(--color-star);
       border-radius: 999px;
       background: transparent;
-      color: #00d4e8;
+      color: var(--color-star);
       text-decoration: none;
       text-transform: uppercase;
       letter-spacing: 0.14em;
@@ -300,10 +258,10 @@ const postHref = '#';
     }
 
     .load-more-cta:hover {
-      color: #e800d4;
-      border-color: #e800d4;
-      background: rgba(232, 0, 212, 0.08);
-      box-shadow: 0 0 16px rgba(232, 0, 212, 0.18);
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+      background: var(--color-accent-08);
+      box-shadow: 0 0 16px var(--color-accent-18);
       transform: translateY(-2px);
     }
 
@@ -313,7 +271,7 @@ const postHref = '#';
       flex-direction: row;
       min-height: 75px;
       box-sizing: border-box;
-      border: 1px outset #00d4e8;
+      border: 1px outset var(--color-star);
       border-radius: 8px;
       overflow: hidden;
       background: transparent;
@@ -335,7 +293,7 @@ const postHref = '#';
       padding: 5px;
       border-radius: 6px;
       background: transparent;
-      border: 1px outset #00d4e8;
+      border: 1px outset var(--color-star);
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -370,7 +328,7 @@ const postHref = '#';
       align-self: flex-end;
       margin: -8px -4px 10px 0;
       padding: 0;
-      color: #00d4e8;
+      color: var(--color-star);
       opacity: 0;
       visibility: hidden;
       text-decoration: none;
@@ -383,7 +341,7 @@ const postHref = '#';
     }
 
     .limbo-cta:hover {
-      color: #e800d4;
+      color: var(--color-accent);
       transform: translateY(-1px);
     }
 
@@ -392,14 +350,14 @@ const postHref = '#';
       align-self: flex-end;
       font-size: 0.72rem;
       font-family: monospace;
-      color: #00d4e8;
+      color: var(--color-star);
       text-decoration: none;
       padding: 5px 0;
       transition: color 0.2s;
     }
 
     .cta-read:hover {
-      color: #e800d4;
+      color: var(--color-accent);
     }
 
     .dot {
@@ -413,7 +371,7 @@ const postHref = '#';
     }
 
     .content-section:hover {
-      border-color: #e800d4;
+      border-color: var(--color-accent);
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
       transform: translateY(-2px);
     }
@@ -461,13 +419,13 @@ const postHref = '#';
     }
 
     .title-link {
-      color: #00d4e8;
+      color: var(--color-star);
       text-decoration: none;
       transition: color 0.2s ease;
     }
 
     .title-link:hover {
-      color: #e800d4;
+      color: var(--color-accent);
     }
 
     .content-section p {
@@ -514,9 +472,9 @@ const postHref = '#';
       justify-content: center;
       width: 32px;
       height: 32px;
-      color: #00d4e8;
+      color: var(--color-star);
       background: transparent;
-      border: 1px outset #00d4e8;
+      border: 1px outset var(--color-star);
       border-radius: 50%;
       cursor: pointer;
       text-decoration: none;
@@ -524,9 +482,9 @@ const postHref = '#';
     }
 
     .cta-btn:hover {
-      color: #e800d4;
-      border-color: #e800d4;
-      background: rgba(232, 0, 212, 0.08);
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+      background: var(--color-accent-08);
     }
 
     @media (max-width: 1024px) {
@@ -678,27 +636,27 @@ const postHref = '#';
     }
 
     .progress-ring-bg {
-      stroke: rgba(232, 0, 212, 0.18);
+      stroke: var(--color-accent-18);
     }
 
     .progress-ring-fill {
-      stroke: #e800d4;
+      stroke: var(--color-accent);
       transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
     }
 
     .progress-ring-fill.completed {
-      stroke: #00d4e8;
+      stroke: var(--color-star);
     }
 
     .progress-text {
       font-size: 0.65rem;
       font-family: monospace;
-      color: #e800d4;
+      color: var(--color-accent);
       transition: color 0.5s ease;
     }
 
     .progress-text.completed {
-      color: #00d4e8;
+      color: var(--color-star);
     }
   </style>
 
@@ -1065,4 +1023,3 @@ const postHref = '#';
 
     loadReadingProgress();
   </script>
-</html>

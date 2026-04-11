@@ -11,72 +11,45 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
 
 <StarBackground />
 
+<!-- Gradiente compartilhado fora do fluxo — referenciado por url(#err-grad) -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none">
+  <defs>
+    <linearGradient id="err-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   style="stop-color: var(--color-star)" />
+      <stop offset="100%" style="stop-color: var(--color-accent)" />
+    </linearGradient>
+  </defs>
+</svg>
+
 <section class="page-overlay">
 
   <div class="visual-block" aria-hidden="true">
     <!-- Dígito do Meio (Back) -->
     <div class="float-element float-1">
-      <svg
-        class="error-code-shadow error-code-shadow-back"
-        viewBox="0 0 1200 500"
-        role="presentation"
-      >
-        <text x="600" y="320">{digits[1]}</text>
+      <svg class="error-code-shadow error-code-shadow-back" viewBox="0 0 1200 500" role="presentation">
+        <text x="600" y="320" fill="transparent" stroke-width="18">{digits[1]}</text>
       </svg>
-
-      <svg
-        class="error-code error-code-back"
-        viewBox="0 0 1200 500"
-        role="presentation"
-      >
-        <defs>
-          <linearGradient id="error-code-gradient-back" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00d4e8" />
-            <stop offset="100%" stop-color="#e800d4" />
-          </linearGradient>
-        </defs>
-        <text x="600" y="320">{digits[1]}</text>
+      <svg class="error-code" viewBox="0 0 1200 500" role="presentation">
+        <text x="600" y="320" fill="transparent" stroke="url(#err-grad)" stroke-width="8">{digits[1]}</text>
       </svg>
     </div>
 
     <!-- Dígitos Laterais (Front) -->
     <div class="float-element float-2">
-      <svg
-        class="error-code-shadow error-code-shadow-front"
-        viewBox="0 0 1200 500"
-        role="presentation"
-      >
-        <text x="395" y="320">{digits[0]}</text>
+      <svg class="error-code-shadow error-code-shadow-front" viewBox="0 0 1200 500" role="presentation">
+        <text x="395" y="320" fill="transparent" stroke-width="18">{digits[0]}</text>
       </svg>
-      <svg
-        class="error-code error-code-front"
-        viewBox="0 0 1200 500"
-        role="presentation"
-      >
-        <defs>
-          <linearGradient id="error-code-gradient-front" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00d4e8" />
-            <stop offset="100%" stop-color="#e800d4" />
-          </linearGradient>
-        </defs>
-        <text x="395" y="320">{digits[0]}</text>
+      <svg class="error-code" viewBox="0 0 1200 500" role="presentation">
+        <text x="395" y="320" fill="transparent" stroke="url(#err-grad)" stroke-width="8">{digits[0]}</text>
       </svg>
     </div>
 
     <div class="float-element float-3">
-      <svg
-        class="error-code-shadow error-code-shadow-front"
-        viewBox="0 0 1200 500"
-        role="presentation"
-      >
-        <text x="805" y="320">{digits[2]}</text>
+      <svg class="error-code-shadow error-code-shadow-front" viewBox="0 0 1200 500" role="presentation">
+        <text x="805" y="320" fill="transparent" stroke-width="18">{digits[2]}</text>
       </svg>
-      <svg
-        class="error-code error-code-front"
-        viewBox="0 0 1200 500"
-        role="presentation"
-      >
-        <text x="805" y="320">{digits[2]}</text>
+      <svg class="error-code" viewBox="0 0 1200 500" role="presentation">
+        <text x="805" y="320" fill="transparent" stroke="url(#err-grad)" stroke-width="8">{digits[2]}</text>
       </svg>
     </div>
 
@@ -179,10 +152,10 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
     border-radius: 999px;
     background: linear-gradient(
       135deg,
-      rgba(0, 212, 232, 0.18) 0%,
-      rgba(0, 212, 232, 0.08) 38%,
-      rgba(232, 0, 212, 0.08) 62%,
-      rgba(232, 0, 212, 0.16) 100%
+      var(--color-star-18)   0%,
+      var(--color-star-08)   38%,
+      var(--color-accent-08) 62%,
+      var(--color-accent-16) 100%
     );
     filter: blur(28px);
     opacity: 0.9;
@@ -225,7 +198,7 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
   .error-code-shadow text {
     fill: transparent;
     stroke-width: 18;
-    stroke: rgba(0, 212, 232, 0.16);
+    stroke: var(--color-star-16);
     font-family: monospace;
     font-size: 380px;
     font-weight: 700;
@@ -243,24 +216,12 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
     z-index: 0;
   }
 
-  .error-code-back {
-    z-index: 0;
+  .error-code-shadow-back text {
+    stroke: var(--color-star-16);
   }
 
   .error-code-shadow-front text {
-    stroke: rgba(232, 0, 212, 0.14);
-  }
-
-  .error-code-back text {
-    stroke: url(#error-code-gradient-back);
-  }
-
-  .error-code-front {
-    z-index: 0;
-  }
-
-  .error-code-front text {
-    stroke: url(#error-code-gradient-front);
+    stroke: var(--color-accent-14);
   }
 
   .helmet-image {
@@ -287,14 +248,14 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
   }
 
   .error-title {
-    color: #00d4e8;
+    color: var(--color-star);
     font-size: clamp(1rem, 1.6vw, 1.2rem);
     text-transform: uppercase;
   }
 
   .error-subtitle {
     margin-top: 12px;
-    color: #ffffff;
+    color: var(--color-text);
     font-size: clamp(0.88rem, 1.3vw, 1rem);
   }
 
@@ -306,9 +267,9 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
     min-height: 44px;
     min-width: 208px;
     padding: 0 29px;
-    border: 1px outset #00d4e8;
+    border: 1px outset var(--color-star);
     border-radius: 999px;
-    color: #00d4e8;
+    color: var(--color-star);
     background: transparent;
     text-decoration: none;
     text-transform: uppercase;
@@ -327,21 +288,21 @@ const digits = code.padEnd(3, '0').slice(0, 3).split('');
   .error-cta:focus-visible {
     transform: translateY(-2px);
     box-shadow:
-      0 0 14px rgba(0, 212, 232, 0.16),
-      0 0 26px rgba(0, 212, 232, 0.1);
+      0 0 14px var(--color-star-16),
+      0 0 26px var(--color-star-10);
     animation: cta-pulse 1.8s ease-in-out infinite;
   }
 
   @keyframes cta-pulse {
     0%, 100% {
       box-shadow:
-        0 0 14px rgba(0, 212, 232, 0.16),
-        0 0 26px rgba(0, 212, 232, 0.1);
+        0 0 14px var(--color-star-16),
+        0 0 26px var(--color-star-10);
     }
     50% {
       box-shadow:
-        0 0 18px rgba(0, 212, 232, 0.24),
-        0 0 34px rgba(0, 212, 232, 0.16);
+        0 0 18px var(--color-star-25),
+        0 0 34px var(--color-star-16);
     }
   }
 
