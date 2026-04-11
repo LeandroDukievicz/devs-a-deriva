@@ -1,0 +1,61 @@
+---
+/**
+ * ThemeProvider — drop inside <head> on every page.
+ *
+ * Responsibilities:
+ *  - Define CSS custom properties for every theme.
+ *  - Restore the saved theme from localStorage *before the first paint*
+ *    (prevents flash of wrong background).
+ *
+ * To add a new theme:
+ *  1. Add a ThemeKey + config in src/lib/themes.ts.
+ *  2. Add a :root[data-theme="key"] block below with the overriding vars.
+ */
+---
+
+<!--
+  Inline (non-module) script runs synchronously in <head> before any paint.
+  This is the only reliable way to avoid a flash of the default theme.
+  Intentionally minimal — no imports, no helpers.
+-->
+<script is:inline>
+  try {
+    var t = localStorage.getItem('dda-theme');
+    if (t) document.documentElement.dataset.theme = t;
+  } catch (_) {}
+</script>
+
+<style is:global>
+  /* ─── Default theme: Órbita Baixa ───────────────────────────── */
+  :root {
+    --color-bg:     #020b18;
+    --color-star:   #00d4e8;
+    --color-accent: #e800d4;
+    --color-text:   #e8f4f8;
+  }
+
+  /* ─── Espaço Profundo ────────────────────────────────────────── */
+  :root[data-theme="espaco-profundo"] {
+    --color-bg: #000000;
+    /* star + accent unchanged */
+  }
+
+  /* ─── Limbo ──────────────────────────────────────────────────── */
+  :root[data-theme="limbo"] {
+    --color-bg:   #ffffff;
+    --color-star: #1a1a2e;
+    --color-text: #0a0a0a;
+  }
+
+  /* ─── Apply background to document ──────────────────────────── */
+  html,
+  body {
+    background-color: var(--color-bg) !important;
+  }
+
+  /* Limbo: pull all text dark (overrides Tailwind utilities) */
+  html[data-theme="limbo"] body,
+  html[data-theme="limbo"] body * {
+    color: var(--color-text) !important;
+  }
+</style>

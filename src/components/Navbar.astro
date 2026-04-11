@@ -188,18 +188,13 @@
     text-align: left;
   }
 
-  /* Limbo theme override */
-  :global(body.theme-limbo),
-  :global(body.theme-limbo *) {
-    color: #000 !important;
-  }
-
-  :global(body.theme-limbo) .dropdown {
+  /* Limbo theme overrides (text handled globally by ThemeProvider) */
+  :global(html[data-theme="limbo"]) .dropdown {
     background: rgba(255, 255, 255, 0.95) !important;
     border-color: rgba(0, 0, 0, 0.15) !important;
   }
 
-  :global(body.theme-limbo) .dropdown-link:hover {
+  :global(html[data-theme="limbo"]) .dropdown-link:hover {
     background: rgba(0, 0, 0, 0.06) !important;
   }
 
@@ -359,20 +354,27 @@
 </style>
 
 <script>
+  import { applyTheme, themes, type ThemeKey } from '../lib/themes';
+
+  // ── Navbar visibility ────────────────────────────────────────────
+  // On the home page (/), the BlackHole animation fires 'animationComplete'
+  // to reveal the navbar. On every other page we show it immediately.
   const INTRO_KEY = 'intro_last_shown';
-  const TODAY = new Date().toISOString().slice(0, 10);
-  const navbar = document.querySelector('.navbar') as HTMLElement | null;
+  const TODAY     = new Date().toISOString().slice(0, 10);
+  const navbar    = document.querySelector('.navbar') as HTMLElement | null;
 
   function showNavbar() {
     navbar?.classList.add('is-visible');
   }
 
-  if (localStorage.getItem(INTRO_KEY) === TODAY) {
+  const isHome = window.location.pathname === '/' || window.location.pathname === '';
+  if (!isHome || localStorage.getItem(INTRO_KEY) === TODAY) {
     showNavbar();
   } else {
     window.addEventListener('animationComplete', showNavbar, { once: true });
   }
 
+  // ── Dropdowns ────────────────────────────────────────────────────
   const dropdowns = [
     { btn: document.getElementById('cat-btn'),   menu: document.getElementById('cat-menu') },
     { btn: document.getElementById('temas-btn'), menu: document.getElementById('temas-menu') },
@@ -396,35 +398,17 @@
   });
 
   document.addEventListener('click', () => closeAll());
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAll();
-  });
+  // ── Theme modal ───────────────────────────────────────────────────
+  const modal              = document.getElementById('theme-modal')!;
+  const modalConfirm       = document.getElementById('modal-confirm')!;
+  const modalCancel        = document.getElementById('modal-cancel')!;
+  const modalDefaultContent = document.getElementById('modal-default-content')!;
+  const modalBye           = document.getElementById('modal-bye')!;
+  let pendingTheme: ThemeKey | null = null;
 
-  const themes: Record<string, string> = {
-    'orbita-baixa':    '#020b18',
-    'espaco-profundo': '#000000',
-    'limbo':           '#ffffff',
-  };
-
-  const modal       = document.getElementById('theme-modal')!;
-  const modalConfirm = document.getElementById('modal-confirm')!;
-  const modalCancel  = document.getElementById('modal-cancel')!;
-  let pendingTheme: string | null = null;
-
-  function applyTheme(theme: string) {
-    const color = themes[theme];
-    if (!color) return;
-    (window as any).__bgColor = color;
-    document.documentElement.style.background = color;
-    document.body.style.background = color;
-    const container = document.getElementById('bh-container');
-    if (container) container.style.background = color;
-    // limbo: força todo texto preto; outros temas removem a classe
-    document.body.classList.toggle('theme-limbo', theme === 'limbo');
-  }
-
-  function openModal() {
+  function openModal()  {
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
   }
@@ -434,9 +418,6 @@
     modal.setAttribute('aria-hidden', 'true');
     pendingTheme = null;
   }
-
-  const modalDefaultContent = document.getElementById('modal-default-content')!;
-  const modalBye = document.getElementById('modal-bye')!;
 
   modalConfirm.addEventListener('click', () => {
     if (pendingTheme === 'limbo') {
@@ -457,24 +438,20 @@
   });
 
   modalCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-  });
-
+  // ── Theme buttons ─────────────────────────────────────────────────
   document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const theme = btn.dataset.theme!;
+      const key = btn.dataset.theme as ThemeKey;
+      if (!key || !(key in themes)) return;
       closeAll();
-      if (theme === 'limbo') {
-        pendingTheme = theme;
+      if (themes[key].dangerous) {
+        pendingTheme = key;
         openModal();
       } else {
-        applyTheme(theme);
+        applyTheme(key);
       }
     });
   });

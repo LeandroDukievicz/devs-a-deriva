@@ -1,6 +1,7 @@
 ---
 import BlackHole from '../components/BlackHole.astro';
 import Navbar from '../components/Navbar.astro';
+import ThemeProvider from '../components/ThemeProvider.astro';
 
 const postHref = '#';
 ---
@@ -11,6 +12,7 @@ const postHref = '#';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Devs à Deriva</title>
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
+    <ThemeProvider />
   </head>
   <body class="m-0 p-0 bg-[#020b18] overflow-x-hidden">
     <Navbar />
