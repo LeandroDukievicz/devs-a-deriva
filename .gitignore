@@ -19,6 +19,7 @@ pnpm-debug.log*
 # editor
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 
