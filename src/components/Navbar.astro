@@ -1,3 +1,37 @@
+---
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+const adminRaw = readFileSync(resolve('./public/astronaut-admin.svg'), 'utf-8');
+const adminSvgInline = adminRaw
+  .replace(/<\?xml[^?]*\?>\s*/g, '')
+  .replace(/<!DOCTYPE[^>]*>\s*/g, '')
+  .replace(/width="[^"]*"/, 'width="68"')
+  .replace(/height="[^"]*"/, 'height="68"');
+const logoRaw = readFileSync(resolve('./public/logohelmet.svg'), 'utf-8');
+const logoForCanvas = Buffer.from(
+  logoRaw
+    .replace(/<\?xml[^?]*\?>\s*/g, '')
+    .replace(/<!DOCTYPE[^>]*>\s*/g, '')
+    .replace(/fill="#000000"/g, 'fill="white"')
+).toString('base64');
+---
+
+<a
+  id="nav-logo-link"
+  href="/"
+  class="nav-logo-link"
+  aria-label="Ir para a home"
+>
+  <canvas
+    id="nav-logo-canvas"
+    width="198"
+    height="198"
+    data-logo-svg={`data:image/svg+xml;base64,${logoForCanvas}`}
+    class="nav-logo-canvas"
+  ></canvas>
+</a>
+
 <nav class="navbar">
   <ul class="nav-links">
     <li class="has-dropdown">
@@ -26,7 +60,8 @@
     <li>
       <a href="/admin/login" class="nav-link admin-link" aria-label="Entrar no painel administrativo">
         <span class="nav-prefix" aria-hidden="true">&gt;_</span>
-        <i class="fa-sharp fa-thin fa-user-astronaut admin-icon" aria-hidden="true"></i>
+        <span>Admin</span>
+        <span class="admin-icon" aria-hidden="true" set:html={adminSvgInline}></span>
         <span class="sr-only">Admin</span>
       </a>
     </li>
@@ -63,6 +98,7 @@
     justify-content: center;
     padding: 0 32px;
     height: 52px;
+    overflow: visible;
     background: transparent;
     opacity: 0;
     visibility: hidden;
@@ -85,6 +121,39 @@
     display: flex;
     gap: 28px;
     align-items: center;
+  }
+
+  .nav-logo-link {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 101;
+    display: block;
+    width: 198px;
+    height: 198px;
+    flex-shrink: 0;
+    text-decoration: none;
+    outline: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.35s ease;
+  }
+
+  .nav-logo-link.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav-logo-canvas {
+    display: block;
+    width: 198px;
+    height: 198px;
+    transition: filter 0.35s ease, transform 0.35s ease;
+  }
+
+  .nav-logo-link:hover .nav-logo-canvas,
+  .nav-logo-link:focus-visible .nav-logo-canvas {
+    animation: logo-cyberpunk 2.2s linear infinite, logo-pulse 1.4s ease-in-out infinite;
   }
 
   .nav-link {
@@ -119,6 +188,30 @@
     50%       { text-shadow: 0 0 14px var(--color-star-90); opacity: 0.75; }
   }
 
+  @keyframes logo-cyberpunk {
+    0% {
+      filter: hue-rotate(0deg) saturate(1) brightness(1);
+    }
+    33% {
+      filter: hue-rotate(24deg) saturate(1.35) brightness(1.08);
+    }
+    66% {
+      filter: hue-rotate(-18deg) saturate(1.45) brightness(1.02);
+    }
+    100% {
+      filter: hue-rotate(0deg) saturate(1) brightness(1);
+    }
+  }
+
+  @keyframes logo-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.045);
+    }
+  }
+
   .nav-prefix {
     color: var(--color-star);
     transition: color 0.22s ease;
@@ -136,18 +229,48 @@
   }
 
   .admin-link {
-    gap: 4px;
+    gap: 6px;
   }
 
   .admin-icon {
-    width: 0.95rem;
-    height: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
     flex-shrink: 0;
+    color: var(--color-star);
     transition: transform 0.22s ease;
   }
 
-  .admin-link:hover .admin-icon {
+  :global(.admin-icon svg) {
+    display: block;
+    width: 68px;
+    height: 68px;
+  }
+
+  :global(.admin-icon #antenna-left) {
+    fill: var(--color-star);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: fill 0.22s ease, filter 0.22s ease;
+  }
+
+  .admin-link:hover .admin-icon,
+  .admin-link:focus-visible .admin-icon {
     transform: translateY(-1px);
+  }
+
+  .admin-link:hover :global(.admin-icon #antenna-left),
+  .admin-link:focus-visible :global(.admin-icon #antenna-left) {
+    animation: gear-spin 3s linear infinite;
+    fill: var(--color-accent);
+    filter: drop-shadow(0 0 8px var(--color-accent-40));
+  }
+
+  @keyframes gear-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   .sr-only {
@@ -359,6 +482,12 @@
       gap: 18px;
     }
 
+    .nav-logo-link,
+    .nav-logo-canvas {
+      width: 130px;
+      height: 130px;
+    }
+
     .nav-link {
       font-size: 0.7rem;
     }
@@ -398,9 +527,43 @@
   const INTRO_KEY = 'intro_last_shown';
   const TODAY     = new Date().toISOString().slice(0, 10);
   const navbar    = document.querySelector('.navbar') as HTMLElement | null;
+  const logoLink = document.getElementById('nav-logo-link') as HTMLAnchorElement | null;
+  const logoCanvas = document.getElementById('nav-logo-canvas') as HTMLCanvasElement | null;
+  const logoCtx = logoCanvas?.getContext('2d') ?? null;
 
   function showNavbar() {
     navbar?.classList.add('is-visible');
+    logoLink?.classList.add('is-visible');
+  }
+
+  if (logoCanvas && logoCtx) {
+    const css = getComputedStyle(document.documentElement);
+    const colorStar = css.getPropertyValue('--color-star').trim() || '#00d4e8';
+    const colorAccent = css.getPropertyValue('--color-accent').trim() || '#e800d4';
+    const logoImage = new Image();
+    logoImage.src = logoCanvas.dataset.logoSvg!;
+
+    logoImage.onload = () => {
+      const size = logoCanvas.width;
+      const iw = logoImage.naturalWidth || 1365;
+      const ih = logoImage.naturalHeight || 768;
+      const scale = Math.min(size / iw, size / ih);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      const dx = (size - dw) / 2;
+      const dy = (size - dh) / 2;
+
+      logoCtx.clearRect(0, 0, size, size);
+      logoCtx.drawImage(logoImage, dx, dy, dw, dh);
+
+      const grad = logoCtx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, colorStar);
+      grad.addColorStop(1, colorAccent);
+      logoCtx.globalCompositeOperation = 'source-atop';
+      logoCtx.fillStyle = grad;
+      logoCtx.fillRect(0, 0, size, size);
+      logoCtx.globalCompositeOperation = 'source-over';
+    };
   }
 
   const isHome = window.location.pathname === '/' || window.location.pathname === '';
