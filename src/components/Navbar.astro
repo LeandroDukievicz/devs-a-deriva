@@ -28,6 +28,14 @@ const logoForCanvas = Buffer.from(
 
 <nav class="navbar">
   <ul class="nav-links">
+    <li>
+        <a href="/" class="nav-link nav-link--home">
+          <span class="nav-home-icon" aria-hidden="true">
+            <span class="nav-prefix nav-home-prefix">&gt;_</span>
+            <canvas class="globe-canvas" aria-hidden="true"></canvas>
+          </span>Home
+        </a>
+      </li>
     <li class="has-dropdown">
       <button class="nav-link nav-btn" id="cat-btn" aria-expanded="false" aria-controls="cat-menu">
         <span class="nav-prefix">&gt;_</span>Categorias
@@ -459,14 +467,55 @@ const logoForCanvas = Buffer.from(
     animation: warn-pulse 0.8s ease-in-out infinite;
   }
 
+  /* ── Globe hover ────────────────────────────────────────────── */
+  .nav-home-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* fica no fluxo — define altura natural do wrapper */
+  .nav-home-prefix {
+    transition: opacity 0.2s ease;
+    margin-right: 0;
+  }
+
+  /* flutua sobre o prefix sem afetar o layout */
+  .globe-canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 22px;
+    height: 22px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .nav-link--home:hover .nav-home-prefix { opacity: 0; }
+  .nav-link--home:hover .globe-canvas    { opacity: 1; }
+  .nav-link--home:hover .nav-home-icon   { margin-right: 5px; }
+
   @media (max-width: 480px) {
     .navbar {
-      padding: 0 16px;
-      top: 20px;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      height: auto;
+      padding: 12px 14px;
+      border: 1px solid var(--color-star-18);
+      border-radius: 14px;
+      background: var(--color-bg-88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .nav-links {
-      gap: 18px;
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 0;
     }
 
     .nav-logo-link {
@@ -474,7 +523,31 @@ const logoForCanvas = Buffer.from(
     }
 
     .nav-link {
-      font-size: 0.7rem;
+      font-size: 0.56rem;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .nav-links > li {
+      flex: 1 1 0;
+      display: flex;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .nav-links > li > .nav-link,
+    .nav-links > li > .nav-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .nav-home-icon {
+      width: 18px;
+    }
+
+    .globe-canvas {
+      width: 18px;
+      height: 18px;
     }
 
     .has-dropdown {
@@ -482,7 +555,7 @@ const logoForCanvas = Buffer.from(
     }
 
     .dropdown {
-      top: 44px;
+      top: calc(100% + 12px);
       left: 50%;
       transform: translateX(-50%) translateY(-6px);
       width: min(92vw, 260px);
@@ -563,25 +636,84 @@ const logoForCanvas = Buffer.from(
     { btn: document.getElementById('cat-btn'),   menu: document.getElementById('cat-menu') },
     { btn: document.getElementById('temas-btn'), menu: document.getElementById('temas-menu') },
   ];
+  const hoverCloseTimers = new WeakMap<HTMLElement, number>();
+
+  function isMobileNavbar() {
+    return window.matchMedia('(max-width: 480px)').matches;
+  }
+
+  function setDropdownState(
+    btn: HTMLElement | null,
+    menu: HTMLElement | null,
+    open: boolean
+  ) {
+    menu?.classList.toggle('is-open', open);
+    btn?.setAttribute('aria-expanded', String(open));
+  }
 
   function closeAll(except?: Element) {
     dropdowns.forEach(({ btn, menu }) => {
       if (menu === except) return;
-      menu?.classList.remove('is-open');
-      btn?.setAttribute('aria-expanded', 'false');
+      setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, false);
     });
+  }
+
+  function clearHoverClose(menu: HTMLElement | null) {
+    if (!menu) return;
+    const timer = hoverCloseTimers.get(menu);
+    if (timer) {
+      window.clearTimeout(timer);
+      hoverCloseTimers.delete(menu);
+    }
+  }
+
+  function scheduleHoverClose(btn: HTMLElement | null, menu: HTMLElement | null) {
+    if (!menu) return;
+    clearHoverClose(menu);
+    const timer = window.setTimeout(() => {
+      setDropdownState(btn, menu, false);
+      hoverCloseTimers.delete(menu);
+    }, 160);
+    hoverCloseTimers.set(menu, timer);
   }
 
   dropdowns.forEach(({ btn, menu }) => {
     btn?.addEventListener('click', (e) => {
+      if (!isMobileNavbar()) return;
       e.stopPropagation();
       closeAll(menu!);
-      const open = menu?.classList.toggle('is-open');
-      btn.setAttribute('aria-expanded', String(open));
+      const open = !menu?.classList.contains('is-open');
+      setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, Boolean(open));
+    });
+
+    const parent = btn?.closest('.has-dropdown');
+    parent?.addEventListener('mouseenter', () => {
+      if (isMobileNavbar()) return;
+      clearHoverClose(menu as HTMLElement | null);
+      closeAll(menu!);
+      setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, true);
+    });
+
+    parent?.addEventListener('mouseleave', () => {
+      if (isMobileNavbar()) return;
+      scheduleHoverClose(btn as HTMLElement | null, menu as HTMLElement | null);
+    });
+
+    menu?.addEventListener('mouseenter', () => {
+      if (isMobileNavbar()) return;
+      clearHoverClose(menu as HTMLElement | null);
+      setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, true);
+    });
+
+    menu?.addEventListener('mouseleave', () => {
+      if (isMobileNavbar()) return;
+      scheduleHoverClose(btn as HTMLElement | null, menu as HTMLElement | null);
     });
   });
 
-  document.addEventListener('click', () => closeAll());
+  document.addEventListener('click', () => {
+    if (isMobileNavbar()) closeAll();
+  });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 
   // ── Theme modal ───────────────────────────────────────────────────
@@ -624,6 +756,102 @@ const logoForCanvas = Buffer.from(
   modalCancel.addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // ── Globe (Home hover) ────────────────────────────────────────────
+  const homeNavLink = document.querySelector<HTMLAnchorElement>('.nav-link--home');
+  const globeCanvas = document.querySelector<HTMLCanvasElement>('.globe-canvas');
+  const globeCtx    = globeCanvas?.getContext('2d') ?? null;
+
+  if (homeNavLink && globeCanvas && globeCtx) {
+    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+    const SIZE = 22;
+    globeCanvas.width  = SIZE * DPR;
+    globeCanvas.height = SIZE * DPR;
+    globeCtx.scale(DPR, DPR);
+
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+    const R  = SIZE / 2 - 2;
+
+    let globeAngle = 0;
+    let globeRAF: number | null = null;
+
+    function toRad(d: number) { return d * Math.PI / 180; }
+
+    function gpt(lat: number, lng: number) {
+      const φ = toRad(lat);
+      const λ = toRad(lng + globeAngle);
+      return {
+        x:  Math.cos(φ) * Math.sin(λ),
+        y: -Math.sin(φ),
+        z:  Math.cos(φ) * Math.cos(λ),
+      };
+    }
+
+    function drawGlobeFrame() {
+      const css   = getComputedStyle(document.documentElement);
+      const color = css.getPropertyValue('--color-accent').trim() || '#e800d4';
+
+      globeCtx.clearRect(0, 0, SIZE, SIZE);
+
+      // Sphere outline
+      globeCtx.beginPath();
+      globeCtx.arc(CX, CY, R, 0, Math.PI * 2);
+      globeCtx.strokeStyle = color;
+      globeCtx.lineWidth   = 0.7;
+      globeCtx.globalAlpha = 0.5;
+      globeCtx.stroke();
+
+      // Meridians every 30°
+      for (let lng = 0; lng < 360; lng += 30) {
+        globeCtx.beginPath();
+        let pen = false;
+        for (let lat = -90; lat <= 90; lat += 4) {
+          const p = gpt(lat, lng);
+          if (p.z <= 0.01) { pen = false; continue; }
+          const px = CX + p.x * R;
+          const py = CY + p.y * R;
+          pen ? globeCtx.lineTo(px, py) : globeCtx.moveTo(px, py);
+          pen = true;
+        }
+        globeCtx.strokeStyle = color;
+        globeCtx.lineWidth   = 0.45;
+        globeCtx.globalAlpha = 0.28;
+        globeCtx.stroke();
+      }
+
+      // Parallels at -60 -30 0 30 60
+      for (const lat of [-60, -30, 0, 30, 60]) {
+        globeCtx.beginPath();
+        let pen = false;
+        for (let lng = 0; lng <= 360; lng += 4) {
+          const p = gpt(lat, lng);
+          if (p.z <= 0.01) { pen = false; continue; }
+          const px = CX + p.x * R;
+          const py = CY + p.y * R;
+          pen ? globeCtx.lineTo(px, py) : globeCtx.moveTo(px, py);
+          pen = true;
+        }
+        globeCtx.strokeStyle = color;
+        globeCtx.lineWidth   = lat === 0 ? 0.65 : 0.45;
+        globeCtx.globalAlpha = lat === 0 ? 0.42 : 0.28;
+        globeCtx.stroke();
+      }
+
+      globeCtx.globalAlpha = 1;
+      globeAngle = (globeAngle + 0.45) % 360;
+      globeRAF   = requestAnimationFrame(drawGlobeFrame);
+    }
+
+    homeNavLink.addEventListener('mouseenter', () => {
+      if (!globeRAF) drawGlobeFrame();
+    });
+
+    homeNavLink.addEventListener('mouseleave', () => {
+      if (globeRAF !== null) { cancelAnimationFrame(globeRAF); globeRAF = null; }
+      globeCtx.clearRect(0, 0, SIZE, SIZE);
+    });
+  }
 
   // ── Theme buttons ─────────────────────────────────────────────────
   document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach((btn) => {

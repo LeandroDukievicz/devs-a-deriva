@@ -24,9 +24,6 @@ import StarBackground from '../components/StarBackground.astro';
 
       <p>Você também está <span class="manifesto-highlight">à deriva</span> agora.</p>
 
-      <div class="cta-wrap">
-        <a href="/" class="error-cta">Voltar à órbita inicial</a>
-      </div>
     </section>
   </main>
 </Base>
@@ -88,61 +85,8 @@ import StarBackground from '../components/StarBackground.astro';
     color: var(--color-accent);
   }
 
-  .cta-wrap {
-    display: flex;
-    justify-content: center;
-    margin-top: -48px;
-  }
-
   .manifesto-section::-webkit-scrollbar {
     display: none;
-  }
-
-  .error-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 24px;
-    min-height: 44px;
-    min-width: 208px;
-    padding: 0 29px;
-    border: 1px outset var(--color-star);
-    border-radius: 999px;
-    color: var(--color-star);
-    background: transparent;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-family: monospace;
-    font-size: 0.72rem;
-    transition:
-      color 0.32s ease,
-      border-color 0.32s ease,
-      background 0.32s ease,
-      box-shadow 0.32s ease,
-      transform 0.32s ease;
-  }
-
-  .error-cta:hover,
-  .error-cta:focus-visible {
-    transform: translateY(-2px);
-    box-shadow:
-      0 0 14px var(--color-star-16),
-      0 0 26px var(--color-star-10);
-    animation: cta-pulse 1.8s ease-in-out infinite;
-  }
-
-  @keyframes cta-pulse {
-    0%, 100% {
-      box-shadow:
-        0 0 14px var(--color-star-16),
-        0 0 26px var(--color-star-10);
-    }
-    50% {
-      box-shadow:
-        0 0 18px var(--color-star-25),
-        0 0 34px var(--color-star-16);
-    }
   }
 
   @media (max-width: 768px) {

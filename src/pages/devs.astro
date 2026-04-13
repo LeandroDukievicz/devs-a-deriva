@@ -9,6 +9,7 @@ const devs = [
     tag: '@leandro',
     bio: 'Apaixonado por sistemas distribuídos e café mal feito às 2 da manhã.',
     accent: 'star',
+    photo: 'https://i.pravatar.cc/150?img=11',
   },
   {
     name: 'Ana Lima',
@@ -16,6 +17,7 @@ const devs = [
     tag: '@analima',
     bio: 'Transforma designs em pixels com precisão cirúrgica e muito CSS obscuro.',
     accent: 'accent',
+    photo: 'https://i.pravatar.cc/150?img=47',
   },
   {
     name: 'Carlos Mendes',
@@ -23,6 +25,7 @@ const devs = [
     tag: '@cmendes',
     bio: 'Se está queimando em produção, provavelmente é culpa do deploy de sexta.',
     accent: 'star',
+    photo: 'https://i.pravatar.cc/150?img=33',
   },
   {
     name: 'Julia Ferraz',
@@ -30,6 +33,7 @@ const devs = [
     tag: '@juliaferraz',
     bio: 'Arquiteta de APIs que ninguém sabe como funcionam, nem ela mesma.',
     accent: 'accent',
+    photo: 'https://i.pravatar.cc/150?img=54',
   },
 ];
 ---
@@ -48,11 +52,12 @@ const devs = [
           data-accent={dev.accent}
         >
           <div class={`dev-card dev-card--${dev.accent}`}>
-            <div class="dev-card__face">
-              <span class="dev-card__initials">
-                {dev.name.split(' ').slice(0, 2).map(w => w[0]).join('')}
-              </span>
-            </div>
+            <img
+              class="dev-card__photo"
+              src={dev.photo}
+              alt={dev.name}
+              draggable="false"
+            />
           </div>
         </div>
       ))}
@@ -133,23 +138,16 @@ const devs = [
     box-shadow: 0 0 32px var(--color-accent-16), inset 0 0 24px var(--color-accent-08);
   }
 
-  /* ── Face ──────────────────────────────────────────────────── */
-  .dev-card__face {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* ── Foto ──────────────────────────────────────────────────── */
+  .dev-card__photo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    user-select: none;
   }
-
-  .dev-card__initials {
-    font-family: monospace;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    line-height: 1;
-  }
-
-  .dev-card--star   .dev-card__initials { color: var(--color-star); }
-  .dev-card--accent .dev-card__initials { color: var(--color-accent); }
 
   /* ── Popup ─────────────────────────────────────────────────── */
   .dev-popup {
@@ -213,17 +211,76 @@ const devs = [
   }
 
   @media (max-width: 600px) {
+    .cards-overlay {
+      inset: 56px 0 0;
+    }
+
     .dev-card-anchor  { width: 70px; height: 70px; }
-    .dev-card__initials { font-size: 0.85rem; }
-    .dev-popup { width: 180px; }
+
+    .dev-popup {
+      width: min(calc(100vw - 32px), 320px);
+      padding: 16px 18px;
+      transform: translateX(-50%) translateY(12px);
+    }
+
+    .dev-popup.is-visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .dev-popup__name {
+      font-size: 0.92rem;
+    }
+
+    .dev-popup__role {
+      font-size: 0.68rem;
+    }
+
+    .dev-popup__bio {
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
   }
 </style>
 
 <script>
-const CARD_SIZE       = 45;   // metade de 91px
 const FADE_ZONE_MULT  = 9;    // fade começa a 9× o raio do BH
 const ACCEL_THRESHOLD = 0.35; // opacidade abaixo disso → aceleração gravitacional
 const ACCEL_PEAK      = 28;   // multiplicador máximo de velocidade no momento da sucção
+
+function isMobile() {
+  return window.innerWidth <= 600;
+}
+
+function getCardHalfSize() {
+  return isMobile() ? 35 : 45.5;
+}
+
+function getSafeBounds() {
+  return {
+    top: isMobile() ? 88 : 24,
+    right: 20,
+    bottom: isMobile() ? 24 : 20,
+    left: 20,
+  };
+}
+
+function getMaxRadiusForAngle(
+  angle: number,
+  bh: { x: number; y: number; W: number; H: number },
+  halfSize: number
+) {
+  const safe = getSafeBounds();
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const limits: number[] = [];
+
+  if (cos > 0) limits.push((bh.W - safe.right - halfSize - bh.x) / cos);
+  if (cos < 0) limits.push((safe.left + halfSize - bh.x) / cos);
+  if (sin > 0) limits.push((bh.H - safe.bottom - halfSize - bh.y) / sin);
+  if (sin < 0) limits.push((safe.top + halfSize - bh.y) / sin);
+
+  return Math.max(0, ...limits.filter((value) => Number.isFinite(value) && value >= 0));
+}
 
 function getBH() {
   const W = window.innerWidth;
@@ -240,14 +297,16 @@ function pullFactor(opacity: number): number {
 
 function spawnAtEdge(d: CardData) {
   const { x: bhX, y: bhY, W, H } = getBH();
+  const half = getCardHalfSize();
+  const safe = getSafeBounds();
   const edge = Math.floor(Math.random() * 4);
   let sx: number, sy: number;
 
   switch (edge) {
-    case 0: sx = Math.random() * W;  sy = -CARD_SIZE * 2;    break; // topo
-    case 1: sx = W + CARD_SIZE * 2;  sy = Math.random() * H; break; // direita
-    case 2: sx = Math.random() * W;  sy = H + CARD_SIZE * 2; break; // baixo
-    default: sx = -CARD_SIZE * 2;    sy = Math.random() * H; break; // esquerda
+    case 0: sx = safe.left + Math.random() * (W - safe.left - safe.right); sy = safe.top - half * 2; break;
+    case 1: sx = W + half * 2; sy = safe.top + Math.random() * (H - safe.top - safe.bottom); break;
+    case 2: sx = safe.left + Math.random() * (W - safe.left - safe.right); sy = H + half * 2; break;
+    default: sx = safe.left - half * 2; sy = safe.top + Math.random() * (H - safe.top - safe.bottom); break;
   }
 
   const dx = sx - bhX;
@@ -271,14 +330,16 @@ interface CardData {
 /** Posiciona o card em coordenadas aleatórias dentro da tela, fora do BH */
 function initOnScreen(d: CardData) {
   const { x: bhX, y: bhY, r: bhR, W, H } = getBH();
-  const margin   = CARD_SIZE + 10;
+  const halfSize = getCardHalfSize();
+  const safe = getSafeBounds();
+  const margin   = halfSize + 10;
   const minDist  = bhR * 3.5; // não começa colado ao BH
   let sx: number, sy: number, dist: number;
 
   // Tenta até achar ponto fora do BH e dentro da tela
   do {
-    sx = margin + Math.random() * (W - margin * 2);
-    sy = margin + Math.random() * (H - margin * 2);
+    sx = safe.left + margin + Math.random() * (W - safe.left - safe.right - margin * 2);
+    sy = safe.top + margin + Math.random() * (H - safe.top - safe.bottom - margin * 2);
     dist = Math.sqrt((sx - bhX) ** 2 + (sy - bhY) ** 2);
   } while (dist < minDist);
 
@@ -292,6 +353,7 @@ function initOnScreen(d: CardData) {
 
 const popup   = document.getElementById('dev-popup') as HTMLElement;
 const anchors = Array.from(document.querySelectorAll<HTMLElement>('.dev-card-anchor'));
+let activeAnchor: HTMLElement | null = null;
 
 // ── Popup helpers ─────────────────────────────────────────────
 function showPopup(anchor: HTMLElement) {
@@ -304,22 +366,31 @@ function showPopup(anchor: HTMLElement) {
   popup.classList.add(`accent-${accent}`);
 
   const rect       = anchor.getBoundingClientRect();
-  const popupW     = 220;
   const gap        = 16;
-  const spaceRight = window.innerWidth - rect.right;
 
-  popup.style.left = spaceRight >= popupW + gap
-    ? `${rect.right + gap}px`
-    : `${rect.left - popupW - gap}px`;
-  popup.style.top = `${rect.top + rect.height / 2}px`;
+  if (isMobile()) {
+    popup.style.left = '50%';
+    popup.style.top = 'auto';
+    popup.style.bottom = '16px';
+  } else {
+    const popupW     = 220;
+    const spaceRight = window.innerWidth - rect.right;
+    popup.style.bottom = 'auto';
+    popup.style.left = spaceRight >= popupW + gap
+      ? `${rect.right + gap}px`
+      : `${rect.left - popupW - gap}px`;
+    popup.style.top = `${rect.top + rect.height / 2}px`;
+  }
 
   popup.classList.add('is-visible');
   popup.setAttribute('aria-hidden', 'false');
+  activeAnchor = anchor;
 }
 
 function hidePopup() {
   popup.classList.remove('is-visible');
   popup.setAttribute('aria-hidden', 'true');
+  activeAnchor = null;
 }
 
 // ── Dados de animação ─────────────────────────────────────────
@@ -327,14 +398,33 @@ const data: CardData[] = anchors.map((el, i) => {
   const card = el.querySelector<HTMLElement>('.dev-card')!;
 
   card.addEventListener('mouseenter', () => {
+    if (isMobile()) return;
     const d = data.find(d => d.el === el);
     if (d) d.paused = true;
     showPopup(el);
   });
   card.addEventListener('mouseleave', () => {
+    if (isMobile()) return;
     const d = data.find(d => d.el === el);
     if (d) d.paused = false;
     hidePopup();
+  });
+  card.addEventListener('click', () => {
+    if (!isMobile()) return;
+
+    const d = data.find(d => d.el === el);
+    if (!d) return;
+
+    if (activeAnchor === el) {
+      d.paused = false;
+      hidePopup();
+      return;
+    }
+
+    data.forEach((item) => {
+      item.paused = item.el === el;
+    });
+    showPopup(el);
   });
 
   const d: CardData = {
@@ -363,10 +453,13 @@ function tick() {
     const factor = pullFactor(d.opacity);
     d.angle  += d.orbitSpeed  * factor;
     d.radius -= d.radius * d.baseDecayRate * factor;
+    const halfSize = getCardHalfSize();
+    const maxRadius = getMaxRadiusForAngle(d.angle, bh, halfSize);
+    d.radius = Math.min(d.radius, maxRadius);
 
     const x = bh.x + Math.cos(d.angle) * d.radius;
     const y = bh.y + Math.sin(d.angle) * d.radius;
-    d.el.style.transform = `translate(${x - CARD_SIZE}px, ${y - CARD_SIZE}px)`;
+    d.el.style.transform = `translate(${x - halfSize}px, ${y - halfSize}px)`;
 
     // ── Fade-in ao nascer na borda ────────────────────────────
     if (d.state === 'spawning') {
@@ -394,6 +487,24 @@ function tick() {
 
   requestAnimationFrame(tick);
 }
+
+window.addEventListener('resize', () => {
+  if (activeAnchor) showPopup(activeAnchor);
+});
+
+document.addEventListener('click', (event) => {
+  if (!isMobile()) return;
+  const target = event.target as Node;
+  if (popup.contains(target)) return;
+
+  const clickedAnchor = anchors.some((anchor) => anchor.contains(target));
+  if (clickedAnchor) return;
+
+  data.forEach((item) => {
+    item.paused = false;
+  });
+  hidePopup();
+});
 
 tick();
 </script>
