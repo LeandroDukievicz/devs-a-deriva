@@ -200,7 +200,7 @@ const postHref = '#';
           </div>
         </div>
         <div class="load-more-wrap">
-          <a href="#" class="load-more-cta">Carregar mais posts <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+          <a href="#" class="load-more-cta"><span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
         </div>
       </div>
     </main>
@@ -215,7 +215,7 @@ const postHref = '#';
       justify-content: center;
       margin-top: -100vh;
       min-height: 100vh;
-      padding: clamp(72px, 9vw, 100px) 24px 48px;
+      padding: clamp(172px, 9vw, 200px) 24px 48px;
       pointer-events: none;
     }
 
@@ -243,25 +243,21 @@ const postHref = '#';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 240px;
-      padding: 12px 22px;
-      border: 1px outset var(--color-star);
-      border-radius: 999px;
+      gap: 2px;
+      padding: 8px 16px;
       background: transparent;
+      border: none;
       color: var(--color-star);
       text-decoration: none;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 0.72rem;
+      font-size: 1.4rem;
       font-family: monospace;
-      transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+      letter-spacing: 0.1em;
+      transition: color 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
     }
 
     .load-more-cta:hover {
       color: var(--color-accent);
-      border-color: var(--color-accent);
-      background: var(--color-accent-08);
-      box-shadow: 0 0 16px var(--color-accent-18);
+      text-shadow: 0 0 12px var(--color-accent-60);
       transform: translateY(-2px);
     }
 
@@ -284,6 +280,15 @@ const postHref = '#';
       object-fit: cover;
       border-radius: 4px;
       display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .section-image:hover {
+      cursor: pointer;
+    }
+
+    .section-image:hover .section-img {
+      transform: scale(1.04);
     }
 
     .section-image {
@@ -293,7 +298,7 @@ const postHref = '#';
       padding: 5px;
       border-radius: 6px;
       background: transparent;
-      border: 1px outset var(--color-star);
+      box-shadow: 0 6px 20px 4px rgba(0, 0, 0, 0.45);
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -517,7 +522,7 @@ const postHref = '#';
     @media (max-width: 768px) {
       .page-overlay {
         margin-top: -100svh;
-        padding: 86px 16px 32px;
+        padding: 136px 16px 32px;
       }
 
       .sections-container {
@@ -587,7 +592,7 @@ const postHref = '#';
 
     @media (max-width: 480px) {
       .page-overlay {
-        padding-top: 70px;
+        padding-top: 120px;
       }
 
       .sections-container {
@@ -680,7 +685,6 @@ const postHref = '#';
     });
 
     const LIMBO_SLICE_COUNT = 36;
-    let activeLimboSection: HTMLElement | null = null;
 
     function easeInCubic(x: number) {
       return x * x * x;
@@ -721,9 +725,7 @@ const postHref = '#';
     }
 
     function vanishSection(section: HTMLElement) {
-      if (activeLimboSection || section.classList.contains('is-vanishing')) return;
-
-      activeLimboSection = section;
+      if (section.classList.contains('is-vanishing')) return;
       const rect = section.getBoundingClientRect();
       const overlay = document.createElement('div');
       overlay.className = 'limbo-overlay';
@@ -790,7 +792,6 @@ const postHref = '#';
 
         overlay.remove();
         section.remove();
-        activeLimboSection = null;
       }
 
       window.requestAnimationFrame(frame);
@@ -928,8 +929,7 @@ const postHref = '#';
     }
 
     async function vanishSectionSequential(section: HTMLElement) {
-      if (activeLimboSection || section.classList.contains('is-vanishing')) return;
-      activeLimboSection = section;
+      if (section.classList.contains('is-vanishing')) return;
       section.classList.add('is-vanishing');
       section.style.pointerEvents = 'none';
 
@@ -968,8 +968,6 @@ const postHref = '#';
 
       // 6 — bordas da seção colapsam e são sugadas
       await collapseShell(section, bhX, bhY);
-
-      activeLimboSection = null;
     }
 
     document.querySelectorAll('.limbo-cta').forEach((cta) => {

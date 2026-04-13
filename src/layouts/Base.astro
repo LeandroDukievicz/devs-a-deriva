@@ -2,6 +2,8 @@
 import '../styles/tokens.css';
 import ThemeProvider from '../components/ThemeProvider.astro';
 import Navbar from '../components/Navbar.astro';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 interface Props {
   title?: string;
@@ -10,6 +12,13 @@ interface Props {
 }
 
 const { title = 'Devs à Deriva', hideNavbar = false } = Astro.props;
+
+const adminRaw = readFileSync(resolve('./public/astronaut-admin.svg'), 'utf-8');
+const adminSvgInline = adminRaw
+  .replace(/<\?xml[^?]*\?>\s*/g, '')
+  .replace(/<!DOCTYPE[^>]*>\s*/g, '')
+  .replace(/width="[^"]*"/, 'width="48"')
+  .replace(/height="[^"]*"/, 'height="48"');
 ---
 
 <html lang="pt-BR">
@@ -23,5 +32,211 @@ const { title = 'Devs à Deriva', hideNavbar = false } = Astro.props;
   <body class="m-0 p-0 overflow-x-hidden">
     {!hideNavbar && <Navbar />}
     <slot />
+
+    <div id="admin-wrap">
+      <div id="admin-cta" aria-label="Acessar painel administrativo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <rect x="9" y="11" width="6" height="5" rx="1"/>
+          <path d="M12 11V8a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v3"/>
+          <circle cx="12" cy="13.5" r="0.8" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <a href="/admin/login" id="admin-link" aria-label="Entrar no painel">
+        <span class="admin-svg" set:html={adminSvgInline}></span>
+        <span class="admin-label">Admin</span>
+      </a>
+    </div>
+
+    <button id="back-to-top" aria-label="Voltar ao topo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+    </button>
   </body>
 </html>
+
+<style>
+  @keyframes admin-blink {
+    0%   { opacity: 1; }
+    30%  { opacity: 0; }
+    60%  { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  #admin-wrap {
+    position: fixed;
+    top: 4px;
+    right: 4px;
+    z-index: 150;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #admin-cta {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-star);
+    cursor: pointer;
+    animation: admin-blink 4s ease-in-out infinite;
+    transition: opacity 1.5s ease, color 0.22s ease, filter 0.22s ease, transform 0.22s ease;
+    flex-shrink: 0;
+  }
+
+  #admin-wrap:hover #admin-cta {
+    animation: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #admin-cta svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  #admin-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-12px);
+    transition: opacity 1.5s ease, transform 1.5s ease;
+    order: -1;
+  }
+
+  #admin-wrap:hover #admin-link {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  #admin-link .admin-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-star);
+    filter: drop-shadow(0 0 6px var(--color-star-40));
+  }
+
+  #admin-link .admin-svg :global(svg) {
+    display: block;
+    width: 24px;
+    height: 24px;
+    color: var(--color-star);
+  }
+
+  #admin-link .admin-svg :global(svg *) {
+    fill: var(--color-star);
+    stroke: var(--color-star);
+  }
+
+  @media (max-width: 480px) {
+    #admin-wrap {
+      right: auto;
+      left: 4px;
+      flex-direction: row-reverse;
+    }
+
+    #admin-link {
+      transform: translateX(12px);
+    }
+
+    #admin-wrap:hover #admin-link {
+      transform: translateX(0);
+    }
+  }
+
+  #admin-link .admin-svg :global(#antenna-left) {
+    fill: var(--color-star);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: fill 0.22s ease, filter 0.22s ease;
+  }
+
+  #admin-link:hover .admin-svg :global(#antenna-left) {
+    animation: gear-spin 3s linear infinite;
+    fill: var(--color-accent);
+    filter: drop-shadow(0 0 8px var(--color-accent-40));
+  }
+
+  @keyframes gear-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  #admin-link .admin-label {
+    font-family: monospace;
+    font-size: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-star);
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  #admin-link .nav-prefix {
+    color: var(--color-star);
+    margin-right: 1px;
+  }
+
+  #back-to-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 150;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px outset var(--color-star);
+    border-radius: 50%;
+    color: var(--color-star);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  #back-to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  #back-to-top:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 14px var(--color-accent-30);
+  }
+
+  #back-to-top svg {
+    width: 18px;
+    height: 18px;
+  }
+</style>
+
+<script>
+  const btn = document.getElementById('back-to-top');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+      btn?.classList.add('is-visible');
+    } else {
+      btn?.classList.remove('is-visible');
+    }
+  }, { passive: true });
+
+  btn?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>

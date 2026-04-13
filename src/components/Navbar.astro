@@ -2,12 +2,6 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-const adminRaw = readFileSync(resolve('./public/astronaut-admin.svg'), 'utf-8');
-const adminSvgInline = adminRaw
-  .replace(/<\?xml[^?]*\?>\s*/g, '')
-  .replace(/<!DOCTYPE[^>]*>\s*/g, '')
-  .replace(/width="[^"]*"/, 'width="68"')
-  .replace(/height="[^"]*"/, 'height="68"');
 const logoRaw = readFileSync(resolve('./public/logohelmet.svg'), 'utf-8');
 const logoForCanvas = Buffer.from(
   logoRaw
@@ -56,14 +50,6 @@ const logoForCanvas = Buffer.from(
         <li role="none"><button class="dropdown-link dropdown-btn" data-theme="espaco-profundo">Espaço Profundo</button></li>
         <li role="none"><button class="dropdown-link dropdown-btn" data-theme="limbo">Limbo</button></li>
       </ul>
-    </li>
-    <li>
-      <a href="/admin/login" class="nav-link admin-link" aria-label="Entrar no painel administrativo">
-        <span class="nav-prefix" aria-hidden="true">&gt;_</span>
-        <span>Admin</span>
-        <span class="admin-icon" aria-hidden="true" set:html={adminSvgInline}></span>
-        <span class="sr-only">Admin</span>
-      </a>
     </li>
   </ul>
 </nav>
@@ -125,8 +111,8 @@ const logoForCanvas = Buffer.from(
 
   .nav-logo-link {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: -50px;
+    left: -50px;
     z-index: 101;
     display: block;
     width: 198px;
@@ -476,16 +462,15 @@ const logoForCanvas = Buffer.from(
   @media (max-width: 480px) {
     .navbar {
       padding: 0 16px;
+      top: 20px;
     }
 
     .nav-links {
       gap: 18px;
     }
 
-    .nav-logo-link,
-    .nav-logo-canvas {
-      width: 130px;
-      height: 130px;
+    .nav-logo-link {
+      display: none;
     }
 
     .nav-link {
