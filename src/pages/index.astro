@@ -666,13 +666,24 @@ const postHref = '#';
   </style>
 
   <script>
-    window.addEventListener('animationComplete', () => {
+    const INTRO_KEY = 'intro_last_shown';
+    const TODAY     = new Date().toISOString().slice(0, 10);
+
+    function revealContent() {
       const container = document.getElementById('sections-container');
       if (container) {
-        container.style.opacity = '1';
+        container.style.opacity  = '1';
         container.style.transform = 'translate3d(0, 0, 0)';
       }
-    });
+    }
+
+    // Se a intro já foi vista hoje, o BlackHole dispara animationComplete
+    // de forma síncrona antes deste listener ser registrado — revelamos direto.
+    if (localStorage.getItem(INTRO_KEY) === TODAY) {
+      revealContent();
+    } else {
+      window.addEventListener('animationComplete', revealContent, { once: true });
+    }
 
     document.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
