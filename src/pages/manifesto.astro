@@ -58,7 +58,9 @@ import StarBackground from '../components/StarBackground.astro';
     font-size: 1.6rem;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    color: var(--color-star);
+    color: var(--color-star) !important;
+    text-align: center;
+    padding: 10px;
     margin: 0 0 32px;
   }
 
@@ -66,7 +68,7 @@ import StarBackground from '../components/StarBackground.astro';
     font-family: monospace;
     font-size: 0.88rem;
     line-height: 1.85;
-    color: var(--color-text);
+    color: var(--color-text) !important;
     text-align: justify;
     margin: 0 0 20px;
     max-width: 920px;
@@ -79,15 +81,15 @@ import StarBackground from '../components/StarBackground.astro';
   }
 
   .manifesto-highlight {
-    color: var(--color-star);
+    color: var(--color-star) !important;
   }
 
   .manifesto-highlight-accent {
-    color: var(--color-accent);
+    color: var(--color-accent) !important;
   }
 
   .manifesto-highlight-underline {
-    color: var(--color-accent);
+    color: var(--color-accent) !important;
   }
 
   .manifesto-section::-webkit-scrollbar {

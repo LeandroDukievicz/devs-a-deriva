@@ -574,6 +574,49 @@ const logoForCanvas = Buffer.from(
       line-height: 1.45;
     }
   }
+
+  @media (max-width: 300px) {
+    .navbar {
+      left: 8px;
+      right: 8px;
+      padding: 10px 8px;
+    }
+
+    .nav-links {
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: 8px;
+      column-gap: 10px;
+    }
+
+    .nav-links > li {
+      flex: 0 1 auto;
+    }
+
+    .nav-links > li > .nav-link,
+    .nav-links > li > .nav-btn {
+      width: auto;
+    }
+
+    .nav-link {
+      font-size: 0.52rem;
+      letter-spacing: 0.04em;
+    }
+
+    .nav-home-icon {
+      width: 16px;
+    }
+
+    .globe-canvas {
+      width: 16px;
+      height: 16px;
+    }
+
+    .dropdown {
+      width: min(calc(100vw - 16px), 240px);
+      max-width: calc(100vw - 16px);
+    }
+  }
 </style>
 
 <script>
