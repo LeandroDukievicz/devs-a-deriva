@@ -1,0 +1,399 @@
+---
+import Base from '../layouts/Base.astro';
+import BlackHole from '../components/BlackHole.astro';
+
+const devs = [
+  {
+    name: 'Leandro Dukievicz',
+    role: 'Engenheiro de Software',
+    tag: '@leandro',
+    bio: 'Apaixonado por sistemas distribuídos e café mal feito às 2 da manhã.',
+    accent: 'star',
+  },
+  {
+    name: 'Ana Lima',
+    role: 'Frontend Developer',
+    tag: '@analima',
+    bio: 'Transforma designs em pixels com precisão cirúrgica e muito CSS obscuro.',
+    accent: 'accent',
+  },
+  {
+    name: 'Carlos Mendes',
+    role: 'DevOps & SRE',
+    tag: '@cmendes',
+    bio: 'Se está queimando em produção, provavelmente é culpa do deploy de sexta.',
+    accent: 'star',
+  },
+  {
+    name: 'Julia Ferraz',
+    role: 'Backend Engineer',
+    tag: '@juliaferraz',
+    bio: 'Arquiteta de APIs que ninguém sabe como funcionam, nem ela mesma.',
+    accent: 'accent',
+  },
+];
+---
+
+<Base title="Devs · Devs à Deriva">
+  <div class="devs-page">
+    <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
+
+    <div class="cards-overlay">
+      {devs.map((dev) => (
+        <div
+          class="dev-card-anchor"
+          data-name={dev.name}
+          data-role={dev.role}
+          data-bio={dev.bio}
+          data-accent={dev.accent}
+        >
+          <div class={`dev-card dev-card--${dev.accent}`}>
+            <div class="dev-card__face">
+              <span class="dev-card__initials">
+                {dev.name.split(' ').slice(0, 2).map(w => w[0]).join('')}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Popup único, reposicionado pelo JS -->
+    <div id="dev-popup" class="dev-popup" aria-hidden="true">
+      <h3 class="dev-popup__name"></h3>
+      <span class="dev-popup__role"></span>
+      <p class="dev-popup__bio"></p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .devs-page {
+    position: fixed;
+    inset: 0;
+  }
+
+  .devs-page > :global(#bh-container) {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .cards-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Âncora animada pelo JS */
+  .dev-card-anchor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 91px;
+    height: 91px;
+    will-change: transform, opacity;
+  }
+
+  /* ── Círculo ───────────────────────────────────────────────── */
+  .dev-card {
+    pointer-events: auto;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--color-bg-88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+
+  .dev-card--star {
+    border: 1px solid var(--color-star-25);
+    box-shadow: 0 0 18px var(--color-star-10), inset 0 0 18px var(--color-star-05);
+  }
+
+  .dev-card--accent {
+    border: 1px solid var(--color-accent-20);
+    box-shadow: 0 0 18px var(--color-accent-08), inset 0 0 18px var(--color-accent-06);
+  }
+
+  .dev-card:hover { transform: scale(1.1); }
+
+  .dev-card--star:hover {
+    border-color: var(--color-star-45);
+    box-shadow: 0 0 32px var(--color-star-22), inset 0 0 24px var(--color-star-10);
+  }
+
+  .dev-card--accent:hover {
+    border-color: var(--color-accent-40);
+    box-shadow: 0 0 32px var(--color-accent-16), inset 0 0 24px var(--color-accent-08);
+  }
+
+  /* ── Face ──────────────────────────────────────────────────── */
+  .dev-card__face {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dev-card__initials {
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .dev-card--star   .dev-card__initials { color: var(--color-star); }
+  .dev-card--accent .dev-card__initials { color: var(--color-accent); }
+
+  /* ── Popup ─────────────────────────────────────────────────── */
+  .dev-popup {
+    position: fixed;
+    z-index: 100;
+    width: 220px;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: var(--color-bg-90);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    pointer-events: none;
+
+    opacity: 0;
+    transform: translateY(-50%) translateX(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .dev-popup.is-visible {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  .dev-popup.accent-star {
+    border: 1px solid var(--color-star-22);
+    box-shadow: 0 0 28px var(--color-star-10);
+  }
+
+  .dev-popup.accent-accent {
+    border: 1px solid var(--color-accent-18);
+    box-shadow: 0 0 28px var(--color-accent-08);
+  }
+
+  .dev-popup__name {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+  }
+
+  .dev-popup__role {
+    font-family: monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  }
+
+  .dev-popup.accent-star   .dev-popup__role { color: var(--color-star); }
+  .dev-popup.accent-accent .dev-popup__role { color: var(--color-accent); }
+
+  .dev-popup__bio {
+    margin: 6px 0 0;
+    font-size: 0.72rem;
+    color: var(--color-text);
+    opacity: 0.55;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .dev-card-anchor  { width: 70px; height: 70px; }
+    .dev-card__initials { font-size: 0.85rem; }
+    .dev-popup { width: 180px; }
+  }
+</style>
+
+<script>
+const CARD_SIZE       = 45;   // metade de 91px
+const FADE_ZONE_MULT  = 9;    // fade começa a 9× o raio do BH
+const ACCEL_THRESHOLD = 0.35; // opacidade abaixo disso → aceleração gravitacional
+const ACCEL_PEAK      = 28;   // multiplicador máximo de velocidade no momento da sucção
+
+function getBH() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  return { x: W / 2, y: H / 2, r: Math.min(W, H) * 0.22 * 0.35, W, H };
+}
+
+/** Retorna o multiplicador de aceleração com base na opacidade atual */
+function pullFactor(opacity: number): number {
+  if (opacity > ACCEL_THRESHOLD) return 1;
+  const t = 1 - opacity / ACCEL_THRESHOLD; // 0→1 conforme opacidade cai para 0
+  return 1 + t * t * (ACCEL_PEAK - 1);
+}
+
+function spawnAtEdge(d: CardData) {
+  const { x: bhX, y: bhY, W, H } = getBH();
+  const edge = Math.floor(Math.random() * 4);
+  let sx: number, sy: number;
+
+  switch (edge) {
+    case 0: sx = Math.random() * W;  sy = -CARD_SIZE * 2;    break; // topo
+    case 1: sx = W + CARD_SIZE * 2;  sy = Math.random() * H; break; // direita
+    case 2: sx = Math.random() * W;  sy = H + CARD_SIZE * 2; break; // baixo
+    default: sx = -CARD_SIZE * 2;    sy = Math.random() * H; break; // esquerda
+  }
+
+  const dx = sx - bhX;
+  const dy = sy - bhY;
+  d.angle  = Math.atan2(dy, dx);
+  d.radius = Math.sqrt(dx * dx + dy * dy);
+  d.opacity = 0;
+}
+
+interface CardData {
+  el: HTMLElement;
+  angle: number;
+  radius: number;
+  orbitSpeed: number;
+  baseDecayRate: number;
+  opacity: number;
+  state: 'orbiting' | 'spawning';
+  paused: boolean;
+}
+
+/** Posiciona o card em coordenadas aleatórias dentro da tela, fora do BH */
+function initOnScreen(d: CardData) {
+  const { x: bhX, y: bhY, r: bhR, W, H } = getBH();
+  const margin   = CARD_SIZE + 10;
+  const minDist  = bhR * 3.5; // não começa colado ao BH
+  let sx: number, sy: number, dist: number;
+
+  // Tenta até achar ponto fora do BH e dentro da tela
+  do {
+    sx = margin + Math.random() * (W - margin * 2);
+    sy = margin + Math.random() * (H - margin * 2);
+    dist = Math.sqrt((sx - bhX) ** 2 + (sy - bhY) ** 2);
+  } while (dist < minDist);
+
+  const dx = sx - bhX;
+  const dy = sy - bhY;
+  d.angle   = Math.atan2(dy, dx);
+  d.radius  = dist;
+  d.opacity = 1;
+  d.state   = 'orbiting';
+}
+
+const popup   = document.getElementById('dev-popup') as HTMLElement;
+const anchors = Array.from(document.querySelectorAll<HTMLElement>('.dev-card-anchor'));
+
+// ── Popup helpers ─────────────────────────────────────────────
+function showPopup(anchor: HTMLElement) {
+  const { name, role, bio, accent } = anchor.dataset;
+  popup.querySelector('.dev-popup__name')!.textContent = name ?? '';
+  popup.querySelector('.dev-popup__role')!.textContent = role ?? '';
+  popup.querySelector('.dev-popup__bio')!.textContent  = bio  ?? '';
+
+  popup.classList.remove('accent-star', 'accent-accent');
+  popup.classList.add(`accent-${accent}`);
+
+  const rect       = anchor.getBoundingClientRect();
+  const popupW     = 220;
+  const gap        = 16;
+  const spaceRight = window.innerWidth - rect.right;
+
+  popup.style.left = spaceRight >= popupW + gap
+    ? `${rect.right + gap}px`
+    : `${rect.left - popupW - gap}px`;
+  popup.style.top = `${rect.top + rect.height / 2}px`;
+
+  popup.classList.add('is-visible');
+  popup.setAttribute('aria-hidden', 'false');
+}
+
+function hidePopup() {
+  popup.classList.remove('is-visible');
+  popup.setAttribute('aria-hidden', 'true');
+}
+
+// ── Dados de animação ─────────────────────────────────────────
+const data: CardData[] = anchors.map((el, i) => {
+  const card = el.querySelector<HTMLElement>('.dev-card')!;
+
+  card.addEventListener('mouseenter', () => {
+    const d = data.find(d => d.el === el);
+    if (d) d.paused = true;
+    showPopup(el);
+  });
+  card.addEventListener('mouseleave', () => {
+    const d = data.find(d => d.el === el);
+    if (d) d.paused = false;
+    hidePopup();
+  });
+
+  const d: CardData = {
+    el,
+    angle: 0,
+    radius: 0,
+    orbitSpeed:    0.00018 + Math.random() * 0.00008,
+    baseDecayRate: 0.00012 + Math.random() * 0.00004,
+    opacity: 1,
+    state: 'orbiting',
+    paused: false,
+  };
+
+  initOnScreen(d);
+  return d;
+});
+
+// ── Loop de animação ──────────────────────────────────────────
+function tick() {
+  const bh = getBH();
+
+  for (const d of data) {
+    if (d.paused) continue;
+
+    // ── Movimento (sempre ativo, inclusive durante spawning) ──
+    const factor = pullFactor(d.opacity);
+    d.angle  += d.orbitSpeed  * factor;
+    d.radius -= d.radius * d.baseDecayRate * factor;
+
+    const x = bh.x + Math.cos(d.angle) * d.radius;
+    const y = bh.y + Math.sin(d.angle) * d.radius;
+    d.el.style.transform = `translate(${x - CARD_SIZE}px, ${y - CARD_SIZE}px)`;
+
+    // ── Fade-in ao nascer na borda ────────────────────────────
+    if (d.state === 'spawning') {
+      d.opacity = Math.min(1, d.opacity + 0.022);
+      d.el.style.opacity = String(d.opacity);
+      if (d.opacity >= 1) d.state = 'orbiting';
+      continue;
+    }
+
+    // ── Fade-out por proximidade ao BH ────────────────────────
+    const fadeZone = bh.r * FADE_ZONE_MULT;
+    if (d.radius < fadeZone) {
+      d.opacity = Math.max(0, (d.radius - bh.r) / (fadeZone - bh.r));
+    } else {
+      d.opacity = 1;
+    }
+    d.el.style.opacity = String(d.opacity);
+
+    // ── Sugado: ressurge imediatamente em outra borda ─────────
+    if (d.radius <= bh.r * 1.05) {
+      spawnAtEdge(d);   // reposiciona na borda (opacity já vai para 0)
+      d.state = 'spawning';
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+tick();
+</script>

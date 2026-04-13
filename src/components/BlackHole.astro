@@ -2,6 +2,17 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
+interface Props {
+  /** Posição X do buraco negro como fração da largura da tela (0–1). Padrão: 0.94 */
+  bhX?: number;
+  /** Posição Y do buraco negro como fração da altura da tela (0–1). Padrão: 0.08 */
+  bhY?: number;
+  /** Multiplicador de tamanho do buraco negro. Padrão: 1.0 */
+  bhScale?: number;
+}
+
+const { bhX = 0.94, bhY = 0.08, bhScale = 1.0 } = Astro.props;
+
 const svgRaw = readFileSync(resolve('./public/astronauts.svg'), 'utf-8');
 const svgInline = svgRaw
   .replace(/<\?xml[^?]*\?>\s*/g, '')
@@ -20,7 +31,7 @@ const svgForCanvas = Buffer.from(
 
 ---
 
-<div id="bh-container" class="relative w-full h-screen overflow-hidden" style="background:var(--color-bg);">
+<div id="bh-container" class="relative w-full h-screen overflow-hidden" style="background:var(--color-bg);" data-bh-x={bhX} data-bh-y={bhY} data-bh-scale={bhScale}>
   <canvas id="c" class="block w-full h-full" data-astro-svg={`data:image/svg+xml;base64,${svgForCanvas}`}></canvas>
   <div id="hero" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none select-none" style="gap: 20px;">
     <div
@@ -241,9 +252,13 @@ function drawGlyphs() {
 function resize() {
   W = canvas.width  = window.innerWidth;
   H = canvas.height = window.innerHeight;
-  CFG.bhRadius  = Math.min(W, H) * 0.22;
-  CFG.ringWidth = Math.min(W, H) * 0.012;
-  BH = { x: W * 0.94, y: H * 0.08 };
+  const container  = document.getElementById('bh-container') as HTMLElement;
+  const fracX  = parseFloat(container?.dataset.bhX     ?? '0.94');
+  const fracY  = parseFloat(container?.dataset.bhY     ?? '0.08');
+  const scale  = parseFloat(container?.dataset.bhScale ?? '1.0');
+  CFG.bhRadius  = Math.min(W, H) * 0.22 * scale;
+  CFG.ringWidth = Math.min(W, H) * 0.012 * scale;
+  BH = { x: W * fracX, y: H * fracY };
   init();
 }
 
