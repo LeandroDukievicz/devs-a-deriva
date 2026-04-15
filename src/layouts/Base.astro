@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import ThemeProvider from '../components/ThemeProvider.astro';
 import Navbar from '../components/Navbar.astro';
+import Analytics from '@vercel/analytics/astro';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -32,6 +33,7 @@ const adminSvgInline = adminRaw
   <body class="m-0 p-0 overflow-x-hidden">
     {!hideNavbar && <Navbar />}
     <slot />
+    <Analytics />
 
     <div id="admin-wrap">
       <div id="admin-cta" aria-label="Acessar painel administrativo">
