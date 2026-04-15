@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import ThemeProvider from '../components/ThemeProvider.astro';
 import Navbar from '../components/Navbar.astro';
+import Analytics from '@vercel/analytics/astro';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -27,6 +28,7 @@ const adminSvgInline = adminRaw
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
+    <Analytics />
     <ThemeProvider />
   </head>
   <body class="m-0 p-0 overflow-x-hidden">
