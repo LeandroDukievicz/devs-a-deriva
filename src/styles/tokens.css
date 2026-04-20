@@ -48,7 +48,9 @@
 
 /* ─── Espaço Profundo ────────────────────────────────────────── */
 :root[data-theme="espaco-profundo"] {
-  --color-bg: #000000;
+  --color-bg:     #000000;
+  --color-star:   #007a8f;
+  --color-accent: #9400b8;
 }
 
 /* ─── Limbo ──────────────────────────────────────────────────── */
