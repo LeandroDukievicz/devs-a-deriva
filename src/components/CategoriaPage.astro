@@ -1,0 +1,193 @@
+---
+interface Props {
+  category: string;
+  description: string;
+  image: string;
+  imageAlt: string;
+}
+
+const { category, description, image, imageAlt } = Astro.props;
+---
+
+<div class="categoria-page">
+  <header class="categoria-header">
+    <img
+      class="categoria-img"
+      src={image}
+      alt={imageAlt}
+      draggable="false"
+    />
+    <div class="categoria-info">
+      <h1 class="categoria-title">
+        <span class="cat-prefix">&gt;_</span>{category}
+      </h1>
+      <p class="categoria-desc">{description}</p>
+      <span class="categoria-count">0 posts</span>
+    </div>
+  </header>
+
+  <div class="categoria-divider"></div>
+
+  <div class="categoria-content">
+    <!-- posts serão renderizados aqui -->
+  </div>
+</div>
+
+<style is:global>
+  #nav-logo-link {
+    display: none !important;
+  }
+
+  .categoria-page {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    padding-top: 72px;
+  }
+
+  .categoria-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    padding: 24px 48px 28px;
+  }
+
+  .categoria-img {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--color-star-18);
+    box-shadow: 0 0 28px var(--color-star-10);
+    opacity: 0;
+    animation: cat-fade-img 0.65s ease 0.1s forwards;
+  }
+
+  @keyframes cat-fade-img {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .categoria-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    animation: cat-fade-info 0.65s ease 0.25s forwards;
+  }
+
+  @keyframes cat-fade-info {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .categoria-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-star);
+    text-shadow: 0 0 20px var(--color-star-40);
+    line-height: 1.1;
+  }
+
+  .cat-prefix {
+    color: var(--color-accent);
+    margin-right: 6px;
+  }
+
+  .categoria-desc {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--color-star);
+    opacity: 0.5;
+    line-height: 1.6;
+    max-width: 480px;
+  }
+
+  .categoria-count {
+    font-family: monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+    opacity: 0.7;
+  }
+
+  .categoria-divider {
+    margin: 0 48px;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      var(--color-star-18),
+      var(--color-accent-08),
+      transparent
+    );
+  }
+
+  .categoria-content {
+    padding: 36px 48px 48px;
+    max-width: 1100px;
+  }
+
+  /* ── Limbo ───────────────────────────────────────────────────── */
+  html[data-theme="limbo"] .categoria-img {
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: none;
+  }
+
+  html[data-theme="limbo"] .categoria-title {
+    text-shadow: none;
+    color: var(--color-text);
+  }
+
+  html[data-theme="limbo"] .cat-prefix {
+    color: var(--color-text);
+  }
+
+  html[data-theme="limbo"] .categoria-desc {
+    color: var(--color-text);
+  }
+
+  html[data-theme="limbo"] .categoria-count {
+    color: var(--color-text);
+    opacity: 0.5;
+  }
+
+  html[data-theme="limbo"] .categoria-divider {
+    background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.05),
+      transparent
+    );
+  }
+
+  /* ── Mobile ──────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .categoria-header {
+      gap: 20px;
+      padding: 20px 20px 24px;
+    }
+
+    .categoria-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+    }
+
+    .categoria-divider {
+      margin: 0 20px;
+    }
+
+    .categoria-content {
+      padding: 28px 20px 40px;
+    }
+  }
+</style>

@@ -37,8 +37,11 @@ const logoForCanvas = Buffer.from(
         </a>
       </li>
     <li class="has-dropdown">
-      <button class="nav-link nav-btn" id="cat-btn" aria-expanded="false" aria-controls="cat-menu">
-        <span class="nav-prefix">&gt;_</span>Categorias
+      <button class="nav-link nav-btn nav-link--categorias" id="cat-btn" aria-expanded="false" aria-controls="cat-menu">
+        <span class="nav-icon-wrap nav-categorias-icon" aria-hidden="true">
+          <span class="nav-prefix nav-categorias-prefix">&gt;_</span>
+          <canvas class="categorias-canvas" aria-hidden="true"></canvas>
+        </span>Categorias
       </button>
       <ul class="dropdown" id="cat-menu" role="menu">
         <li role="none"><a href="/categorias/aleatoriedades"    class="dropdown-link" role="menuitem">Aleatoriedades</a></li>
@@ -49,11 +52,22 @@ const logoForCanvas = Buffer.from(
         <li role="none"><a href="/categorias/tech"             class="dropdown-link" role="menuitem">Tech</a></li>
       </ul>
     </li>
-    <li><a href="/devs" class="nav-link"><span class="nav-prefix">&gt;_</span>Devs</a></li>
-    <li><a href="/manifesto" class="nav-link"><span class="nav-prefix">&gt;_</span>Manifesto</a></li>
+    <li><a href="/devs" class="nav-link nav-link--devs">
+      <span class="nav-icon-wrap nav-devs-icon" aria-hidden="true">
+        <span class="nav-prefix nav-devs-prefix">&gt;_</span>
+        <canvas class="devs-canvas" aria-hidden="true"></canvas>
+      </span>Devs</a></li>
+    <li><a href="/manifesto" class="nav-link nav-link--manifesto">
+      <span class="nav-icon-wrap nav-manifesto-icon" aria-hidden="true">
+        <span class="nav-prefix nav-manifesto-prefix">&gt;_</span>
+        <canvas class="manifesto-canvas" aria-hidden="true"></canvas>
+      </span>Manifesto</a></li>
     <li class="has-dropdown">
-      <button class="nav-link nav-btn" id="temas-btn" aria-expanded="false" aria-controls="temas-menu">
-        <span class="nav-prefix">&gt;_</span>Temas
+      <button class="nav-link nav-btn nav-link--temas" id="temas-btn" aria-expanded="false" aria-controls="temas-menu">
+        <span class="nav-icon-wrap nav-temas-icon" aria-hidden="true">
+          <span class="nav-prefix nav-temas-prefix">&gt;_</span>
+          <canvas class="temas-canvas" aria-hidden="true"></canvas>
+        </span>Temas
       </button>
       <ul class="dropdown" id="temas-menu" role="menu">
         <li role="none"><button class="dropdown-link dropdown-btn" data-theme="orbita-baixa">Órbita Baixa</button></li>
@@ -469,21 +483,28 @@ const logoForCanvas = Buffer.from(
     animation: warn-pulse 0.8s ease-in-out infinite;
   }
 
-  /* ── Globe hover ────────────────────────────────────────────── */
-  .nav-home-icon {
+  /* ── Icon hover shared ──────────────────────────────────────── */
+  .nav-home-icon,
+  .nav-icon-wrap {
     position: relative;
     display: inline-flex;
     align-items: center;
   }
 
-  /* fica no fluxo — define altura natural do wrapper */
-  .nav-home-prefix {
+  .nav-home-prefix,
+  .nav-categorias-prefix,
+  .nav-devs-prefix,
+  .nav-manifesto-prefix,
+  .nav-temas-prefix {
     transition: opacity 0.2s ease;
     margin-right: 0;
   }
 
-  /* flutua sobre o prefix sem afetar o layout */
-  .globe-canvas {
+  .globe-canvas,
+  .categorias-canvas,
+  .devs-canvas,
+  .manifesto-canvas,
+  .temas-canvas {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -495,9 +516,25 @@ const logoForCanvas = Buffer.from(
     pointer-events: none;
   }
 
-  .nav-link--home:hover .nav-home-prefix { opacity: 0; }
-  .nav-link--home:hover .globe-canvas    { opacity: 1; }
-  .nav-link--home:hover .nav-home-icon   { margin-right: 5px; }
+  .nav-link--home:hover .nav-home-prefix         { opacity: 0; }
+  .nav-link--home:hover .globe-canvas            { opacity: 1; }
+  .nav-link--home:hover .nav-home-icon           { margin-right: 5px; }
+
+  .nav-link--categorias:hover .nav-categorias-prefix { opacity: 0; }
+  .nav-link--categorias:hover .categorias-canvas     { opacity: 1; }
+  .nav-link--categorias:hover .nav-categorias-icon   { margin-right: 5px; }
+
+  .nav-link--devs:hover .nav-devs-prefix     { opacity: 0; }
+  .nav-link--devs:hover .devs-canvas         { opacity: 1; }
+  .nav-link--devs:hover .nav-devs-icon       { margin-right: 5px; }
+
+  .nav-link--manifesto:hover .nav-manifesto-prefix { opacity: 0; }
+  .nav-link--manifesto:hover .manifesto-canvas     { opacity: 1; }
+  .nav-link--manifesto:hover .nav-manifesto-icon   { margin-right: 5px; }
+
+  .nav-link--temas:hover .nav-temas-prefix { opacity: 0; }
+  .nav-link--temas:hover .temas-canvas     { opacity: 1; }
+  .nav-link--temas:hover .nav-temas-icon   { margin-right: 5px; }
 
   @media (max-width: 480px) {
     .navbar {
@@ -543,11 +580,16 @@ const logoForCanvas = Buffer.from(
       justify-content: center;
     }
 
-    .nav-home-icon {
+    .nav-home-icon,
+    .nav-icon-wrap {
       width: 18px;
     }
 
-    .globe-canvas {
+    .globe-canvas,
+    .categorias-canvas,
+    .devs-canvas,
+    .manifesto-canvas,
+    .temas-canvas {
       width: 18px;
       height: 18px;
     }
@@ -605,11 +647,16 @@ const logoForCanvas = Buffer.from(
       letter-spacing: 0.04em;
     }
 
-    .nav-home-icon {
+    .nav-home-icon,
+    .nav-icon-wrap {
       width: 16px;
     }
 
-    .globe-canvas {
+    .globe-canvas,
+    .categorias-canvas,
+    .devs-canvas,
+    .manifesto-canvas,
+    .temas-canvas {
       width: 16px;
       height: 16px;
     }
@@ -897,6 +944,324 @@ const logoForCanvas = Buffer.from(
       globeCtx.clearRect(0, 0, SIZE, SIZE);
     });
   }
+
+  // ── Categorias icon (folder opening) ─────────────────────────────
+  (function() {
+    const link   = document.querySelector<HTMLElement>('.nav-link--categorias');
+    const canvas = document.querySelector<HTMLCanvasElement>('.categorias-canvas');
+    const ctx    = canvas?.getContext('2d') ?? null;
+    if (!link || !canvas || !ctx) return;
+
+    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+    const SIZE = 22;
+    canvas.width  = SIZE * DPR;
+    canvas.height = SIZE * DPR;
+    ctx.scale(DPR, DPR);
+
+    let raf: number | null = null;
+
+    // Folder geometry (total height = tabH + bh = 11px, centered in 22px → top at 5.5)
+    const bx = 2, by = 8, bw = 18, bh = 9; // body rect
+    const tabW = 7, tabH = 2;               // tab above body
+
+    function draw() {
+      const color = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#e800d4';
+      const t = Date.now() / 900;
+      // open oscillates 0→1→0 smoothly
+      const open = (1 - Math.cos(t * Math.PI * 2)) / 2;
+      const lift = open * 5;
+
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+
+      // Folder tab (top-left flap)
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx, by - tabH);
+      ctx.lineTo(bx + tabW, by - tabH);
+      ctx.lineTo(bx + tabW + 1.5, by);
+      ctx.globalAlpha = 0.8;
+      ctx.stroke();
+
+      // Folder body
+      ctx.beginPath();
+      ctx.rect(bx, by, bw, bh);
+      ctx.globalAlpha = 0.8;
+      ctx.stroke();
+
+      // Lid — arcs upward from left hinge
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.bezierCurveTo(
+        bx + bw * 0.3, by - lift,
+        bx + bw * 0.7, by - lift,
+        bx + bw, by
+      );
+      ctx.globalAlpha = 0.7 + 0.3 * open;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Content lines revealed when open
+      if (open > 0.25) {
+        ctx.lineWidth = 0.65;
+        ctx.globalAlpha = 0.55 * open;
+        ctx.beginPath();
+        ctx.moveTo(bx + 2.5, by + 3);
+        ctx.lineTo(bx + bw - 2.5, by + 3);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bx + 2.5, by + 5.5);
+        ctx.lineTo(bx + bw - 5, by + 5.5);
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(draw);
+    }
+
+    link.addEventListener('mouseenter', () => { if (!raf) draw(); });
+    link.addEventListener('mouseleave', () => {
+      if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+      ctx.clearRect(0, 0, SIZE, SIZE);
+    });
+  })();
+
+  // ── Devs icon (matrix drip) ───────────────────────────────────────
+  (function() {
+    const link   = document.querySelector<HTMLElement>('.nav-link--devs');
+    const canvas = document.querySelector<HTMLCanvasElement>('.devs-canvas');
+    const ctx    = canvas?.getContext('2d') ?? null;
+    if (!link || !canvas || !ctx) return;
+
+    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+    const SIZE = 22;
+    canvas.width  = SIZE * DPR;
+    canvas.height = SIZE * DPR;
+    ctx.scale(DPR, DPR);
+
+    let raf: number | null = null;
+
+    const FONT      = 6;
+    const ROWS      = Math.ceil(SIZE / FONT);
+    const TRAIL     = 3;
+    const randBit   = () => Math.random() > 0.5 ? '1' : '0';
+    const makeChars = () => Array.from({ length: ROWS }, randBit);
+
+    const columns = [
+      { x: 4,  drop: -1,         speed: 0.065 },
+      { x: 11, drop: -ROWS * 0.5, speed: 0.05  },
+      { x: 18, drop: -ROWS * 0.8, speed: 0.075 },
+    ].map(c => ({ ...c, chars: makeChars() }));
+
+    function draw() {
+      const color = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#e800d4';
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      ctx.font = `bold ${FONT}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+
+      columns.forEach(col => {
+        const head = Math.floor(col.drop);
+        for (let r = Math.max(0, head - TRAIL + 1); r <= Math.min(head, ROWS - 1); r++) {
+          const dist = head - r;
+          ctx.fillStyle = color;
+          ctx.globalAlpha = dist === 0 ? 0.9 : (1 - dist / TRAIL) * 0.55;
+          ctx.fillText(col.chars[r], col.x, r * FONT + 1);
+        }
+        col.drop += col.speed;
+        if (col.drop > ROWS + TRAIL) {
+          col.drop = -TRAIL;
+          col.chars = makeChars();
+        }
+      });
+
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(draw);
+    }
+
+    link.addEventListener('mouseenter', () => { if (!raf) draw(); });
+    link.addEventListener('mouseleave', () => {
+      if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+      ctx.clearRect(0, 0, SIZE, SIZE);
+    });
+  })();
+
+  // ── Manifesto icon (scan cursor over text lines) ──────────────────
+  (function() {
+    const link   = document.querySelector<HTMLElement>('.nav-link--manifesto');
+    const canvas = document.querySelector<HTMLCanvasElement>('.manifesto-canvas');
+    const ctx    = canvas?.getContext('2d') ?? null;
+    if (!link || !canvas || !ctx) return;
+
+    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+    const SIZE = 22;
+    canvas.width  = SIZE * DPR;
+    canvas.height = SIZE * DPR;
+    ctx.scale(DPR, DPR);
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+
+    let raf: number | null = null;
+    const lines = [
+      { y: CY - 5, w: 13 },
+      { y: CY,     w: 10 },
+      { y: CY + 5, w: 7  },
+    ];
+
+    function draw() {
+      const color = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#e800d4';
+      const scanT = (Date.now() / 900) % 1;
+      const scanX = (CX - 8) + scanT * 16;
+      ctx.clearRect(0, 0, SIZE, SIZE);
+
+      lines.forEach(({ y, w }) => {
+        const x0 = CX - w / 2;
+        const x1 = CX + w / 2;
+
+        // Base line
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 0.7;
+        ctx.globalAlpha = 0.25;
+        ctx.stroke();
+
+        // Glow around scan position
+        const dist = Math.abs(scanX - (x0 + x1) / 2);
+        const glow = Math.max(0, 1 - dist / 9);
+        if (glow > 0 && scanX >= x0 && scanX <= x1) {
+          ctx.beginPath();
+          ctx.moveTo(x0, y);
+          ctx.lineTo(x1, y);
+          ctx.lineWidth = 1.4;
+          ctx.globalAlpha = glow * 0.9;
+          ctx.stroke();
+        }
+      });
+
+      // Scan cursor vertical line
+      ctx.beginPath();
+      ctx.moveTo(scanX, CY - 8);
+      ctx.lineTo(scanX, CY + 8);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 0.6;
+      ctx.globalAlpha = 0.35;
+      ctx.stroke();
+
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(draw);
+    }
+
+    link.addEventListener('mouseenter', () => { if (!raf) draw(); });
+    link.addEventListener('mouseleave', () => {
+      if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+      ctx.clearRect(0, 0, SIZE, SIZE);
+    });
+  })();
+
+  // ── Temas icon (morphing circle → square → triangle) ─────────────
+  (function() {
+    const link   = document.querySelector<HTMLElement>('.nav-link--temas');
+    const canvas = document.querySelector<HTMLCanvasElement>('.temas-canvas');
+    const ctx    = canvas?.getContext('2d') ?? null;
+    if (!link || !canvas || !ctx) return;
+
+    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
+    const SIZE = 22;
+    canvas.width  = SIZE * DPR;
+    canvas.height = SIZE * DPR;
+    ctx.scale(DPR, DPR);
+
+    let raf: number | null = null;
+
+    const CX = SIZE / 2, CY = SIZE / 2, R = SIZE / 2 - 2.5;
+    const N = 12;
+    type Pt = [number, number];
+
+    function makeCircle(): Pt[] {
+      return Array.from({ length: N }, (_, i) => {
+        const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+        return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
+      });
+    }
+
+    function makeSquare(): Pt[] {
+      const pts: Pt[] = [];
+      const half = R / Math.sqrt(2);
+      const pps  = N / 4;
+      for (let s = 0; s < 4; s++) {
+        for (let j = 0; j < pps; j++) {
+          const t = j / pps;
+          let x = 0, y = 0;
+          if (s === 0) { x = CX - half + t * 2 * half; y = CY - half; }
+          if (s === 1) { x = CX + half; y = CY - half + t * 2 * half; }
+          if (s === 2) { x = CX + half - t * 2 * half; y = CY + half; }
+          if (s === 3) { x = CX - half; y = CY + half - t * 2 * half; }
+          pts.push([x, y]);
+        }
+      }
+      return pts;
+    }
+
+    function makeTriangle(): Pt[] {
+      const pts: Pt[] = [];
+      const pps   = N / 3;
+      const verts: Pt[] = [
+        [CX, CY - R],
+        [CX + R * Math.cos(Math.PI / 6), CY + R * Math.sin(Math.PI / 6)],
+        [CX - R * Math.cos(Math.PI / 6), CY + R * Math.sin(Math.PI / 6)],
+      ];
+      for (let s = 0; s < 3; s++) {
+        const [x0, y0] = verts[s];
+        const [x1, y1] = verts[(s + 1) % 3];
+        for (let j = 0; j < pps; j++) {
+          const t = j / pps;
+          pts.push([x0 + t * (x1 - x0), y0 + t * (y1 - y0)]);
+        }
+      }
+      return pts;
+    }
+
+    const shapes = [makeCircle(), makeSquare(), makeTriangle()];
+
+    function easeInOut(t: number) { return (1 - Math.cos(t * Math.PI)) / 2; }
+
+    function lerpPts(a: Pt[], b: Pt[], t: number): Pt[] {
+      const e = easeInOut(t);
+      return a.map(([ax, ay], i) => [ax + (b[i][0] - ax) * e, ay + (b[i][1] - ay) * e]);
+    }
+
+    const PHASE = 1200;
+
+    function draw() {
+      const color = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#e800d4';
+      const raw   = (Date.now() % (PHASE * 3)) / PHASE;
+      const phase = Math.floor(raw) % 3;
+      const frac  = raw - Math.floor(raw);
+      const pts   = lerpPts(shapes[phase], shapes[(phase + 1) % 3], frac);
+
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < N; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 1;
+      ctx.globalAlpha = 0.82;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    link.addEventListener('mouseenter', () => { if (!raf) draw(); });
+    link.addEventListener('mouseleave', () => {
+      if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+      ctx.clearRect(0, 0, SIZE, SIZE);
+    });
+  })();
 
   // ── Theme buttons ─────────────────────────────────────────────────
   document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach((btn) => {
