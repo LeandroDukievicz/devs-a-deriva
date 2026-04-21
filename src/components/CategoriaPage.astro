@@ -7,16 +7,33 @@ interface Props {
 }
 
 const { category, description, image, imageAlt } = Astro.props;
+
+const featuredPosts = [
+  { title: "Lorem ipsum dolor sit amet consectetur adipiscing elit", readTime: "7 min de leitura" },
+  { title: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem", readTime: "5 min de leitura" },
+  { title: "At vero eos et accusamus et iusto odio dignissimos ducimus", readTime: "6 min de leitura" },
+  { title: "Nam libero tempore cum soluta nobis eligendi optio cumque", readTime: "4 min de leitura" },
+  { title: "Temporibus autem quibusdam et aut officiis debitis rerum", readTime: "8 min de leitura" },
+  { title: "Itaque earum rerum hic tenetur a sapiente delectus ut aut", readTime: "3 min de leitura" },
+];
+
+const allPosts = [
+  { title: "Portas que não levam a lugar nenhum", excerpt: "Às vezes, o caminho mais interessante é aquele que não tem destino.", readTime: "5 min", hashtag: "#devaneios" },
+  { title: "Navegando em mares que inventei", excerpt: "Construo barcos de papel para cruzar oceanos imaginários.", readTime: "6 min", hashtag: "#pensamentos" },
+  { title: "Cartas para meu eu do futuro", excerpt: "Se alguém encontrar isso um dia, me lembra de quem eu era.", readTime: "7 min", hashtag: "#reflexões" },
+  { title: "Ideias que não saem da cabeça", excerpt: "Quando a mente não para, só resta colocar pra fora.", readTime: "4 min", hashtag: "#mente" },
+  { title: "Dias comuns, pensamentos incomuns", excerpt: "Sobre encontrar beleza nas coisas que ninguém nota.", readTime: "5 min", hashtag: "#cotidiano" },
+  { title: "Buguei as emoções temporariamente", excerpt: "Dando um break de sentir para não quebrar.", readTime: "3 min", hashtag: "#caos" },
+  { title: "O gato que me entende sem eu falar nada", excerpt: "Companhia silenciosa para noites barulhentas.", readTime: "4 min", hashtag: "#companheiros" },
+  { title: "Direções que a vida não me deu", excerpt: "Perguntas sem resposta e tudo bem assim.", readTime: "6 min", hashtag: "#vida" },
+  { title: "Explorando o universo dentro da cabeça", excerpt: "A viagem mais longa é sempre para dentro de nós.", readTime: "8 min", hashtag: "#universo" },
+];
 ---
 
 <div class="categoria-page">
+  <!-- ── Header ─────────────────────────────────────────────────── -->
   <header class="categoria-header">
-    <img
-      class="categoria-img"
-      src={image}
-      alt={imageAlt}
-      draggable="false"
-    />
+    <img class="categoria-img" src={image} alt={imageAlt} draggable="false" />
     <div class="categoria-info">
       <h1 class="categoria-title">
         <span class="cat-prefix">&gt;_</span>{category}
@@ -28,16 +45,105 @@ const { category, description, image, imageAlt } = Astro.props;
 
   <div class="categoria-divider"></div>
 
-  <div class="categoria-content">
-    <!-- posts serão renderizados aqui -->
-  </div>
+  <!-- ── Destaques ──────────────────────────────────────────────── -->
+  <section class="destaques-section">
+    <div class="section-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+      </svg>
+      DESTAQUES DA CATEGORIA
+    </div>
+
+    <div class="carousel-wrapper">
+      <button class="carousel-btn prev" id="carousel-prev" aria-label="Anterior">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <div class="carousel-viewport">
+        <div class="carousel-track" id="carousel-track">
+          {featuredPosts.map((post, i) => (
+            <article class="feat-card" data-index={i}>
+              <div class="feat-card-body">
+                <span class="card-tag">{category.toUpperCase()}</span>
+                <h3 class="feat-card-title">{post.title}</h3>
+                <div class="card-meta">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  {post.readTime}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <button class="carousel-btn next" id="carousel-next" aria-label="Próximo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="carousel-dots" id="carousel-dots">
+      {featuredPosts.map((_, i) => (
+        <button class={`dot${i === 0 ? ' active' : ''}`} data-dot={i} aria-label={`Ir para destaque ${i + 1}`}></button>
+      ))}
+    </div>
+  </section>
+
+  <!-- ── Todos os Posts ─────────────────────────────────────────── -->
+  <section class="posts-section">
+    <div class="section-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      TODOS OS POSTS
+    </div>
+
+    <div class="posts-grid">
+      {allPosts.map(post => (
+        <article class="post-card">
+          <div class="post-card-body">
+            <span class="card-tag">{category.toUpperCase()}</span>
+            <h3 class="post-card-title">{post.title}</h3>
+            <p class="post-card-excerpt">{post.excerpt}</p>
+            <div class="post-card-meta">
+              <div class="card-meta">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                {post.readTime}
+              </div>
+              <span class="post-hashtag">{post.hashtag}</span>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <div class="load-more-wrap">
+      <button class="load-more-btn">
+        CARREGAR MAIS POSTS
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+      </button>
+    </div>
+  </section>
 </div>
 
 <style is:global>
   #nav-logo-link {
     display: none !important;
   }
+</style>
 
+<style>
+  /* ── Page wrapper ──────────────────────────────────────────── */
   .categoria-page {
     position: relative;
     z-index: 10;
@@ -45,6 +151,7 @@ const { category, description, image, imageAlt } = Astro.props;
     padding-top: 72px;
   }
 
+  /* ── Header ────────────────────────────────────────────────── */
   .categoria-header {
     display: flex;
     flex-direction: row;
@@ -131,63 +238,373 @@ const { category, description, image, imageAlt } = Astro.props;
     );
   }
 
-  .categoria-content {
-    padding: 36px 48px 48px;
-    max-width: 1100px;
+  /* ── Section label ─────────────────────────────────────────── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-star-16);
   }
 
-  /* ── Limbo ───────────────────────────────────────────────────── */
+  .section-label svg {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  /* ── Shared card styles ────────────────────────────────────── */
+  .card-tag {
+    display: inline-block;
+    font-family: monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+    margin-bottom: 8px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: monospace;
+    font-size: 0.62rem;
+    color: var(--color-star);
+    opacity: 0.55;
+  }
+
+  /* ── Destaques / Carousel ──────────────────────────────────── */
+  .destaques-section {
+    padding: 36px 48px 0;
+  }
+
+  .carousel-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .carousel-viewport {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .carousel-track {
+    display: flex;
+    gap: 16px;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .feat-card {
+    flex: 0 0 calc(25% - 12px);
+    min-width: 0;
+    background: transparent;
+    border: 1px solid var(--color-star-16);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+
+  .feat-card:hover {
+    border-color: var(--color-star-40);
+    box-shadow: 0 0 20px var(--color-star-10);
+    transform: translateY(-2px);
+  }
+
+  .feat-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 140px;
+    justify-content: flex-end;
+  }
+
+  .feat-card-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text);
+    letter-spacing: 0.01em;
+  }
+
+  .carousel-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-star-08);
+    border: 1px solid var(--color-star-22);
+    border-radius: 50%;
+    color: var(--color-star);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .carousel-btn:hover {
+    background: var(--color-star-16);
+    border-color: var(--color-star-40);
+    box-shadow: 0 0 12px var(--color-star-16);
+  }
+
+  .carousel-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    margin-bottom: 4px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-star-22);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  .dot.active {
+    background: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent-40);
+    transform: scale(1.25);
+  }
+
+  /* ── Posts Grid ────────────────────────────────────────────── */
+  .posts-section {
+    padding: 40px 48px 48px;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .post-card {
+    background: transparent;
+    border: 1px solid var(--color-star-16);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+
+  .post-card:hover {
+    border-color: var(--color-star-40);
+    box-shadow: 0 0 20px var(--color-star-10);
+    transform: translateY(-2px);
+  }
+
+  .post-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .post-card-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text);
+  }
+
+  .post-card-excerpt {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.68rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    opacity: 0.55;
+  }
+
+  .post-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .post-hashtag {
+    font-family: monospace;
+    font-size: 0.6rem;
+    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
+  /* ── Load More ─────────────────────────────────────────────── */
+  .load-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 36px;
+  }
+
+  .load-more-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    background: transparent;
+    border: 1px dashed var(--color-accent-40);
+    border-radius: 6px;
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+  }
+
+  .load-more-btn:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 18px var(--color-accent-20);
+    background: var(--color-accent-06);
+  }
+
+  /* ── Limbo overrides ───────────────────────────────────────── */
   html[data-theme="limbo"] .categoria-img {
-    border-color: rgba(0, 0, 0, 0.15);
+    border-color: rgba(0,0,0,0.15);
     box-shadow: none;
   }
-
-  html[data-theme="limbo"] .categoria-title {
-    text-shadow: none;
-    color: var(--color-text);
-  }
-
-  html[data-theme="limbo"] .cat-prefix {
-    color: var(--color-text);
-  }
-
-  html[data-theme="limbo"] .categoria-desc {
-    color: var(--color-text);
-  }
-
-  html[data-theme="limbo"] .categoria-count {
-    color: var(--color-text);
-    opacity: 0.5;
-  }
-
+  html[data-theme="limbo"] .categoria-title,
+  html[data-theme="limbo"] .cat-prefix { color: var(--color-text); text-shadow: none; }
+  html[data-theme="limbo"] .categoria-desc,
+  html[data-theme="limbo"] .categoria-count { color: var(--color-text); }
   html[data-theme="limbo"] .categoria-divider {
-    background: linear-gradient(
-      to right,
-      rgba(0, 0, 0, 0.15),
-      rgba(0, 0, 0, 0.05),
-      transparent
-    );
+    background: linear-gradient(to right, rgba(0,0,0,0.15), rgba(0,0,0,0.05), transparent);
+  }
+  html[data-theme="limbo"] .feat-card,
+  html[data-theme="limbo"] .post-card {
+    background: transparent;
+    border-color: rgba(0,0,0,0.15);
+  }
+  html[data-theme="limbo"] .feat-card:hover,
+  html[data-theme="limbo"] .post-card:hover {
+    border-color: rgba(0,0,0,0.4);
+    box-shadow: none;
+  }
+  html[data-theme="limbo"] .section-label,
+  html[data-theme="limbo"] .section-label svg { color: var(--color-text); }
+  html[data-theme="limbo"] .card-tag,
+  html[data-theme="limbo"] .post-hashtag { color: var(--color-text); opacity: 0.5; }
+  html[data-theme="limbo"] .carousel-btn {
+    background: rgba(0,0,0,0.06);
+    border-color: rgba(0,0,0,0.2);
+    color: var(--color-text);
+  }
+  html[data-theme="limbo"] .dot { background: rgba(0,0,0,0.2); }
+  html[data-theme="limbo"] .dot.active { background: var(--color-text); box-shadow: none; }
+  html[data-theme="limbo"] .load-more-btn { color: var(--color-text); border-color: rgba(0,0,0,0.3); }
+  html[data-theme="limbo"] .load-more-btn:hover { background: rgba(0,0,0,0.05); box-shadow: none; }
+
+  /* ── Mobile ────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .feat-card {
+      flex: 0 0 calc(50% - 8px);
+    }
   }
 
-  /* ── Mobile ──────────────────────────────────────────────────── */
   @media (max-width: 600px) {
     .categoria-header {
       gap: 20px;
       padding: 20px 20px 24px;
     }
-
     .categoria-img {
       width: 100px;
       height: 100px;
       border-radius: 10px;
     }
-
-    .categoria-divider {
-      margin: 0 20px;
+    .categoria-divider { margin: 0 20px; }
+    .destaques-section { padding: 28px 20px 0; }
+    .posts-section { padding: 32px 20px 40px; }
+    .posts-grid { grid-template-columns: 1fr; }
+    .feat-card {
+      flex: 0 0 calc(100% - 0px);
     }
-
-    .categoria-content {
-      padding: 28px 20px 40px;
-    }
+    .carousel-btn { display: none; }
   }
 </style>
+
+<script>
+  const track = document.getElementById('carousel-track') as HTMLElement;
+  const dotsContainer = document.getElementById('carousel-dots') as HTMLElement;
+  const prevBtn = document.getElementById('carousel-prev') as HTMLButtonElement;
+  const nextBtn = document.getElementById('carousel-next') as HTMLButtonElement;
+
+  if (track && dotsContainer && prevBtn && nextBtn) {
+    const dots = Array.from(dotsContainer.querySelectorAll<HTMLButtonElement>('.dot'));
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('.feat-card'));
+    let current = 0;
+
+    function getVisible(): number {
+      if (window.innerWidth <= 600) return 1;
+      if (window.innerWidth <= 900) return 2;
+      return 4;
+    }
+
+    function maxIndex(): number {
+      return Math.max(0, cards.length - getVisible());
+    }
+
+    function update() {
+      const cardEl = cards[0];
+      if (!cardEl) return;
+      const gap = 16;
+      const cardWidth = cardEl.getBoundingClientRect().width;
+      track.style.transform = `translateX(-${current * (cardWidth + gap)}px)`;
+
+      dots.forEach((dot, i) => dot.classList.toggle('active', i === current));
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current >= maxIndex();
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (current > 0) { current--; update(); }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (current < maxIndex()) { current++; update(); }
+    });
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        current = Math.min(i, maxIndex());
+        update();
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      current = Math.min(current, maxIndex());
+      update();
+    }, { passive: true });
+
+    update();
+  }
+</script>
