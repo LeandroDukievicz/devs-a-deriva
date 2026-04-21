@@ -9,7 +9,7 @@ const postHref = '#';
   <BlackHole />
     <main class="page-overlay">
       <div id="sections-container" class="sections-container">
-        <div class="content-section" data-section-id="section-1">
+        <div class="content-section" data-section-id="section-1" data-post-href={postHref} role="link" tabindex="0">
           <div class="section-image"><img src="/logo-high-color.webp" alt="Devs à Deriva" class="section-img" /></div>
           <div class="section-body">
             <div class="section-info">
@@ -47,7 +47,7 @@ const postHref = '#';
             </div>
           </div>
         </div>
-        <div class="content-section" data-section-id="section-2">
+        <div class="content-section" data-section-id="section-2" data-post-href={postHref} role="link" tabindex="0">
           <div class="section-image"><img src="/logo-high-color.webp" alt="Devs à Deriva" class="section-img" /></div>
           <div class="section-body">
             <div class="section-info">
@@ -85,7 +85,7 @@ const postHref = '#';
             </div>
           </div>
         </div>
-        <div class="content-section" data-section-id="section-3">
+        <div class="content-section" data-section-id="section-3" data-post-href={postHref} role="link" tabindex="0">
           <div class="section-image"><img src="/logo-high-color.webp" alt="Devs à Deriva" class="section-img" /></div>
           <div class="section-body">
             <div class="section-info">
@@ -123,7 +123,7 @@ const postHref = '#';
             </div>
           </div>
         </div>
-        <div class="content-section" data-section-id="section-4">
+        <div class="content-section" data-section-id="section-4" data-post-href={postHref} role="link" tabindex="0">
           <div class="section-image"><img src="/logo-high-color.webp" alt="Devs à Deriva" class="section-img" /></div>
           <div class="section-body">
             <div class="section-info">
@@ -161,7 +161,7 @@ const postHref = '#';
             </div>
           </div>
         </div>
-        <div class="content-section" data-section-id="section-5">
+        <div class="content-section" data-section-id="section-5" data-post-href={postHref} role="link" tabindex="0">
           <div class="section-image"><img src="/logo-high-color.webp" alt="Devs à Deriva" class="section-img" /></div>
           <div class="section-body">
             <div class="section-info">
@@ -379,6 +379,17 @@ const postHref = '#';
       border-color: var(--color-accent);
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
       transform: translateY(-2px);
+    }
+
+    .content-section[role="link"] {
+      cursor: pointer;
+    }
+
+    .content-section[role="link"]:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 4px;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 4px var(--color-accent-16), 0 14px 30px rgba(0, 0, 0, 0.24);
     }
 
     .content-section:hover .limbo-cta {
@@ -814,6 +825,29 @@ const postHref = '#';
         const section = (cta as HTMLElement).closest('.content-section') as HTMLElement | null;
         if (!section) return;
         vanishSection(section);
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>('.content-section[data-post-href]').forEach((section) => {
+      const goToPost = () => {
+        if (section.classList.contains('is-vanishing')) return;
+        const href = section.dataset.postHref;
+        if (!href) return;
+        window.location.href = href;
+      };
+
+      section.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest('a, button')) return;
+        goToPost();
+      });
+
+      section.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const target = event.target as HTMLElement | null;
+        if (target?.closest('a, button')) return;
+        event.preventDefault();
+        goToPost();
       });
     });
 

@@ -1,94 +1,103 @@
 # Devs à Deriva
 
-> Uma experiência visual interativa construída com Astro e Tailwind CSS — onde código, arte e física se encontram no horizonte de eventos.
+**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. Não é um blog genérico: a proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e uma base preparada para evoluir para conteúdo dinâmico.
 
----
+## Propósito
 
-## Visão Geral
+O projeto nasce para ser um espaço menos polido e mais honesto sobre tecnologia. Aqui cabem textos técnicos, reflexões de carreira, cultura dev, opinião, experimentos visuais e narrativas pessoais.
 
-**Devs à Deriva** é um projeto web com foco em experiência visual e animações procedurais. A home page apresenta uma simulação de buraco negro com física de fluidos, trilhas de partículas e o efeito de espaghettificação aplicado tanto ao título quanto à ilustração de astronautas.
+A diferença está na experiência: o conteúdo não vive em um template neutro. A interface faz parte da linguagem do projeto, com animações, temas, categorias visuais e interações que reforçam a ideia de estar navegando por algo vivo, estranho e deliberadamente fora da órbita comum.
 
----
+## Tech Stack
 
-## Tecnologias
-
-| Tecnologia | Versão |
-|---|---|
-| [Astro](https://astro.build) | ^4.16.0 |
-| [Tailwind CSS](https://tailwindcss.com) | ^3.4.19 |
-| Canvas API | nativa |
-| Node.js | ^20+ |
-
----
-
-## Estrutura do Projeto
-
-```
-devs-a-deriva/
-├── public/
-│   ├── astronauts.svg       # Ilustração principal
-│   └── devs_a_deriva.svg    # Logo
-├── src/
-│   ├── components/
-│   │   └── BlackHole.astro  # Animação procedural do buraco negro
-│   └── pages/
-│       └── index.astro      # Home page
-├── astro.config.mjs
-└── tailwind.config.mjs
-```
-
----
+- [Astro.js](https://astro.build/) como base da aplicação.
+- [Tailwind CSS](https://tailwindcss.com/) para utilitários de estilo.
+- CSS escopado em componentes/páginas Astro para interações visuais específicas.
+- Canvas e JavaScript nativo para experiências interativas.
+- Dashboard/admin em desenvolvimento para gerenciamento de posts.
+- Backend e banco de dados planejados para conteúdo dinâmico.
+- [Vercel Analytics](https://vercel.com/analytics) integrado ao projeto.
 
 ## Funcionalidades
 
-- **Simulação de buraco negro** — campo gravitacional com componentes orbital e de queda, renderizado em tempo real via Canvas 2D
-- **Espaghettificação do título** — texto "Devs à deriva" sofre distorção física em direção ao buraco negro, caractere por caractere
-- **Espaghettificação dos astronautas** — a ilustração é fatiada em 120 slices, cada um puxado em velocidade proporcional à sua posição no eixo gravitacional
-- **Efeito de levitação** — animação CSS suave simulando ausência de gravidade
-- **Colorshift ciano/magenta** — gradiente de cor cíclico aplicado diretamente no fill do SVG
-- **Totalmente responsivo** — dimensões e posicionamentos calculados dinamicamente em relação ao viewport
+### Atual
 
----
+- Home com experiência visual imersiva.
+- Cards de posts com interação e progresso de leitura.
+- Categorias editoriais.
+- Página de manifesto com crawl scroll-driven em perspectiva.
+- Sistema de temas visuais.
+- Páginas de erro customizadas.
+- Página inicial de login/admin.
 
-## Instalação
+### Planejado
+
+- Sistema real de posts.
+- Dashboard/admin para criar, editar e publicar conteúdos.
+- Banco de dados para conteúdo dinâmico.
+- Gestão de categorias e autores.
+- Páginas individuais de posts.
+- Comentários ou reações.
+- Integrações futuras com analytics, busca e métricas de leitura.
+
+## Estrutura do Projeto
+
+```txt
+devs-a-deriva/
+├── public/              # Assets estáticos
+├── src/
+│   ├── components/      # Componentes Astro reutilizáveis
+│   ├── layouts/         # Layouts base da aplicação
+│   ├── lib/             # Utilitários e configurações compartilhadas
+│   ├── pages/           # Rotas e páginas Astro
+│   └── styles/          # Tokens e estilos globais
+├── astro.config.mjs     # Configuração do Astro
+├── tailwind.config.mjs  # Configuração do Tailwind
+└── package.json         # Scripts e dependências
+```
+
+## Começando
+
+Clone o repositório e instale as dependências:
 
 ```bash
-# Clone o repositório
-git clone git@github.com:LeandroDukievicz/devs-a-deriva.git
-cd devs-a-deriva
-
-# Instale as dependências
 npm install
 ```
 
----
-
-## Scripts
+Rode o servidor de desenvolvimento:
 
 ```bash
-# Servidor de desenvolvimento
 npm run dev
+```
 
-# Build de produção
+Gere o build de produção:
+
+```bash
 npm run build
+```
 
-# Preview do build
+Visualize o build localmente:
+
+```bash
 npm run preview
 ```
 
----
+## Scripts
 
-## Branches
+| Comando | Descrição |
+| --- | --- |
+| `npm run dev` | Inicia o servidor local de desenvolvimento. |
+| `npm run build` | Gera a versão estática de produção. |
+| `npm run preview` | Executa um preview local do build. |
 
-| Branch | Finalidade |
-|---|---|
-| `main` | Produção estável |
-| `develop` | Desenvolvimento ativo |
+## Status
 
-Todo o desenvolvimento acontece na branch `develop`. Merges para `main` apenas em releases estáveis.
+Em desenvolvimento.
 
----
+## Links
 
-## Licença
+- Produção: [https://www.devsaderiva.com.br/](https://www.devsaderiva.com.br/)
 
-MIT © [Leandro Dukievicz](https://github.com/LeandroDukievicz)
+## Documentação
+
+A documentação técnica e decisões de produto devem ficar centralizadas na pasta [`/docs`](./docs).
