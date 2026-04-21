@@ -1,105 +1,237 @@
 ---
 import Base from '../layouts/Base.astro';
-import StarBackground from '../components/StarBackground.astro';
 ---
 
 <Base title="Manifesto · Devs à Deriva">
-  <StarBackground />
+  <main id="manifesto-crawl" aria-label="Manifesto">
+    <div class="crawl-stars" aria-hidden="true"></div>
 
-  <main class="manifesto-wrapper">
-    <section class="manifesto-section">
-      <h1 class="manifesto-title">Manifesto - Devs à deriva</h1>
+    <section class="crawl-viewport" aria-label="Manifesto em perspectiva controlado pelo scroll">
+      <div class="crawl-fade crawl-fade-top" aria-hidden="true"></div>
+      <div class="crawl-fade crawl-fade-bottom" aria-hidden="true"></div>
 
-      <p>Calma, a palavra "<span class="manifesto-highlight">manifesto</span>" aqui não tem nada a ver com aquele outro manifesto, nada ágil, pode respirar tranquilo!</p>
+      <article id="manifesto-crawl-text" class="manifesto-section">
+        <h1 class="manifesto-title">Manifesto - Devs à deriva</h1>
 
-      <p>Esse blog não é nenhum manual, muito menos curso e nem tutorial, vez ou outra pode acontecer de postarmos algo técnico e relevante sim, mas não tem promessa de consistência, sem roadmap, só existe porque eu achei que devia existir, às vezes isso é motivo suficiente.</p>
+        <p>Calma, a palavra "<span class="manifesto-highlight">manifesto</span>" aqui não tem nada a ver com aquele outro manifesto, nada ágil, pode respirar tranquilo!</p>
 
-      <p>Se você está saturado da bolha tech, de ver IA em todo lugar, de CEO pregando o fim dos programadores toda semana, de conteúdo que parece ter sido feito por algoritmo pra agradar algoritmo, então aqui pode ser o teu lugar e teu refúgio!</p>
+        <p>Esse blog não é nenhum manual, muito menos curso e nem tutorial, vez ou outra pode acontecer de postarmos algo técnico e relevante sim, mas não tem promessa de consistência, sem roadmap, só existe porque eu achei que devia existir, às vezes isso é motivo suficiente.</p>
 
-      <p>A única proposta deste projeto é simples, pessoas reais escrevendo com sua pŕopria cabeça, falando o que deseja falar, sem filtro, sem mimimi, com erros de português, vai ter opiniões sem embasamento científico, assunto técnico do lado de assunto completamente aleatório, sem pauta, sem seguir tendência nenhuma, sem aprovação de ninguém.</p>
+        <p>Se você está saturado da bolha tech, de ver IA em todo lugar, de CEO pregando o fim dos programadores toda semana, de conteúdo que parece ter sido feito por algoritmo pra agradar algoritmo, então aqui pode ser o teu lugar e teu refúgio!</p>
 
-      <p>Aqui a gente vai errar, vai questionar, vai divagar, não vamos escalar, nem performar e muito menos teremos destino definido, estamos <span class="manifesto-highlight-accent">Totalmente à deriva</span>.</p>
+        <p>A única proposta deste projeto é simples, pessoas reais escrevendo com sua pŕopria cabeça, falando o que deseja falar, sem filtro, sem mimimi, com erros de português, vai ter opiniões sem embasamento científico, assunto técnico do lado de assunto completamente aleatório, sem pauta, sem seguir tendência nenhuma, sem aprovação de ninguém.</p>
 
-      <p>Se você veio buscar alguma certeza, Orra, você sabe que existe lugar melhor pra isso, mas se veio por que quer conteúdo feito por gente de verdade, sem filtro de marca pessoal, então seja bem-vindo à bordo.</p>
+        <p>Aqui a gente vai errar, vai questionar, vai divagar, não vamos escalar, nem performar e muito menos teremos destino definido, estamos <span class="manifesto-highlight-accent">Totalmente à deriva</span>.</p>
 
-      <p>Você também está <span class="manifesto-highlight">à deriva</span> agora.</p>
+        <p>Se você veio buscar alguma certeza, Orra, você sabe que existe lugar melhor pra isso, mas se veio por que quer conteúdo feito por gente de verdade, sem filtro de marca pessoal, então seja bem-vindo à bordo.</p>
 
+        <p>Você também está <span class="manifesto-highlight">à deriva</span> agora.</p>
+
+      </article>
     </section>
   </main>
 </Base>
 
+<script>
+  const section = document.getElementById('manifesto-crawl');
+  const crawlText = document.getElementById('manifesto-crawl-text');
+  const firstParagraph = crawlText?.querySelector('p');
+
+  if (section && crawlText && firstParagraph) {
+    let ticking = false;
+
+    const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+    const updateCrawl = () => {
+      const maxScroll = section.offsetHeight - window.innerHeight;
+      const progress = maxScroll > 0
+        ? clamp(-section.getBoundingClientRect().top / maxScroll, 0, 1)
+        : 0;
+
+      const firstParagraphCenterOffset = firstParagraph.offsetTop + firstParagraph.offsetHeight / 2;
+      const startY = -firstParagraphCenterOffset;
+      const endY = -crawlText.offsetHeight * 1.18;
+      const currentY = startY + (endY - startY) * progress;
+
+      crawlText.style.setProperty('--crawl-y', `${currentY}px`);
+      crawlText.style.setProperty('--crawl-opacity', `${clamp(1 - progress * 0.18, 0.72, 1)}`);
+      ticking = false;
+    };
+
+    const requestUpdate = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateCrawl);
+        ticking = true;
+      }
+    };
+
+    updateCrawl();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+  }
+</script>
+
 <style>
-  .manifesto-wrapper {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  #manifesto-crawl {
+    position: relative;
+    min-height: 260vh;
+    min-height: 260dvh;
+    overflow: clip;
+    background: #000;
+    color: #00d4e8;
+    scrollbar-color: #00d4e8 rgba(0, 212, 232, 0.08);
+    scrollbar-width: thin;
+  }
+
+  :global(html:has(#manifesto-crawl)),
+  :global(body:has(#manifesto-crawl)) {
+    scrollbar-color: #00d4e8 rgba(0, 212, 232, 0.08);
+    scrollbar-width: thin;
+  }
+
+  :global(body:has(#manifesto-crawl)::-webkit-scrollbar) {
+    width: 8px;
+  }
+
+  :global(body:has(#manifesto-crawl)::-webkit-scrollbar-track) {
+    background: rgba(0, 212, 232, 0.08);
+  }
+
+  :global(body:has(#manifesto-crawl)::-webkit-scrollbar-thumb) {
+    background: linear-gradient(180deg, #70f3ff 0%, #00d4e8 55%, #007a8f 100%);
+    border: 1px solid #000;
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(0, 212, 232, 0.45);
+  }
+
+  .crawl-viewport {
+    position: sticky;
+    top: 0;
     z-index: 10;
-    pointer-events: none;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    perspective: 760px;
+    perspective-origin: 50% 42%;
   }
 
   .manifesto-section {
-    width: 75%;
-    height: 86.4vh;
-    border: 1px solid var(--color-transparent);
-    border-radius: 16px;
-    padding: 38px 56px 48px;
-    overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    --crawl-y: -92px;
+    --crawl-opacity: 1;
+    position: absolute;
+    top: 10%;
+    right: 0;
+    left: 0;
+    width: min(84vw, 1120px);
+    margin: 0 auto;
     box-sizing: border-box;
-    pointer-events: auto;
-    text-align: center;
+    color: #00d4e8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-weight: 800;
+    text-align: justify;
+    text-shadow: 0 0 12px rgba(0, 212, 232, 0.36);
+    opacity: var(--crawl-opacity);
+    transform: rotateX(42deg) translate3d(0, var(--crawl-y), 0);
+    transform-origin: 50% 50%;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
   }
 
   .manifesto-title {
-    font-family: monospace;
-    font-size: 1.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--color-star) !important;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    color: #00d4e8;
+    font-size: clamp(1.15rem, 2.4vw, 2.2rem);
+    line-height: 1.15;
+    letter-spacing: 0.14em;
     text-align: center;
-    padding: 10px;
-    margin: 0 0 32px;
+    text-transform: uppercase;
   }
 
   .manifesto-section p {
-    font-family: monospace;
-    font-size: 0.88rem;
-    line-height: 1.85;
-    color: var(--color-text) !important;
-    text-align: justify;
-    margin: 0 0 20px;
-    max-width: 920px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 0 30px;
+    color: #00d4e8;
+    font-size: clamp(1.05rem, 2.1vw, 1.9rem);
+    line-height: 1.48;
+    text-align-last: center;
   }
 
   .manifesto-section p:last-child {
     margin-bottom: 0;
   }
 
-  .manifesto-highlight {
-    color: var(--color-star) !important;
-  }
-
-  .manifesto-highlight-accent {
-    color: var(--color-accent) !important;
-  }
-
+  .manifesto-highlight,
+  .manifesto-highlight-accent,
   .manifesto-highlight-underline {
-    color: var(--color-accent) !important;
+    color: #e800d4;
   }
 
-  .manifesto-section::-webkit-scrollbar {
-    display: none;
+  .crawl-fade {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .crawl-fade-top {
+    top: 0;
+    height: 34vh;
+    background: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.86) 34%, transparent 100%);
+  }
+
+  .crawl-fade-bottom {
+    bottom: 0;
+    height: 18vh;
+    background: linear-gradient(0deg, #000 0%, transparent 100%);
+  }
+
+  .crawl-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle, rgba(255, 255, 255, 0.78) 0 1px, transparent 1.3px),
+      radial-gradient(circle, rgba(0, 212, 232, 0.45) 0 1px, transparent 1.4px),
+      radial-gradient(circle, rgba(255, 255, 255, 0.42) 0 1px, transparent 1.2px);
+    background-position: 0 0, 38px 74px, 112px 36px;
+    background-size: 150px 150px, 240px 240px, 310px 310px;
+    opacity: 0.34;
   }
 
   @media (max-width: 768px) {
+    #manifesto-crawl {
+      min-height: 240vh;
+      min-height: 240dvh;
+    }
+
+    .crawl-viewport {
+      perspective: 520px;
+      perspective-origin: 50% 40%;
+    }
+
     .manifesto-section {
-      width: 95%;
-      padding: 32px 20px;
+      width: min(90vw, 620px);
+      transform: rotateX(36deg) translate3d(0, var(--crawl-y), 0);
+    }
+
+    .manifesto-title {
+      margin-bottom: 28px;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    .manifesto-section p {
+      margin-bottom: 24px;
+      font-size: 1rem;
+      line-height: 1.48;
     }
   }
 </style>
