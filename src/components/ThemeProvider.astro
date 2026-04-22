@@ -12,7 +12,71 @@
 
 <script is:inline>
   try {
+    var palettes = {
+      'orbita-baixa': {
+        bg: [2, 11, 24],
+        star: [0, 212, 232],
+        accent: [232, 0, 212],
+        text: [232, 244, 248]
+      },
+      'espaco-profundo': {
+        bg: [0, 0, 0],
+        star: [0, 122, 143],
+        accent: [148, 0, 184],
+        text: [232, 244, 248]
+      },
+      limbo: {
+        bg: [255, 255, 255],
+        star: [0, 0, 0],
+        accent: [0, 0, 0],
+        text: [0, 0, 0]
+      }
+    };
+
+    function rgb(c, alpha) {
+      return alpha === undefined
+        ? 'rgb(' + c[0] + ' ' + c[1] + ' ' + c[2] + ')'
+        : 'rgb(' + c[0] + ' ' + c[1] + ' ' + c[2] + ' / ' + alpha + ')';
+    }
+
+    function mix(c, other, amount) {
+      var inverse = 1 - amount;
+      return rgb([
+        Math.round(c[0] * amount + other[0] * inverse),
+        Math.round(c[1] * amount + other[1] * inverse),
+        Math.round(c[2] * amount + other[2] * inverse)
+      ]);
+    }
+
+    function setThemeVars(key) {
+      var palette = palettes[key];
+      if (!palette) return;
+
+      var root = document.documentElement;
+      root.style.setProperty('--color-bg', rgb(palette.bg));
+      root.style.setProperty('--color-star', rgb(palette.star));
+      root.style.setProperty('--color-accent', rgb(palette.accent));
+      root.style.setProperty('--color-text', rgb(palette.text));
+      root.style.setProperty('--color-star-light', mix(palette.star, [255, 255, 255], 0.7));
+      root.style.setProperty('--color-star-dark', mix(palette.star, [0, 0, 0], 0.7));
+
+      [5, 8, 10, 16, 18, 22, 25, 40, 45, 70, 90].forEach(function(value) {
+        root.style.setProperty('--color-star-' + String(value).padStart(2, '0'), rgb(palette.star, value / 100));
+      });
+
+      [6, 8, 14, 16, 18, 20, 40, 60].forEach(function(value) {
+        root.style.setProperty('--color-accent-' + String(value).padStart(2, '0'), rgb(palette.accent, value / 100));
+      });
+
+      [70, 88, 90, 95].forEach(function(value) {
+        root.style.setProperty('--color-bg-' + value, rgb(palette.bg, value / 100));
+      });
+    }
+
     var t = localStorage.getItem('dda-theme');
-    if (t) document.documentElement.dataset.theme = t;
+    if (t && palettes[t]) {
+      document.documentElement.dataset.theme = t;
+      setThemeVars(t);
+    }
   } catch (_) {}
 </script>

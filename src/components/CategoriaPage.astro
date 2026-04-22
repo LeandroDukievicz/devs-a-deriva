@@ -166,8 +166,8 @@ const allPosts = [
     flex-shrink: 0;
     object-fit: cover;
     border-radius: 12px;
-    border: 1px solid var(--color-star-18);
-    box-shadow: 0 0 28px var(--color-star-10);
+    border: 1px solid var(--color-star);
+    box-shadow: 0 0 18px var(--color-star);
     opacity: 0;
     animation: cat-fade-img 0.65s ease 0.1s forwards;
   }
@@ -232,10 +232,11 @@ const allPosts = [
     height: 1px;
     background: linear-gradient(
       to right,
-      var(--color-star-18),
-      var(--color-accent-08),
+      var(--color-star),
+      var(--color-accent),
       transparent
     );
+    opacity: 0.35;
   }
 
   /* ── Section label ─────────────────────────────────────────── */
@@ -251,7 +252,7 @@ const allPosts = [
     color: var(--color-star);
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--color-star-16);
+    border-bottom: 1px solid var(--color-star);
   }
 
   .section-label svg {
@@ -307,15 +308,15 @@ const allPosts = [
     flex: 0 0 calc(25% - 12px);
     min-width: 0;
     background: transparent;
-    border: 1px solid var(--color-star-16);
+    border: 1px solid var(--color-star);
     border-radius: 10px;
     cursor: pointer;
     transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
   }
 
   .feat-card:hover {
-    border-color: var(--color-star-40);
-    box-shadow: 0 0 20px var(--color-star-10);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 14px var(--color-accent);
     transform: translateY(-2px);
   }
 
@@ -345,8 +346,8 @@ const allPosts = [
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-star-08);
-    border: 1px solid var(--color-star-22);
+    background: transparent;
+    border: 1px solid var(--color-star);
     border-radius: 50%;
     color: var(--color-star);
     cursor: pointer;
@@ -354,9 +355,9 @@ const allPosts = [
   }
 
   .carousel-btn:hover {
-    background: var(--color-star-16);
-    border-color: var(--color-star-40);
-    box-shadow: 0 0 12px var(--color-star-16);
+    background: transparent;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 10px var(--color-accent);
   }
 
   .carousel-btn:disabled {
@@ -377,7 +378,8 @@ const allPosts = [
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--color-star-22);
+    background: var(--color-star);
+    opacity: 0.35;
     border: none;
     cursor: pointer;
     padding: 0;
@@ -386,7 +388,8 @@ const allPosts = [
 
   .dot.active {
     background: var(--color-accent);
-    box-shadow: 0 0 8px var(--color-accent-40);
+    box-shadow: 0 0 8px var(--color-accent);
+    opacity: 1;
     transform: scale(1.25);
   }
 
@@ -403,15 +406,15 @@ const allPosts = [
 
   .post-card {
     background: transparent;
-    border: 1px solid var(--color-star-16);
+    border: 1px solid var(--color-star);
     border-radius: 10px;
     cursor: pointer;
     transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
   }
 
   .post-card:hover {
-    border-color: var(--color-star-40);
-    box-shadow: 0 0 20px var(--color-star-10);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 14px var(--color-accent);
     transform: translateY(-2px);
   }
 
@@ -472,7 +475,7 @@ const allPosts = [
     text-transform: uppercase;
     color: var(--color-accent);
     background: transparent;
-    border: 1px dashed var(--color-accent-40);
+    border: 1px dashed var(--color-accent);
     border-radius: 6px;
     padding: 14px 32px;
     cursor: pointer;
@@ -482,7 +485,7 @@ const allPosts = [
   .load-more-btn:hover {
     border-color: var(--color-accent);
     box-shadow: 0 0 18px var(--color-accent-20);
-    background: var(--color-accent-06);
+    background: transparent;
   }
 
   /* ── Mobile ────────────────────────────────────────────────── */
