@@ -485,42 +485,6 @@ const allPosts = [
     background: var(--color-accent-06);
   }
 
-  /* ── Limbo overrides ───────────────────────────────────────── */
-  :global(html[data-theme="limbo"]) .categoria-img {
-    border-color: rgba(0,0,0,0.15);
-    box-shadow: none;
-  }
-  :global(html[data-theme="limbo"]) .categoria-title,
-  :global(html[data-theme="limbo"]) .cat-prefix { color: var(--color-text); text-shadow: none; }
-  :global(html[data-theme="limbo"]) .categoria-desc,
-  :global(html[data-theme="limbo"]) .categoria-count { color: var(--color-text); }
-  :global(html[data-theme="limbo"]) .categoria-divider {
-    background: linear-gradient(to right, rgba(0,0,0,0.15), rgba(0,0,0,0.05), transparent);
-  }
-  :global(html[data-theme="limbo"]) .feat-card,
-  :global(html[data-theme="limbo"]) .post-card {
-    background: transparent;
-    border-color: rgba(0,0,0,0.15);
-  }
-  :global(html[data-theme="limbo"]) .feat-card:hover,
-  :global(html[data-theme="limbo"]) .post-card:hover {
-    border-color: rgba(0,0,0,0.4);
-    box-shadow: none;
-  }
-  :global(html[data-theme="limbo"]) .section-label,
-  :global(html[data-theme="limbo"]) .section-label svg { color: var(--color-text); }
-  :global(html[data-theme="limbo"]) .card-tag,
-  :global(html[data-theme="limbo"]) .post-hashtag { color: var(--color-text); opacity: 0.5; }
-  :global(html[data-theme="limbo"]) .carousel-btn {
-    background: rgba(0,0,0,0.06);
-    border-color: rgba(0,0,0,0.2);
-    color: var(--color-text);
-  }
-  :global(html[data-theme="limbo"]) .dot { background: rgba(0,0,0,0.2); }
-  :global(html[data-theme="limbo"]) .dot.active { background: var(--color-text); box-shadow: none; }
-  :global(html[data-theme="limbo"]) .load-more-btn { color: var(--color-text); border-color: rgba(0,0,0,0.3); }
-  :global(html[data-theme="limbo"]) .load-more-btn:hover { background: rgba(0,0,0,0.05); box-shadow: none; }
-
   /* ── Mobile ────────────────────────────────────────────────── */
   @media (max-width: 900px) {
     .posts-grid {
