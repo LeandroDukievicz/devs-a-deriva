@@ -53,6 +53,7 @@
       if (!palette) return;
 
       var root = document.documentElement;
+      root.dataset.theme = key;
       root.style.setProperty('--color-bg', rgb(palette.bg));
       root.style.setProperty('--color-star', rgb(palette.star));
       root.style.setProperty('--color-accent', rgb(palette.accent));
@@ -73,10 +74,18 @@
       });
     }
 
+    window.__applyDdaTheme = function(key) {
+      if (!palettes[key]) return false;
+      setThemeVars(key);
+      localStorage.setItem('dda-theme', key);
+      window.__bgColor = rgb(palettes[key].bg);
+      window.dispatchEvent(new CustomEvent('dda-theme-change', { detail: { theme: key } }));
+      return true;
+    };
+
     var t = localStorage.getItem('dda-theme');
     if (t && palettes[t]) {
-      document.documentElement.dataset.theme = t;
-      setThemeVars(t);
+      window.__applyDdaTheme(t);
     }
   } catch (_) {}
 </script>

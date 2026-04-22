@@ -58,6 +58,23 @@
     };
   }
 
+  function repaintStars() {
+    const container = document.querySelector<HTMLElement>('.stars-container');
+    if (!container) return;
+
+    const css = getComputedStyle(document.documentElement);
+    const bg = css.getPropertyValue('--color-bg').trim();
+    if (bg) container.style.background = bg;
+
+    container.querySelectorAll<HTMLElement>('.stars').forEach((layer) => {
+      layer.style.animationName = 'none';
+      void layer.offsetHeight;
+      layer.style.animationName = '';
+    });
+  }
+
+  window.addEventListener('dda-theme-change', repaintStars);
+  repaintStars();
   setTimeout(spawnShip, INTERVAL);
 </script>
 

@@ -379,12 +379,14 @@ const logoForCanvas = Buffer.from(
     backdrop-filter: blur(6px);
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transition: opacity 0.22s ease, visibility 0.22s ease;
   }
 
   .modal-overlay.is-open {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
   }
 
   .modal-box {
@@ -671,6 +673,15 @@ const logoForCanvas = Buffer.from(
 <script>
   import { applyTheme, themes, type ThemeKey } from '../lib/themes';
 
+  const navWindow = window as typeof window & {
+    __ddaNavbarAbort?: AbortController;
+    __applyDdaTheme?: (theme: string) => boolean;
+  };
+  navWindow.__ddaNavbarAbort?.abort();
+  const navAbort = new AbortController();
+  navWindow.__ddaNavbarAbort = navAbort;
+  const navSignal = navAbort.signal;
+
   // ── Navbar visibility ────────────────────────────────────────────
   // On the home page (/), the BlackHole animation fires 'animationComplete'
   // to reveal the navbar. On every other page we show it immediately.
@@ -720,7 +731,7 @@ const logoForCanvas = Buffer.from(
   if (!isHome || localStorage.getItem(INTRO_KEY) === TODAY) {
     showNavbar();
   } else {
-    window.addEventListener('animationComplete', showNavbar, { once: true });
+    window.addEventListener('animationComplete', showNavbar, { once: true, signal: navSignal });
   }
 
   // ── Dropdowns ────────────────────────────────────────────────────
@@ -729,6 +740,7 @@ const logoForCanvas = Buffer.from(
     { btn: document.getElementById('temas-btn'), menu: document.getElementById('temas-menu') },
   ];
   const hoverCloseTimers = new WeakMap<HTMLElement, number>();
+  let pinnedMenu: HTMLElement | null = null;
 
   function isMobileNavbar() {
     return window.matchMedia('(max-width: 480px)').matches;
@@ -748,6 +760,7 @@ const logoForCanvas = Buffer.from(
       if (menu === except) return;
       setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, false);
     });
+    if (!except || pinnedMenu !== except) pinnedMenu = null;
   }
 
   function clearHoverClose(menu: HTMLElement | null) {
@@ -761,6 +774,7 @@ const logoForCanvas = Buffer.from(
 
   function scheduleHoverClose(btn: HTMLElement | null, menu: HTMLElement | null) {
     if (!menu) return;
+    if (pinnedMenu === menu) return;
     clearHoverClose(menu);
     const timer = window.setTimeout(() => {
       setDropdownState(btn, menu, false);
@@ -771,12 +785,11 @@ const logoForCanvas = Buffer.from(
 
   dropdowns.forEach(({ btn, menu }) => {
     btn?.addEventListener('click', (e) => {
-      if (!isMobileNavbar()) return;
       e.stopPropagation();
+      pinnedMenu = menu as HTMLElement | null;
       closeAll(menu!);
-      const open = !menu?.classList.contains('is-open');
-      setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, Boolean(open));
-    });
+      setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, true);
+    }, { signal: navSignal });
 
     const parent = btn?.closest('.has-dropdown');
     parent?.addEventListener('mouseenter', () => {
@@ -784,29 +797,35 @@ const logoForCanvas = Buffer.from(
       clearHoverClose(menu as HTMLElement | null);
       closeAll(menu!);
       setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, true);
-    });
+    }, { signal: navSignal });
 
     parent?.addEventListener('mouseleave', () => {
       if (isMobileNavbar()) return;
       scheduleHoverClose(btn as HTMLElement | null, menu as HTMLElement | null);
-    });
+    }, { signal: navSignal });
 
     menu?.addEventListener('mouseenter', () => {
       if (isMobileNavbar()) return;
       clearHoverClose(menu as HTMLElement | null);
       setDropdownState(btn as HTMLElement | null, menu as HTMLElement | null, true);
-    });
+    }, { signal: navSignal });
 
     menu?.addEventListener('mouseleave', () => {
       if (isMobileNavbar()) return;
       scheduleHoverClose(btn as HTMLElement | null, menu as HTMLElement | null);
-    });
+    }, { signal: navSignal });
+
+    menu?.addEventListener('click', () => {
+      pinnedMenu = null;
+    }, { signal: navSignal });
   });
 
-  document.addEventListener('click', () => {
-    if (isMobileNavbar()) closeAll();
-  });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+  document.addEventListener('click', (e) => {
+    const target = e.target as Element | null;
+    if (target?.closest('.has-dropdown')) return;
+    closeAll();
+  }, { signal: navSignal });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); }, { signal: navSignal });
 
   // ── Theme modal ───────────────────────────────────────────────────
   const modal              = document.getElementById('theme-modal')!;
@@ -827,27 +846,43 @@ const logoForCanvas = Buffer.from(
     pendingTheme = null;
   }
 
+  function forceApplyTheme(key: ThemeKey) {
+    if (!navWindow.__applyDdaTheme?.(key)) {
+      applyTheme(key);
+      window.dispatchEvent(new CustomEvent('dda-theme-change', { detail: { theme: key } }));
+    }
+
+    // Force the current page to invalidate CSS variable consumers immediately.
+    void document.documentElement.offsetHeight;
+    requestAnimationFrame(() => {
+      if (!navWindow.__applyDdaTheme?.(key)) {
+        applyTheme(key);
+        window.dispatchEvent(new CustomEvent('dda-theme-change', { detail: { theme: key } }));
+      }
+    });
+  }
+
   modalConfirm.addEventListener('click', () => {
     if (pendingTheme === 'limbo') {
       modalDefaultContent.style.display = 'none';
       modalBye.style.display = 'block';
       modalBye.setAttribute('aria-hidden', 'false');
       setTimeout(() => {
-        applyTheme('limbo');
+        forceApplyTheme('limbo');
         closeModal();
         modalDefaultContent.style.display = '';
         modalBye.style.display = 'none';
         modalBye.setAttribute('aria-hidden', 'true');
       }, 1500);
     } else {
-      if (pendingTheme) applyTheme(pendingTheme);
+      if (pendingTheme) forceApplyTheme(pendingTheme);
       closeModal();
     }
-  });
+  }, { signal: navSignal });
 
-  modalCancel.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  modalCancel.addEventListener('click', closeModal, { signal: navSignal });
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); }, { signal: navSignal });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); }, { signal: navSignal });
 
   // ── Globe (Home hover) ────────────────────────────────────────────
   const homeNavLink = document.querySelector<HTMLAnchorElement>('.nav-link--home');
@@ -1264,19 +1299,23 @@ const logoForCanvas = Buffer.from(
   })();
 
   // ── Theme buttons ─────────────────────────────────────────────────
-  // 'button[data-theme]' avoids matching <html data-theme> set by ThemeProvider.
-  document.querySelectorAll<HTMLButtonElement>('button[data-theme]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const key = btn.dataset.theme as ThemeKey;
-      if (!key || !(key in themes)) return;
-      closeAll();
-      if (document.documentElement.dataset.theme === key) return;
-      if (themes[key].dangerous) {
-        pendingTheme = key;
-        openModal();
-      } else {
-        applyTheme(key);
-      }
-    });
-  });
+  document.addEventListener('click', (e) => {
+    const target = e.target as Element | null;
+    const btn = target?.closest<HTMLButtonElement>('button[data-theme]');
+    if (!btn) return;
+
+    const key = btn.dataset.theme as ThemeKey;
+    if (!key || !(key in themes)) return;
+
+    e.preventDefault();
+    closeAll();
+
+    if (document.documentElement.dataset.theme === key) return;
+    if (themes[key].dangerous) {
+      pendingTheme = key;
+      openModal();
+    } else {
+      forceApplyTheme(key);
+    }
+  }, { signal: navSignal });
 </script>
