@@ -1264,7 +1264,8 @@ const logoForCanvas = Buffer.from(
   })();
 
   // ── Theme buttons ─────────────────────────────────────────────────
-  document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach((btn) => {
+  // 'button[data-theme]' avoids matching <html data-theme> set by ThemeProvider.
+  document.querySelectorAll<HTMLButtonElement>('button[data-theme]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.theme as ThemeKey;
       if (!key || !(key in themes)) return;
