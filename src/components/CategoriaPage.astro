@@ -1,6 +1,9 @@
 ---
+import { getFeaturedByCategory, getPostsByCategory } from '../lib/posts';
+
 interface Props {
   category: string;
+  categorySlug: string;
   description: string;
   cornerIllustration?: string;
   animateIllustration?: boolean;
@@ -8,31 +11,14 @@ interface Props {
 
 const {
   category,
+  categorySlug,
   description,
   cornerIllustration,
   animateIllustration = false,
 } = Astro.props;
 
-const featuredPosts = [
-  { title: "Lorem ipsum dolor sit amet consectetur adipiscing elit", readTime: "7 min de leitura" },
-  { title: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem", readTime: "5 min de leitura" },
-  { title: "At vero eos et accusamus et iusto odio dignissimos ducimus", readTime: "6 min de leitura" },
-  { title: "Nam libero tempore cum soluta nobis eligendi optio cumque", readTime: "4 min de leitura" },
-  { title: "Temporibus autem quibusdam et aut officiis debitis rerum", readTime: "8 min de leitura" },
-  { title: "Itaque earum rerum hic tenetur a sapiente delectus ut aut", readTime: "3 min de leitura" },
-];
-
-const allPosts = [
-  { title: "Portas que não levam a lugar nenhum", excerpt: "Às vezes, o caminho mais interessante é aquele que não tem destino.", readTime: "5 min", hashtag: "#devaneios" },
-  { title: "Navegando em mares que inventei", excerpt: "Construo barcos de papel para cruzar oceanos imaginários.", readTime: "6 min", hashtag: "#pensamentos" },
-  { title: "Cartas para meu eu do futuro", excerpt: "Se alguém encontrar isso um dia, me lembra de quem eu era.", readTime: "7 min", hashtag: "#reflexões" },
-  { title: "Ideias que não saem da cabeça", excerpt: "Quando a mente não para, só resta colocar pra fora.", readTime: "4 min", hashtag: "#mente" },
-  { title: "Dias comuns, pensamentos incomuns", excerpt: "Sobre encontrar beleza nas coisas que ninguém nota.", readTime: "5 min", hashtag: "#cotidiano" },
-  { title: "Buguei as emoções temporariamente", excerpt: "Dando um break de sentir para não quebrar.", readTime: "3 min", hashtag: "#caos" },
-  { title: "O gato que me entende sem eu falar nada", excerpt: "Companhia silenciosa para noites barulhentas.", readTime: "4 min", hashtag: "#companheiros" },
-  { title: "Direções que a vida não me deu", excerpt: "Perguntas sem resposta e tudo bem assim.", readTime: "6 min", hashtag: "#vida" },
-  { title: "Explorando o universo dentro da cabeça", excerpt: "A viagem mais longa é sempre para dentro de nós.", readTime: "8 min", hashtag: "#universo" },
-];
+const featuredPosts = getFeaturedByCategory(categorySlug);
+const allPosts = getPostsByCategory(categorySlug);
 ---
 
 <div class="categoria-page">
@@ -55,7 +41,7 @@ const allPosts = [
         <span class="cat-prefix">&gt;_</span>{category}
       </h1>
       <p class="categoria-desc">{description}</p>
-      <span class="categoria-count">0 posts</span>
+      <span class="categoria-count">{allPosts.length} {allPosts.length === 1 ? 'post' : 'posts'}</span>
     </div>
   </header>
 
@@ -80,7 +66,7 @@ const allPosts = [
       <div class="carousel-viewport">
         <div class="carousel-track" id="carousel-track">
           {featuredPosts.map((post, i) => (
-            <article class="feat-card" data-index={i}>
+            <a href={`/posts/${post.slug}`} class="feat-card" data-index={i}>
               <div class="feat-card-body">
                 <span class="card-tag">{category.toUpperCase()}</span>
                 <h3 class="feat-card-title">{post.title}</h3>
@@ -91,7 +77,7 @@ const allPosts = [
                   {post.readTime}
                 </div>
               </div>
-            </article>
+            </a>
           ))}
         </div>
       </div>
@@ -118,7 +104,7 @@ const allPosts = [
 
     <div class="posts-grid">
       {allPosts.map(post => (
-        <article class="post-card">
+        <a href={`/posts/${post.slug}`} class="post-card">
           <div class="post-card-body">
             <span class="card-tag">{category.toUpperCase()}</span>
             <h3 class="post-card-title">{post.title}</h3>
@@ -133,7 +119,7 @@ const allPosts = [
               <span class="post-hashtag">{post.hashtag}</span>
             </div>
           </div>
-        </article>
+        </a>
       ))}
     </div>
 
@@ -394,6 +380,8 @@ const allPosts = [
     border: 1px solid var(--color-star);
     border-radius: 10px;
     cursor: pointer;
+    text-decoration: none;
+    display: block;
     transition: border-color 0.22s ease;
   }
 
@@ -488,6 +476,8 @@ const allPosts = [
     border: 1px solid var(--color-star);
     border-radius: 10px;
     cursor: pointer;
+    text-decoration: none;
+    display: block;
     transition: border-color 0.22s ease;
   }
 

@@ -1,0 +1,192 @@
+---
+import Base from '../../layouts/Base.astro';
+import StarBackground from '../../components/StarBackground.astro';
+import { posts, getPost } from '../../lib/posts';
+
+export function getStaticPaths() {
+  return posts.map(post => ({ params: { slug: post.slug } }));
+}
+
+const { slug } = Astro.params;
+const post = getPost(slug);
+
+if (!post) return Astro.redirect('/404');
+---
+
+<Base title={`${post.title} · Devs à Deriva`}>
+  <StarBackground />
+
+  <article class="post-page">
+    <header class="post-header">
+      <a href={`/categorias/${post.categorySlug}`} class="post-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {post.category}
+      </a>
+
+      <span class="post-hashtag">{post.hashtag}</span>
+      <h1 class="post-title">{post.title}</h1>
+      <p class="post-excerpt">{post.excerpt}</p>
+
+      <div class="post-meta">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        {post.readTime} de leitura
+      </div>
+    </header>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+      {post.content.split('\n\n').map(paragraph => (
+        <p>{paragraph}</p>
+      ))}
+    </div>
+
+    <footer class="post-footer">
+      <a href={`/categorias/${post.categorySlug}`} class="post-back-footer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Voltar para {post.category}
+      </a>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .post-page {
+    position: relative;
+    z-index: 10;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 100px 24px 80px;
+  }
+
+  .post-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    animation: fade-up 0.55s ease 0.1s forwards;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .post-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    text-decoration: none;
+    width: fit-content;
+    transition: opacity 0.2s ease;
+  }
+
+  .post-back:hover { opacity: 0.7; }
+
+  .post-hashtag {
+    font-family: monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--color-star);
+    opacity: 0.5;
+  }
+
+  .post-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-star);
+    text-shadow: 0 0 30px var(--color-star-25);
+    letter-spacing: 0.02em;
+  }
+
+  .post-excerpt {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--color-star);
+    opacity: 0.55;
+    max-width: 520px;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.62rem;
+    color: var(--color-star);
+    opacity: 0.45;
+    letter-spacing: 0.06em;
+  }
+
+  .post-divider {
+    margin: 32px 0;
+    height: 1px;
+    background: linear-gradient(to right, var(--color-accent), var(--color-star), transparent);
+    opacity: 0.3;
+    animation: fade-up 0.55s ease 0.2s both;
+  }
+
+  .post-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    animation: fade-up 0.55s ease 0.3s both;
+  }
+
+  .post-body p {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.88rem;
+    line-height: 1.9;
+    color: var(--color-text);
+    opacity: 0.85;
+  }
+
+  .post-footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-star-10);
+    animation: fade-up 0.55s ease 0.4s both;
+  }
+
+  .post-back-footer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    text-decoration: none;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, color 0.2s ease;
+  }
+
+  .post-back-footer:hover {
+    opacity: 1;
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 600px) {
+    .post-page { padding: 88px 20px 60px; }
+  }
+</style>
