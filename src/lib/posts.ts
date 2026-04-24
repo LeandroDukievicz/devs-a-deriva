@@ -1,3 +1,9 @@
+export interface Author {
+  name: string;
+  role: string;
+  photo: string;
+}
+
 export interface Post {
   slug: string;
   title: string;
@@ -7,8 +13,32 @@ export interface Post {
   content: string;
   readTime: string;
   hashtag: string;
+  author: Author;
   featured?: boolean;
 }
+
+const authors = {
+  leandro: {
+    name: 'Leandro Dukievicz',
+    role: 'Engenheiro de Software',
+    photo: 'https://i.pravatar.cc/150?img=11',
+  },
+  ana: {
+    name: 'Ana Lima',
+    role: 'Frontend Developer',
+    photo: 'https://i.pravatar.cc/150?img=47',
+  },
+  carlos: {
+    name: 'Carlos Mendes',
+    role: 'DevOps & SRE',
+    photo: 'https://i.pravatar.cc/150?img=33',
+  },
+  julia: {
+    name: 'Julia Ferraz',
+    role: 'Backend Engineer',
+    photo: 'https://i.pravatar.cc/150?img=54',
+  },
+} satisfies Record<string, Author>;
 
 export const posts: Post[] = [
   {
@@ -19,6 +49,7 @@ export const posts: Post[] = [
     excerpt: 'Às vezes, o caminho mais interessante é aquele que não tem destino.',
     readTime: '5 min',
     hashtag: '#devaneios',
+    author: authors.leandro,
     featured: true,
     content: `Existe uma porta nos fundos do escritório que ninguém abre. Não porque esteja trancada — a maçaneta gira, a dobradiça range, o vão existe. Mas ninguém abre.
 
@@ -42,6 +73,7 @@ A diferença importa.`,
     excerpt: 'Construo barcos de papel para cruzar oceanos imaginários.',
     readTime: '6 min',
     hashtag: '#pensamentos',
+    author: authors.ana,
     featured: true,
     content: `Todo projeto começa como um oceano que você inventou. Você não sabe a profundidade, não tem mapa, e o barco que você tem é o que você conseguiu construir com o que sabia até ontem.
 
@@ -65,6 +97,7 @@ Construa o barco. Entre no mar. Aprenda a nadar enquanto o barco afunda se neces
     excerpt: 'Se alguém encontrar isso um dia, me lembra de quem eu era.',
     readTime: '7 min',
     hashtag: '#reflexões',
+    author: authors.julia,
     featured: false,
     content: `Eu comecei a escrever cartas para mim mesmo depois de perceber que estava esquecendo quem eu era antes de saber o que sei agora.
 
@@ -90,6 +123,7 @@ Raramente é.`,
     excerpt: 'Depois de um ano usando IA no dia a dia, o que realmente mudou e o que é só ruído.',
     readTime: '8 min',
     hashtag: '#ia',
+    author: authors.leandro,
     featured: true,
     content: `Deixa eu ser direto: a IA não vai te substituir. Mas vai substituir quem não souber usá-la — e essa distinção importa mais do que parece.
 
@@ -119,6 +153,7 @@ O ruído vai diminuir. O sinal vai ficar mais claro. E o sinal é: a IA é uma f
     excerpt: 'Habilitei strict em um projeto legado. Aqui está o que aprendi.',
     readTime: '6 min',
     hashtag: '#typescript',
+    author: authors.julia,
     featured: true,
     content: `Sim. Vale. Mas deixa eu te dar contexto.
 
@@ -148,6 +183,7 @@ Se você vai começar um projeto novo, ativa strict desde o dia um. Se é legado
     excerpt: 'O que realmente está acontecendo no mercado e como navegar isso.',
     readTime: '9 min',
     hashtag: '#mercado',
+    author: authors.carlos,
     featured: true,
     content: `Vou falar o que eu vejo, não o que é confortável de ouvir.
 
@@ -183,6 +219,7 @@ O mercado está mais honesto, não mais cruel. Apenas exige que você também se
     excerpt: 'A conversa mais difícil da sua carreira não precisa ser um tiro no escuro.',
     readTime: '7 min',
     hashtag: '#carreira',
+    author: authors.ana,
     featured: false,
     content: `A maioria dos devs que pede aumento e não recebe cometeu o mesmo erro: não preparou o caso. Chegou na reunião com "acho que mereço mais" e saiu com "vamos conversar no próximo ciclo".
 
@@ -214,6 +251,7 @@ Se a resposta for não: peça o que precisaria mudar para ser sim, e com qual pr
     excerpt: 'Reli Dune e não consegui parar de pensar em arquitetura de sistemas.',
     readTime: '7 min',
     hashtag: '#livros',
+    author: authors.leandro,
     featured: true,
     content: `Eu sei que parece forçado. Mas me ouça.
 
@@ -241,6 +279,7 @@ Leia Dune. Pense em microsserviços. Não é tão absurdo quanto parece.`,
     excerpt: 'Não é qualquer música que serve. Tem ciência por trás disso.',
     readTime: '5 min',
     hashtag: '#musica',
+    author: authors.ana,
     featured: true,
     content: `Existe um tipo específico de música que me faz codar bem e outro que me faz codar rápido. Não são a mesma coisa.
 
@@ -268,6 +307,7 @@ Teste isso por uma semana. Mude só a música e veja o que acontece com seu foco
     excerpt: 'Testei por duas semanas antes de escrever. Aqui está o que é real.',
     readTime: '6 min',
     hashtag: '#openai',
+    author: authors.carlos,
     featured: true,
     content: `Passei duas semanas usando o o1 antes de escrever qualquer coisa sobre ele. Queria ter opinião, não impressão.
 

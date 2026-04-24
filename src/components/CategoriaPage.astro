@@ -66,7 +66,7 @@ const allPosts = getPostsByCategory(categorySlug);
       <div class="carousel-viewport">
         <div class="carousel-track" id="carousel-track">
           {featuredPosts.map((post, i) => (
-            <a href={`/posts/${post.slug}`} class="feat-card" data-index={i}>
+            <a href={`/posts/${post.slug}?from=category`} class="feat-card" data-index={i}>
               <div class="feat-card-body">
                 <span class="card-tag">{category.toUpperCase()}</span>
                 <h3 class="feat-card-title">{post.title}</h3>
@@ -104,7 +104,7 @@ const allPosts = getPostsByCategory(categorySlug);
 
     <div class="posts-grid">
       {allPosts.map(post => (
-        <a href={`/posts/${post.slug}`} class="post-card">
+        <a href={`/posts/${post.slug}?from=category`} class="post-card">
           <div class="post-card-body">
             <span class="card-tag">{category.toUpperCase()}</span>
             <h3 class="post-card-title">{post.title}</h3>
@@ -139,6 +139,14 @@ const allPosts = getPostsByCategory(categorySlug);
     display: none !important;
   }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('.feat-card[href*="/posts/"], .post-card[href*="/posts/"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      sessionStorage.setItem('post-nav-origin', 'category');
+    });
+  });
+</script>
 
 <style>
   /* ── Page wrapper ──────────────────────────────────────────── */

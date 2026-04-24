@@ -11,6 +11,27 @@ const { slug } = Astro.params;
 const post = getPost(slug);
 
 if (!post) return Astro.redirect('/404');
+
+const currentIndex = posts.findIndex(p => p.slug === slug);
+const nextPost = posts[currentIndex + 1] ?? posts[0];
+const postImages: Record<string, string> = {
+  'portas-que-nao-levam-a-lugar-nenhum': '/home-portas-que-nao-levam-a-lugar-nenhum.png',
+  'navegando-em-mares-que-inventei': '/home-navegando-em-mares-que-inventei.png',
+  'cartas-para-meu-eu-do-futuro': '/home-cartas-para-meu-eu-do-futuro.png',
+  'o-estado-atual-da-ia-no-desenvolvimento': '/home-o-estado-atual-da-ia-no-desenvolvimento.png',
+  'typescript-strict-mode-vale-a-pena': '/home-typescript-strict-mode-vale-a-pena.png',
+};
+const categoryImages: Record<string, string> = {
+  aleatoriedades: '/aleatoriedades-astronaut-body.webp',
+  carreira: '/carreira-profissional-astronaut-body.webp',
+  livros: '/livros-astronaut.webp',
+  musica: '/musica-astronaut.webp',
+  noticias: '/noticias-astronaut.webp',
+  tech: '/tech-astronaut.webp',
+};
+const postHeroImage = postImages[post.slug] ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp';
+const categoryBackHref = `/categorias/${post.categorySlug}`;
+const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 ---
 
 <Base title={`${post.title} · Devs à Deriva`}>
@@ -18,22 +39,55 @@ if (!post) return Astro.redirect('/404');
 
   <article class="post-page">
     <header class="post-header">
-      <a href={`/categorias/${post.categorySlug}`} class="post-back">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        {post.category}
-      </a>
+      <div class="post-header-main">
+        <div class="post-header-copy">
+          <a
+            href={categoryBackHref}
+            class="post-back"
+            data-home-href="/"
+            data-home-label="Home"
+            data-category-href={categoryBackHref}
+            data-category-label={post.category}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span class="post-back-label">{post.category}</span>
+          </a>
 
-      <span class="post-hashtag">{post.hashtag}</span>
-      <h1 class="post-title">{post.title}</h1>
-      <p class="post-excerpt">{post.excerpt}</p>
+          <h1 class="post-title">{post.title}</h1>
+          <p class="post-excerpt">{post.excerpt}</p>
+          <p class="post-theme" data-home-only="true">Tema: {post.category}</p>
 
-      <div class="post-meta">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        {post.readTime} de leitura
+          <div class="post-meta">
+            <div class="post-author">
+              <img
+                class="post-author-avatar"
+                src={post.author.photo}
+                alt={`Foto de ${post.author.name}`}
+                loading="eager"
+                decoding="async"
+              />
+              <div class="post-author-copy">
+                <span class="post-author-name">{post.author.name}</span>
+                <span class="post-author-role">{post.author.role}</span>
+              </div>
+            </div>
+
+            <span class="post-meta-separator" aria-hidden="true"></span>
+
+            <div class="post-reading-time">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {post.readTime} de leitura
+            </div>
+          </div>
+        </div>
+
+        <figure class="post-hero">
+          <img src={postHeroImage} alt={post.title} class="post-hero-image" />
+        </figure>
       </div>
     </header>
 
@@ -45,12 +99,64 @@ if (!post) return Astro.redirect('/404');
       ))}
     </div>
 
+    <div class="newsletter-block">
+      <div class="newsletter-content">
+        <span class="newsletter-tag">&gt;_ Newsletter</span>
+        <h2 class="newsletter-title">E aí, gostou do conteúdo?</h2>
+        <p class="newsletter-desc">Se quiser ficar por dentro dos novos posts, opiniões sem filtro e saber o que tá rolando no mundo tech, entra na lista. Sem spam, sem aquela encheção que faz você querer cancelar no segundo e-mail.</p>
+      </div>
+      <form class="newsletter-form" id="newsletter-form" novalidate>
+        <div class="newsletter-input-wrap">
+          <input
+            type="email"
+            class="newsletter-input"
+            id="newsletter-email"
+            placeholder="seu@email.com"
+            autocomplete="email"
+            aria-label="Seu e-mail"
+            required
+          />
+          <button type="submit" class="newsletter-btn" aria-label="Entrar na órbita">
+            <span class="newsletter-btn-text">Entrar na órbita</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+        <p class="newsletter-status" id="newsletter-status" aria-live="polite"></p>
+      </form>
+    </div>
+
     <footer class="post-footer">
-      <a href={`/categorias/${post.categorySlug}`} class="post-back-footer">
+      <a
+        href={categoryBackHref}
+        class="post-back-footer"
+        data-home-href="/"
+        data-home-label="Voltar para Home"
+        data-category-href={categoryBackHref}
+        data-category-label={`Voltar para ${post.category}`}
+      >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        Voltar para {post.category}
+        <span class="post-back-footer-label">Voltar para {post.category}</span>
+      </a>
+
+      <a
+        href={categoryNextHref}
+        class="post-next-footer"
+        data-home-href={`/posts/${nextPost.slug}?from=home`}
+        data-home-label="Prox Post"
+        data-home-title={nextPost.title}
+        data-category-href={categoryNextHref}
+        data-category-label="Prox Post"
+        data-category-title={nextPost.title}
+      >
+        <span class="post-next-label">Prox Post</span>
+        <span class="post-next-title">{nextPost.title}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
       </a>
     </footer>
   </article>
@@ -60,17 +166,28 @@ if (!post) return Astro.redirect('/404');
   .post-page {
     position: relative;
     z-index: 10;
-    max-width: 680px;
+    width: 85%;
     margin: 0 auto;
-    padding: 100px 24px 80px;
+    padding: 100px 0 80px;
   }
 
   .post-header {
+    opacity: 0;
+    animation: fade-up 0.55s ease 0.1s forwards;
+  }
+
+  .post-header-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .post-header-copy {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    opacity: 0;
-    animation: fade-up 0.55s ease 0.1s forwards;
+    min-width: 0;
   }
 
   @keyframes fade-up {
@@ -95,14 +212,6 @@ if (!post) return Astro.redirect('/404');
 
   .post-back:hover { opacity: 0.7; }
 
-  .post-hashtag {
-    font-family: monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    color: var(--color-star);
-    opacity: 0.5;
-  }
-
   .post-title {
     margin: 0;
     font-family: monospace;
@@ -124,15 +233,85 @@ if (!post) return Astro.redirect('/404');
     max-width: 520px;
   }
 
+  .post-theme {
+    display: none;
+    margin: -4px 0 0;
+    font-family: monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
   .post-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 14px;
     font-family: monospace;
     font-size: 0.62rem;
     color: var(--color-star);
     opacity: 0.45;
     letter-spacing: 0.06em;
+    flex-wrap: wrap;
+  }
+
+  .post-author {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .post-author-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--color-star-25);
+    box-shadow: 0 0 18px var(--color-star-10);
+    flex-shrink: 0;
+  }
+
+  .post-author-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .post-author-name,
+  .post-author-role {
+    display: block;
+    line-height: 1.3;
+  }
+
+  .post-author-name {
+    color: var(--color-star);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  .post-author-role {
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+  }
+
+  .post-meta-separator {
+    width: 1px;
+    height: 28px;
+    background: linear-gradient(to bottom, transparent, var(--color-star), transparent);
+    opacity: 0.25;
+  }
+
+  .post-reading-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .post-divider {
@@ -141,6 +320,28 @@ if (!post) return Astro.redirect('/404');
     background: linear-gradient(to right, var(--color-accent), var(--color-star), transparent);
     opacity: 0.3;
     animation: fade-up 0.55s ease 0.2s both;
+  }
+
+  .post-hero {
+    margin: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--color-star-18);
+    background: linear-gradient(135deg, var(--color-star-08), transparent 60%);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+    animation: fade-up 0.55s ease 0.25s both;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .post-hero-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: center;
   }
 
   .post-body {
@@ -159,10 +360,142 @@ if (!post) return Astro.redirect('/404');
     opacity: 0.85;
   }
 
+  .newsletter-block {
+    margin-top: 72px;
+    padding: 40px;
+    border: 1px solid var(--color-star-22);
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-star-05) 0%, transparent 60%);
+    display: flex;
+    gap: 48px;
+    align-items: center;
+    animation: fade-up 0.55s ease 0.35s both;
+  }
+
+  .newsletter-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .newsletter-tag {
+    font-family: monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .newsletter-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 700;
+    color: var(--color-star);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  .newsletter-desc {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--color-star);
+    opacity: 0.55;
+  }
+
+  .newsletter-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .newsletter-input-wrap {
+    display: flex;
+    border: 1px solid var(--color-star-40);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .newsletter-input-wrap:focus-within {
+    border-color: var(--color-star);
+    box-shadow: 0 0 14px var(--color-star-22);
+  }
+
+  .newsletter-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: var(--color-text);
+    letter-spacing: 0.04em;
+    min-width: 0;
+  }
+
+  .newsletter-input::placeholder {
+    color: var(--color-star);
+    opacity: 0.3;
+  }
+
+  .newsletter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--color-star-10);
+    border: none;
+    border-left: 1px solid var(--color-star-22);
+    color: var(--color-star);
+    font-family: monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .newsletter-btn:hover {
+    background: var(--color-star-22);
+    color: var(--color-accent);
+  }
+
+  .newsletter-status {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    min-height: 1em;
+    transition: color 0.2s ease;
+  }
+
+  .newsletter-status.success { color: var(--color-star); }
+  .newsletter-status.error   { color: var(--color-accent); }
+
+  @media (max-width: 760px) {
+    .newsletter-block { flex-direction: column; gap: 28px; padding: 28px 24px; }
+  }
+
   .post-footer {
     margin-top: 64px;
     padding-top: 32px;
     border-top: 1px solid var(--color-star-10);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
     animation: fade-up 0.55s ease 0.4s both;
   }
 
@@ -179,6 +512,7 @@ if (!post) return Astro.redirect('/404');
     text-decoration: none;
     opacity: 0.6;
     transition: opacity 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
   }
 
   .post-back-footer:hover {
@@ -186,7 +520,181 @@ if (!post) return Astro.redirect('/404');
     color: var(--color-accent);
   }
 
+  .post-next-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    text-align: right;
+    transition: opacity 0.2s ease;
+    opacity: 0.7;
+    min-width: 0;
+  }
+
+  .post-next-footer:hover { opacity: 1; }
+
+  .post-next-footer:hover .post-next-title {
+    color: var(--color-accent);
+  }
+
+  .post-next-footer:hover svg {
+    color: var(--color-accent);
+  }
+
+  .post-next-footer svg {
+    flex-shrink: 0;
+    color: var(--color-star);
+    transition: color 0.2s ease;
+  }
+
+  .post-next-label {
+    font-family: monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .post-next-title {
+    font-family: monospace;
+    font-size: 0.72rem;
+    color: var(--color-star);
+    line-height: 1.3;
+    transition: color 0.2s ease;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
   @media (max-width: 600px) {
-    .post-page { padding: 88px 20px 60px; }
+    .post-footer { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .post-next-footer { text-align: left; }
+  }
+
+  @media (max-width: 600px) {
+    .post-page { width: 92%; padding: 88px 0 60px; }
+    .post-meta { align-items: flex-start; gap: 12px; }
+    .post-meta-separator { display: none; }
+    .post-author-avatar { width: 54px; height: 54px; }
+  }
+
+  @media (max-width: 860px) {
+    .post-header-main {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .post-hero-image {
+      aspect-ratio: 16 / 9;
+    }
   }
 </style>
+
+<script>
+  const resolvePostOrigin = () => {
+    const fromParam = new URLSearchParams(window.location.search).get('from');
+    if (fromParam === 'home' || fromParam === 'category') return fromParam;
+
+    const storedOrigin = sessionStorage.getItem('post-nav-origin');
+    if (storedOrigin === 'home' || storedOrigin === 'category') return storedOrigin;
+
+    if (document.referrer) {
+      const referrerUrl = new URL(document.referrer);
+      if (referrerUrl.origin === window.location.origin) {
+        if (referrerUrl.pathname === '/') return 'home';
+        if (referrerUrl.pathname.startsWith('/categorias/')) return 'category';
+      }
+    }
+
+    return 'category';
+  };
+
+  const applyPostNavigation = () => {
+    const origin = resolvePostOrigin();
+    const useHome = origin === 'home';
+
+    const topBack = document.querySelector<HTMLAnchorElement>('.post-back');
+    const topBackLabel = document.querySelector<HTMLElement>('.post-back-label');
+    const footerBack = document.querySelector<HTMLAnchorElement>('.post-back-footer');
+    const footerBackLabel = document.querySelector<HTMLElement>('.post-back-footer-label');
+    const footerNext = document.querySelector<HTMLAnchorElement>('.post-next-footer');
+    const footerNextLabel = document.querySelector<HTMLElement>('.post-next-label');
+    const footerNextTitle = document.querySelector<HTMLElement>('.post-next-title');
+    const homeOnlyTheme = document.querySelector<HTMLElement>('[data-home-only="true"]');
+
+    if (topBack) {
+      topBack.href = useHome ? (topBack.dataset.homeHref ?? '/') : (topBack.dataset.categoryHref ?? '/');
+    }
+
+    if (topBackLabel) {
+      topBackLabel.textContent = useHome
+        ? (topBack?.dataset.homeLabel ?? 'Home')
+        : (topBack?.dataset.categoryLabel ?? '');
+    }
+
+    if (footerBack) {
+      footerBack.href = useHome ? (footerBack.dataset.homeHref ?? '/') : (footerBack.dataset.categoryHref ?? '/');
+    }
+
+    if (footerBackLabel) {
+      footerBackLabel.textContent = useHome
+        ? (footerBack?.dataset.homeLabel ?? 'Voltar para Home')
+        : (footerBack?.dataset.categoryLabel ?? '');
+    }
+
+    if (footerNext) {
+      footerNext.href = useHome ? (footerNext.dataset.homeHref ?? '/') : (footerNext.dataset.categoryHref ?? '/');
+    }
+
+    if (footerNextLabel) {
+      footerNextLabel.textContent = useHome
+        ? (footerNext?.dataset.homeLabel ?? 'Prox Post')
+        : (footerNext?.dataset.categoryLabel ?? 'Prox Post');
+    }
+
+    if (footerNextTitle) {
+      footerNextTitle.textContent = useHome
+        ? (footerNext?.dataset.homeTitle ?? '')
+        : (footerNext?.dataset.categoryTitle ?? '');
+    }
+
+    if (homeOnlyTheme) {
+      homeOnlyTheme.style.display = useHome ? 'block' : 'none';
+    }
+  };
+
+  applyPostNavigation();
+
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  const status = document.getElementById('newsletter-status') as HTMLElement | null;
+  const input = document.getElementById('newsletter-email') as HTMLInputElement | null;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!input || !status) return;
+
+    const email = input.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status.textContent = '> e-mail inválido.';
+      status.className = 'newsletter-status error';
+      return;
+    }
+
+    // Visual only — backend será conectado posteriormente
+    const btn = form.querySelector<HTMLButtonElement>('.newsletter-btn');
+    if (btn) btn.disabled = true;
+    status.textContent = '> enviando...';
+    status.className = 'newsletter-status';
+
+    setTimeout(() => {
+      input.value = '';
+      status.textContent = '> você está na órbita. bem-vindo(a).';
+      status.className = 'newsletter-status success';
+      if (btn) btn.disabled = false;
+    }, 800);
+  });
+</script>
