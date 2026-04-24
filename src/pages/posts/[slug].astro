@@ -125,6 +125,17 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
         </div>
         <p class="newsletter-status" id="newsletter-status" aria-live="polite"></p>
       </form>
+      <div class="newsletter-overlay" id="newsletter-overlay" aria-live="polite" aria-hidden="true">
+        <span class="newsletter-overlay-grid" aria-hidden="true"></span>
+        <div class="newsletter-overlay-badge">
+          <span class="newsletter-overlay-badge-dot" aria-hidden="true"></span>
+          <span>SINAL RECEBIDO</span>
+        </div>
+        <div class="newsletter-overlay-copy">
+          <span class="newsletter-overlay-kicker">&gt; transmissão confirmada</span>
+          <strong>Houston, temos um novo assinante!</strong>
+        </div>
+      </div>
     </div>
 
     <footer class="post-footer">
@@ -207,10 +218,16 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     color: var(--color-accent);
     text-decoration: none;
     width: fit-content;
+    max-width: 100%;
     transition: opacity 0.2s ease;
   }
 
   .post-back:hover { opacity: 0.7; }
+
+  .post-back-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 
   .post-title {
     margin: 0;
@@ -242,6 +259,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     text-transform: uppercase;
     color: var(--color-accent);
     opacity: 0.8;
+    overflow-wrap: anywhere;
   }
 
   .post-meta {
@@ -278,6 +296,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    overflow: hidden;
   }
 
   .post-author-name,
@@ -370,6 +389,32 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     gap: 48px;
     align-items: center;
     animation: fade-up 0.55s ease 0.35s both;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+  }
+
+  .newsletter-block::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 28%, var(--color-accent-12), transparent 32%),
+      radial-gradient(circle at 76% 72%, var(--color-star-10), transparent 30%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+
+  .newsletter-block.is-confirmed {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent-12), 0 18px 42px rgba(0, 0, 0, 0.24);
+    background: linear-gradient(135deg, var(--color-star-08) 0%, transparent 60%);
+  }
+
+  .newsletter-block.is-confirmed::after {
+    opacity: 1;
+    animation: newsletter-overlay-pulse 2.4s ease both;
   }
 
   .newsletter-content {
@@ -378,6 +423,9 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     flex-direction: column;
     gap: 10px;
     min-width: 0;
+    position: relative;
+    z-index: 1;
+    transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
   }
 
   .newsletter-tag {
@@ -414,10 +462,21 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     flex-direction: column;
     gap: 10px;
     min-width: 0;
+    position: relative;
+    z-index: 1;
+    transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+  }
+
+  .newsletter-block.is-confirmed .newsletter-content,
+  .newsletter-block.is-confirmed .newsletter-form {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
   }
 
   .newsletter-input-wrap {
     display: flex;
+    align-items: stretch;
     border: 1px solid var(--color-star-40);
     border-radius: 8px;
     overflow: hidden;
@@ -450,6 +509,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
   .newsletter-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 12px 20px;
     background: var(--color-star-10);
@@ -484,6 +544,141 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
   .newsletter-status.success { color: var(--color-star); }
   .newsletter-status.error   { color: var(--color-accent); }
 
+  .newsletter-overlay {
+    position: absolute;
+    inset: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    padding: 24px;
+    border-radius: 12px;
+    background:
+      linear-gradient(135deg, rgba(5, 9, 19, 0.96), rgba(7, 13, 26, 0.9)),
+      radial-gradient(circle at top left, var(--color-accent-12), transparent 45%);
+    border: 1px solid var(--color-accent-12);
+    opacity: 0;
+    transform: scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.28s ease, transform 0.34s ease;
+    z-index: 3;
+    overflow: hidden;
+  }
+
+  .newsletter-overlay.is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .newsletter-overlay-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity: 0.28;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+  }
+
+  .newsletter-overlay-badge,
+  .newsletter-overlay-copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  .newsletter-overlay-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 8px 12px;
+    border: 1px solid var(--color-accent-12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    font-family: monospace;
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .newsletter-overlay-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 10px var(--color-accent);
+  }
+
+  .newsletter-overlay-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 420px;
+  }
+
+  .newsletter-overlay-kicker {
+    font-family: monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    opacity: 0.72;
+  }
+
+  .newsletter-overlay strong {
+    font-family: monospace;
+    font-size: clamp(0.92rem, 2vw, 1.15rem);
+    line-height: 1.45;
+    letter-spacing: 0.04em;
+    color: var(--color-star);
+  }
+
+  .newsletter-overlay.is-visible .newsletter-overlay-badge {
+    animation: newsletter-overlay-badge-in 0.5s ease-out both;
+  }
+
+  .newsletter-overlay.is-visible .newsletter-overlay-copy {
+    animation: newsletter-overlay-copy-in 0.58s ease-out 0.08s both;
+  }
+
+  @keyframes newsletter-overlay-pulse {
+    0% {
+      opacity: 0;
+    }
+    18% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.72;
+    }
+  }
+
+  @keyframes newsletter-overlay-badge-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.94);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes newsletter-overlay-copy-in {
+    0% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @media (max-width: 760px) {
     .newsletter-block { flex-direction: column; gap: 28px; padding: 28px 24px; }
   }
@@ -515,6 +710,10 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     flex-shrink: 0;
   }
 
+  .post-back-footer-label {
+    overflow-wrap: anywhere;
+  }
+
   .post-back-footer:hover {
     opacity: 1;
     color: var(--color-accent);
@@ -522,7 +721,8 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 
   .post-next-footer {
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    justify-content: flex-end;
     gap: 10px;
     text-decoration: none;
     text-align: right;
@@ -542,6 +742,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
   }
 
   .post-next-footer svg {
+    align-self: center;
     flex-shrink: 0;
     color: var(--color-star);
     transition: color 0.2s ease;
@@ -555,6 +756,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     text-transform: uppercase;
     color: var(--color-accent);
     white-space: nowrap;
+    line-height: 1.3;
     flex-shrink: 0;
   }
 
@@ -570,26 +772,142 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     -webkit-box-orient: vertical;
   }
 
-  @media (max-width: 600px) {
-    .post-footer { flex-direction: column; align-items: flex-start; gap: 16px; }
-    .post-next-footer { text-align: left; }
-  }
-
-  @media (max-width: 600px) {
-    .post-page { width: 92%; padding: 88px 0 60px; }
-    .post-meta { align-items: flex-start; gap: 12px; }
-    .post-meta-separator { display: none; }
-    .post-author-avatar { width: 54px; height: 54px; }
-  }
-
   @media (max-width: 860px) {
     .post-header-main {
       grid-template-columns: 1fr;
       gap: 20px;
     }
 
+    .post-hero {
+      max-width: 100%;
+    }
+
     .post-hero-image {
       aspect-ratio: 16 / 9;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .newsletter-block {
+      flex-direction: column;
+      gap: 28px;
+      padding: 28px 24px;
+    }
+
+    .newsletter-content,
+    .newsletter-form {
+      width: 100%;
+    }
+
+    .newsletter-input-wrap {
+      flex-direction: column;
+      border-radius: 12px;
+    }
+
+    .newsletter-btn {
+      width: 100%;
+      border-left: none;
+      border-top: 1px solid var(--color-star-22);
+      padding: 14px 18px;
+    }
+
+    .newsletter-overlay {
+      inset: 12px;
+      padding: 20px 18px;
+      gap: 14px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .post-page {
+      width: min(92%, 640px);
+      padding: 88px 0 60px;
+    }
+
+    .post-header-copy {
+      gap: 14px;
+    }
+
+    .post-back {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+    }
+
+    .post-excerpt {
+      font-size: 0.78rem;
+    }
+
+    .post-theme {
+      font-size: 0.62rem;
+      line-height: 1.5;
+    }
+
+    .post-meta {
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .post-meta-separator {
+      display: none;
+    }
+
+    .post-author-avatar {
+      width: 54px;
+      height: 54px;
+    }
+
+    .post-author-name {
+      font-size: 0.64rem;
+    }
+
+    .post-author-role,
+    .post-reading-time {
+      font-size: 0.56rem;
+    }
+
+    .post-body p {
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+
+    .newsletter-title {
+      font-size: 1rem;
+    }
+
+    .newsletter-desc {
+      font-size: 0.68rem;
+    }
+
+    .newsletter-input {
+      padding: 14px 16px;
+      font-size: 0.74rem;
+    }
+
+    .newsletter-btn {
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+    }
+
+    .post-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 18px;
+    }
+
+    .post-back-footer,
+    .post-next-footer {
+      width: 100%;
+    }
+
+    .post-next-footer {
+      justify-content: space-between;
+      text-align: left;
+      gap: 12px;
+    }
+
+    .post-next-title {
+      flex: 1;
+      font-size: 0.68rem;
     }
   }
 </style>
@@ -672,6 +990,28 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
   const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
   const status = document.getElementById('newsletter-status') as HTMLElement | null;
   const input = document.getElementById('newsletter-email') as HTMLInputElement | null;
+  const newsletterBlock = document.querySelector<HTMLElement>('.newsletter-block');
+  const overlay = document.getElementById('newsletter-overlay') as HTMLElement | null;
+  let overlayTimeout: ReturnType<typeof window.setTimeout> | undefined;
+
+  const showNewsletterOverlay = () => {
+    if (!overlay || !newsletterBlock) return;
+
+    newsletterBlock.classList.remove('is-confirmed');
+    overlay.classList.remove('is-visible');
+    void overlay.offsetWidth;
+
+    newsletterBlock.classList.add('is-confirmed');
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    if (overlayTimeout) window.clearTimeout(overlayTimeout);
+    overlayTimeout = window.setTimeout(() => {
+      newsletterBlock.classList.remove('is-confirmed');
+      overlay.classList.remove('is-visible');
+      overlay.setAttribute('aria-hidden', 'true');
+    }, 2400);
+  };
 
   form?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -694,6 +1034,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
       input.value = '';
       status.textContent = '> você está na órbita. bem-vindo(a).';
       status.className = 'newsletter-status success';
+      showNewsletterOverlay();
       if (btn) btn.disabled = false;
     }, 800);
   });
