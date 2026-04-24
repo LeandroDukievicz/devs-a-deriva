@@ -81,6 +81,8 @@ Padrões esperados:
 - evitar animações baseadas em `top`, `left`, largura ou altura;
 - respeitar performance em dispositivos modestos.
 
+Feedbacks transitórios, como confirmações de CTA, devem esconder temporariamente o conteúdo anterior quando isso melhorar a leitura do estado animado. Quando a animação terminar, o conteúdo base deve voltar sem salto visual.
+
 ## Movimento
 
 Movimento é parte da identidade do projeto, mas deve ser controlado.
@@ -93,3 +95,5 @@ Usar animações para:
 - reforço de atmosfera.
 
 Evitar animações contínuas sem necessidade.
+
+Em CTAs inline, priorizar alinhamento tipográfico consistente entre label, texto principal e ícones. Pequenos desalinhamentos de baseline quebram a leitura mais rápido do que falta de animação.

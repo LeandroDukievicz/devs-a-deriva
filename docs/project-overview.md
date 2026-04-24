@@ -49,9 +49,10 @@ A plataforma deve caminhar para:
 
 - posts reais gerenciados por dashboard;
 - banco de dados como fonte de conteúdo;
-- páginas individuais de publicação;
 - sistema de autores;
 - comentários ou reações;
 - analytics editorial;
 - integrações futuras com automação e IA;
 - documentação contínua para sustentar evolução do produto.
+
+No estado atual, a aplicação já possui páginas individuais de post renderizadas estaticamente, com navegação contextual e CTA de newsletter orientado por animação. O próximo passo não é criar essas páginas do zero, mas substituir a fonte estática por uma origem editorial dinâmica sem perder a identidade visual atual.

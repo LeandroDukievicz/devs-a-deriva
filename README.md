@@ -25,6 +25,8 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - Home com experiência visual imersiva.
 - Cards de posts com interação e progresso de leitura.
 - Categorias editoriais.
+- Páginas individuais de posts com hero, metadados, imagem de capa e navegação contextual.
+- CTA de newsletter com validação básica e animação de confirmação visual.
 - Página de manifesto com crawl scroll-driven em perspectiva.
 - Sistema de temas visuais.
 - Páginas de erro customizadas.
@@ -36,7 +38,6 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - Dashboard/admin para criar, editar e publicar conteúdos.
 - Banco de dados para conteúdo dinâmico.
 - Gestão de categorias e autores.
-- Páginas individuais de posts.
 - Comentários ou reações.
 - Integrações futuras com analytics, busca e métricas de leitura.
 

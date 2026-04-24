@@ -51,7 +51,17 @@ Página inicial para autenticação administrativa. Deve evoluir para um dashboa
 
 ### Posts
 
-As páginas individuais de posts ainda devem ser implementadas como parte do sistema dinâmico de conteúdo.
+As páginas individuais de posts já existem em `src/pages/posts/[slug].astro` com geração estática a partir de `src/lib/posts.ts`.
+
+Responsabilidades:
+
+- renderizar título, resumo, autor, tempo de leitura e imagem principal;
+- exibir o corpo do post com foco em leitura;
+- adaptar links de retorno e CTA final de acordo com a origem da navegação;
+- apresentar CTA de newsletter com feedback visual de sucesso;
+- manter consistência responsiva entre header, corpo, newsletter e footer.
+
+No estado atual, o formulário da newsletter é visual e ainda não está conectado a backend.
 
 ## Organização de Componentes
 
@@ -89,6 +99,8 @@ O frontend deve estar preparado para receber:
 - capa;
 - status de publicação;
 - datas de criação e publicação.
+
+Enquanto a origem dinâmica não existe, `src/lib/posts.ts` funciona como fonte estática de verdade para listagem, `getStaticPaths()` e navegação entre posts.
 
 ## Imagens
 
