@@ -77,13 +77,13 @@
     window.__applyDdaTheme = function(key) {
       if (!palettes[key]) return false;
       setThemeVars(key);
-      localStorage.setItem('dda-theme', key);
+      sessionStorage.setItem('dda-theme', key);
       window.__bgColor = rgb(palettes[key].bg);
       window.dispatchEvent(new CustomEvent('dda-theme-change', { detail: { theme: key } }));
       return true;
     };
 
-    var t = localStorage.getItem('dda-theme');
+    var t = sessionStorage.getItem('dda-theme');
     if (t && palettes[t]) {
       window.__applyDdaTheme(t);
     }

@@ -503,6 +503,23 @@ const postHref = '#';
       background: var(--color-accent-08);
     }
 
+    .copy-confirm {
+      font-family: monospace;
+      font-size: 0.455rem;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      white-space: nowrap;
+      pointer-events: none;
+      animation: copy-fade 2s ease forwards;
+    }
+
+    @keyframes copy-fade {
+      0%   { opacity: 0; transform: translateX(-4px); }
+      15%  { opacity: 1; transform: translateX(0); }
+      70%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
     @media (max-width: 1024px) {
       .page-overlay {
         padding-inline: 20px;
@@ -699,9 +716,12 @@ const postHref = '#';
     document.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         navigator.clipboard.writeText(window.location.href).then(() => {
-          const original = btn.textContent?.trim();
-          btn.textContent = 'Copiado!';
-          setTimeout(() => { if (original) btn.textContent = original; }, 2000);
+          btn.parentElement?.querySelector('.copy-confirm')?.remove();
+          const confirm = document.createElement('span');
+          confirm.className = 'copy-confirm';
+          confirm.textContent = 'Copiado!';
+          btn.insertAdjacentElement('afterend', confirm);
+          setTimeout(() => confirm.remove(), 2000);
         });
       });
     });

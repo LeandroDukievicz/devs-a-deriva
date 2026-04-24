@@ -2,23 +2,15 @@
 interface Props {
   category: string;
   description: string;
-  image: string;
-  imageAlt: string;
   cornerIllustration?: string;
   animateIllustration?: boolean;
-  orbitingBlocks?: string[];
-  drawingCards?: string[];
 }
 
 const {
   category,
   description,
-  image,
-  imageAlt,
   cornerIllustration,
   animateIllustration = false,
-  orbitingBlocks = [],
-  drawingCards = [],
 } = Astro.props;
 
 const featuredPosts = [
@@ -46,33 +38,18 @@ const allPosts = [
 <div class="categoria-page">
   {cornerIllustration && (
     <div
-      class={`categoria-corner-illustration${animateIllustration || orbitingBlocks.length > 0 || drawingCards.length > 0 ? ' is-animated' : ''}`}
+      class={`categoria-corner-illustration${animateIllustration ? ' is-animated' : ''}`}
       aria-hidden="true"
     >
       <span
         class="corner-astronaut"
         style={`--corner-illustration: url("${cornerIllustration}")`}
       ></span>
-      {orbitingBlocks.map((block, index) => (
-        <span
-          class={`corner-block corner-block--${index + 1}`}
-          style={`--corner-block: url("${block}")`}
-        ></span>
-      ))}
-      {drawingCards.map((card, index) => (
-        <span
-          class={`corner-draw-card corner-draw-card--${index + 1}`}
-          style={`--corner-card: url("${card}")`}
-        >
-          <span class="corner-draw-card-art"></span>
-        </span>
-      ))}
     </div>
   )}
 
   <!-- ── Header ─────────────────────────────────────────────────── -->
   <header class="categoria-header">
-    <img class="categoria-img" src={image} alt={imageAlt} draggable="false" />
     <div class="categoria-info">
       <h1 class="categoria-title">
         <span class="cat-prefix">&gt;_</span>{category}
@@ -195,226 +172,33 @@ const allPosts = [
     top: 82px;
     right: 28px;
     z-index: -1;
-    width: min(38vw, 430px);
+    width: min(18.6vw, 211px);
     aspect-ratio: 3 / 2;
     pointer-events: none;
     color: var(--color-star);
     opacity: 0.34;
   }
 
-  .corner-astronaut,
-  .corner-block,
-  .corner-draw-card-art {
+  .corner-astronaut {
     position: absolute;
+    inset: 0;
     display: block;
     background: var(--color-star);
     filter: drop-shadow(0 0 18px var(--color-star-45));
+    mask-image: var(--corner-illustration);
     mask-position: center;
     mask-repeat: no-repeat;
     mask-size: contain;
+    -webkit-mask-image: var(--corner-illustration);
     -webkit-mask-position: center;
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: contain;
-  }
-
-  .corner-astronaut {
-    inset: 0;
     transform-origin: 50% 50%;
-    mask-image: var(--corner-illustration);
-    -webkit-mask-image: var(--corner-illustration);
+    opacity: 0.58;
   }
 
   .categoria-corner-illustration.is-animated .corner-astronaut {
     animation: astronaut-float 7.5s ease-in-out infinite;
-  }
-
-  .corner-block {
-    left: 50%;
-    top: 50%;
-    width: var(--block-size, 34px);
-    aspect-ratio: var(--block-ratio, 1);
-    transform-origin: 50% 50%;
-    mask-image: var(--corner-block);
-    -webkit-mask-image: var(--corner-block);
-    animation: block-orbit var(--orbit-duration, 18s) linear infinite;
-  }
-
-  .corner-draw-card {
-    left: var(--card-left);
-    top: var(--card-top);
-    width: var(--card-width);
-    aspect-ratio: var(--card-ratio);
-    position: absolute;
-    display: block;
-    opacity: 0;
-    transform: translate3d(0, 10px, 0) scale(0.98);
-    transform-origin: 50% 50%;
-    filter: drop-shadow(0 0 16px var(--color-star-40));
-    animation:
-      card-materialize 0.8s cubic-bezier(0.22, 0.75, 0.26, 1) forwards,
-      card-drift 5.5s ease-in-out infinite;
-    animation-delay: var(--draw-delay, 0s), calc(var(--draw-delay, 0s) + 0.8s);
-  }
-
-  .corner-draw-card-art {
-    inset: 0;
-    filter: none;
-    mask-image: var(--corner-card);
-    -webkit-mask-image: var(--corner-card);
-  }
-
-  .corner-draw-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(
-        to bottom,
-        transparent 0%,
-        var(--color-accent-40) 47%,
-        var(--color-star-45) 50%,
-        transparent 55%
-      );
-    opacity: 0;
-    mix-blend-mode: screen;
-    mask-image: var(--corner-card);
-    mask-position: center;
-    mask-repeat: no-repeat;
-    mask-size: contain;
-    -webkit-mask-image: var(--corner-card);
-    -webkit-mask-position: center;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: contain;
-    animation: card-scan 3.8s ease-in-out infinite;
-    animation-delay: calc(var(--draw-delay, 0s) + 1s);
-  }
-
-  .corner-draw-card--1 {
-    --card-left: 8%;
-    --card-top: 7%;
-    --card-width: 12%;
-    --card-ratio: 51 / 49;
-    --draw-delay: 0.4s;
-  }
-
-  .corner-draw-card--2 {
-    --card-left: 0%;
-    --card-top: 35%;
-    --card-width: 12%;
-    --card-ratio: 52 / 50;
-    --draw-delay: 0.95s;
-  }
-
-  .corner-draw-card--3 {
-    --card-left: 1%;
-    --card-top: 62%;
-    --card-width: 12%;
-    --card-ratio: 49 / 53;
-    --draw-delay: 1.5s;
-  }
-
-  .corner-draw-card--4 {
-    --card-left: 79%;
-    --card-top: 6%;
-    --card-width: 12%;
-    --card-ratio: 51 / 46;
-    --draw-delay: 2.05s;
-  }
-
-  .corner-draw-card--5 {
-    --card-left: 83%;
-    --card-top: 34%;
-    --card-width: 14%;
-    --card-ratio: 61 / 55;
-    --draw-delay: 2.6s;
-  }
-
-  .corner-draw-card--6 {
-    --card-left: 85%;
-    --card-top: 61%;
-    --card-width: 13%;
-    --card-ratio: 55 / 54;
-    --draw-delay: 3.15s;
-  }
-
-  .corner-draw-card--7 {
-    --card-left: 52%;
-    --card-top: 56%;
-    --card-width: 32%;
-    --card-ratio: 143 / 112;
-    --draw-delay: 3.7s;
-  }
-
-  .corner-block--1 {
-    --block-size: 40px;
-    --block-ratio: 1;
-    --orbit-x: 174px;
-    --orbit-y: 72px;
-    --orbit-start: 212deg;
-    --orbit-duration: 22s;
-  }
-
-  .corner-block--2 {
-    --block-size: 35px;
-    --block-ratio: 35 / 34;
-    --orbit-x: 190px;
-    --orbit-y: 82px;
-    --orbit-start: 306deg;
-    --orbit-duration: 24s;
-  }
-
-  .corner-block--3 {
-    --block-size: 67px;
-    --block-ratio: 67 / 64;
-    --orbit-x: 184px;
-    --orbit-y: 94px;
-    --orbit-start: 178deg;
-    --orbit-duration: 28s;
-  }
-
-  .corner-block--4 {
-    --block-size: 20px;
-    --block-ratio: 1;
-    --orbit-x: 114px;
-    --orbit-y: 108px;
-    --orbit-start: 246deg;
-    --orbit-duration: 18s;
-  }
-
-  .corner-block--5 {
-    --block-size: 34px;
-    --block-ratio: 34 / 33;
-    --orbit-x: 174px;
-    --orbit-y: 106px;
-    --orbit-start: 20deg;
-    --orbit-duration: 21s;
-  }
-
-  .corner-block--6 {
-    --block-size: 79px;
-    --block-ratio: 79 / 76;
-    --orbit-x: 190px;
-    --orbit-y: 116px;
-    --orbit-start: 42deg;
-    --orbit-duration: 30s;
-  }
-
-  .corner-block--7 {
-    --block-size: 33px;
-    --block-ratio: 33 / 34;
-    --orbit-x: 120px;
-    --orbit-y: 112px;
-    --orbit-start: 102deg;
-    --orbit-duration: 19s;
-  }
-
-  .corner-block--8 {
-    --block-size: 29px;
-    --block-ratio: 29 / 22;
-    --orbit-x: 148px;
-    --orbit-y: 104px;
-    --orbit-start: 134deg;
-    --orbit-duration: 20s;
   }
 
   @keyframes astronaut-float {
@@ -426,74 +210,10 @@ const allPosts = [
     }
   }
 
-  @keyframes block-orbit {
-    from {
-      transform:
-        translate(-50%, -50%)
-        rotate(var(--orbit-start))
-        translate(var(--orbit-x), var(--orbit-y))
-        rotate(0deg);
-    }
-    to {
-      transform:
-        translate(-50%, -50%)
-        rotate(calc(var(--orbit-start) + 360deg))
-        translate(var(--orbit-x), var(--orbit-y))
-        rotate(-360deg);
-    }
-  }
-
-  @keyframes card-materialize {
-    from {
-      opacity: 0;
-      transform: translate3d(0, 12px, 0) scale(0.94);
-    }
-    to {
-      opacity: 0.72;
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-  }
-
-  @keyframes card-drift {
-    0%, 100% {
-      transform: translate3d(0, 0, 0) rotate(-0.7deg);
-    }
-    50% {
-      transform: translate3d(0, -8px, 0) rotate(0.8deg);
-    }
-  }
-
-  @keyframes card-scan {
-    0%, 70%, 100% {
-      opacity: 0;
-      transform: translateY(-45%);
-    }
-    15% {
-      opacity: 0.55;
-    }
-    45% {
-      opacity: 0.16;
-      transform: translateY(45%);
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .corner-astronaut,
-    .corner-block,
-    .corner-draw-card {
+    .corner-astronaut {
       animation: none;
-      opacity: 0.72;
-      transform: none;
     }
-
-    .corner-draw-card::after {
-      animation: none;
-      opacity: 0;
-    }
-  }
-
-  .corner-astronaut {
-    opacity: 0.58;
   }
 
   /* ── Header ────────────────────────────────────────────────── */
@@ -503,23 +223,6 @@ const allPosts = [
     align-items: center;
     gap: 32px;
     padding: 24px 48px 28px;
-  }
-
-  .categoria-img {
-    width: 150px;
-    height: 150px;
-    flex-shrink: 0;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid var(--color-star);
-    box-shadow: 0 0 18px var(--color-star);
-    opacity: 0;
-    animation: cat-fade-img 0.65s ease 0.1s forwards;
-  }
-
-  @keyframes cat-fade-img {
-    from { opacity: 0; transform: translateX(-10px); }
-    to   { opacity: 1; transform: translateX(0); }
   }
 
   .categoria-info {
@@ -830,7 +533,7 @@ const allPosts = [
   /* ── Mobile ────────────────────────────────────────────────── */
   @media (max-width: 900px) {
     .categoria-corner-illustration {
-      width: min(48vw, 320px);
+      width: min(23.5vw, 157px);
       right: 12px;
       opacity: 0.24;
     }
