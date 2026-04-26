@@ -491,6 +491,11 @@ const logoForCanvas = Buffer.from(
     position: relative;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    margin-right: 5px;
   }
 
   .nav-home-prefix,
@@ -520,23 +525,18 @@ const logoForCanvas = Buffer.from(
 
   .nav-link--home:hover .nav-home-prefix         { opacity: 0; }
   .nav-link--home:hover .globe-canvas            { opacity: 1; }
-  .nav-link--home:hover .nav-home-icon           { margin-right: 5px; }
 
   .nav-link--categorias:hover .nav-categorias-prefix { opacity: 0; }
   .nav-link--categorias:hover .categorias-canvas     { opacity: 1; }
-  .nav-link--categorias:hover .nav-categorias-icon   { margin-right: 5px; }
 
   .nav-link--devs:hover .nav-devs-prefix     { opacity: 0; }
   .nav-link--devs:hover .devs-canvas         { opacity: 1; }
-  .nav-link--devs:hover .nav-devs-icon       { margin-right: 5px; }
 
   .nav-link--manifesto:hover .nav-manifesto-prefix { opacity: 0; }
   .nav-link--manifesto:hover .manifesto-canvas     { opacity: 1; }
-  .nav-link--manifesto:hover .nav-manifesto-icon   { margin-right: 5px; }
 
   .nav-link--temas:hover .nav-temas-prefix { opacity: 0; }
   .nav-link--temas:hover .temas-canvas     { opacity: 1; }
-  .nav-link--temas:hover .nav-temas-icon   { margin-right: 5px; }
 
   @media (max-width: 480px) {
     .navbar {
@@ -584,7 +584,10 @@ const logoForCanvas = Buffer.from(
 
     .nav-home-icon,
     .nav-icon-wrap {
+      flex-basis: 18px;
       width: 18px;
+      height: 18px;
+      margin-right: 4px;
     }
 
     .globe-canvas,
@@ -651,7 +654,10 @@ const logoForCanvas = Buffer.from(
 
     .nav-home-icon,
     .nav-icon-wrap {
+      flex-basis: 16px;
       width: 16px;
+      height: 16px;
+      margin-right: 3px;
     }
 
     .globe-canvas,
