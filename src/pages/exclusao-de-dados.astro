@@ -1,0 +1,129 @@
+---
+import Base from '../layouts/Base.astro';
+import StarBackground from '../components/StarBackground.astro';
+---
+
+<Base title="Exclusão de Dados · Devs à Deriva">
+  <StarBackground />
+
+  <main class="legal-page">
+    <article class="legal-content">
+      <p class="legal-kicker">&gt;_ dados do usuário</p>
+      <h1>Exclusão de Dados</h1>
+      <p class="legal-updated">Atualizada em 26 de abril de 2026.</p>
+
+      <section>
+        <h2>Como solicitar</h2>
+        <p>
+          Para solicitar a exclusão dos seus dados relacionados ao Devs à Deriva, envie um e-mail
+          para <a href="mailto:leandrodukievicz1718@gmail.com">leandrodukievicz1718@gmail.com</a>
+          com o assunto "Exclusão de dados".
+        </p>
+      </section>
+
+      <section>
+        <h2>O que informar</h2>
+        <p>
+          Inclua o e-mail ou conta social usada no comentário, o nome exibido e, se possível, o link
+          do post onde o comentário foi enviado. Essas informações ajudam a localizar os dados
+          corretos.
+        </p>
+      </section>
+
+      <section>
+        <h2>Prazo</h2>
+        <p>
+          Após a confirmação da solicitação, os dados serão removidos ou anonimizados em até 30 dias,
+          salvo quando a retenção for necessária por obrigação legal, segurança ou prevenção de abuso.
+        </p>
+      </section>
+
+      <section>
+        <h2>Dados abrangidos</h2>
+        <p>
+          A solicitação pode incluir comentários, nome, e-mail, imagem de perfil e identificadores
+          associados ao login social usado para comentar.
+        </p>
+      </section>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .legal-page {
+    position: relative;
+    z-index: 10;
+    width: min(860px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 110px 0 80px;
+  }
+
+  .legal-content {
+    color: var(--color-text);
+  }
+
+  .legal-kicker,
+  .legal-updated {
+    font-family: monospace;
+    letter-spacing: 0.12em;
+    color: var(--color-star);
+  }
+
+  .legal-kicker {
+    margin: 0 0 16px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .legal-updated {
+    margin: 18px 0 42px;
+    font-size: 0.72rem;
+    opacity: 0.58;
+  }
+
+  section {
+    padding: 26px 0;
+    border-top: 1px solid var(--color-star-12);
+  }
+
+  h2 {
+    margin: 0 0 12px;
+    font-family: monospace;
+    font-size: 0.86rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  p {
+    margin: 0 0 14px;
+    max-width: 72ch;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-text);
+    opacity: 0.78;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  a {
+    color: var(--color-star);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-star-40);
+  }
+
+  a:hover {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import StarBackground from '../../components/StarBackground.astro';
+import Comments from '../../components/Comments.astro';
 import { posts, getPost } from '../../lib/posts';
 
 export function getStaticPaths() {
@@ -98,6 +99,8 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
         <p>{paragraph}</p>
       ))}
     </div>
+
+    <Comments postSlug={post.slug} />
 
     <div class="newsletter-block">
       <div class="newsletter-content">

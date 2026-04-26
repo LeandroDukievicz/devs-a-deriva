@@ -1,0 +1,672 @@
+---
+interface Props {
+  postSlug: string;
+}
+const { postSlug } = Astro.props;
+const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
+---
+
+<section
+  class="comments-section"
+  id="comments"
+  data-slug={postSlug}
+  data-dashboard={dashboardUrl}
+>
+  <div class="comments-header">
+    <span class="comments-kicker">&gt;_ comentários</span>
+    <span class="comments-count" id="comments-count">0</span>
+  </div>
+
+  <!-- Feedback: comentário enviado com sucesso (volta do OAuth) -->
+  <div class="comments-success" id="comments-success" hidden>
+    <span class="comments-success-dot" aria-hidden="true"></span>
+    <p>&gt; comentário recebido. ele aparecerá após moderação.</p>
+  </div>
+
+  <!-- Formulário sempre visível -->
+  <div class="comments-compose">
+    <!-- Estado: escrevendo (padrão) -->
+    <div class="compose-write" id="compose-write">
+      <div class="comments-textarea-wrap">
+        <textarea
+          class="comments-textarea"
+          id="comments-textarea"
+          placeholder="> comentar..."
+          rows="3"
+          maxlength="1000"
+          aria-label="Escreva seu comentário"
+        ></textarea>
+        <span class="comments-char-count" id="comments-char-count">0 / 1000</span>
+      </div>
+      <div class="compose-actions">
+        <p class="comments-moderation-note">&gt; comentários são moderados antes de serem publicados.</p>
+        <button class="comments-submit-btn" id="btn-comentar" type="button">
+          <span>Comentar</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado: prompt de login -->
+    <div class="compose-auth-prompt" id="compose-auth-prompt" hidden>
+      <div class="auth-prompt-inner">
+        <div class="auth-prompt-copy">
+          <span class="auth-prompt-kicker">&gt;_ quase lá</span>
+          <p class="auth-prompt-text">Entre com uma de suas contas para registrar seu comentário.</p>
+        </div>
+        <div class="auth-prompt-actions">
+          <button class="social-btn" type="button" data-provider="google">
+            <svg class="social-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google
+          </button>
+          <button class="social-btn" type="button" data-provider="meta">
+            <svg class="social-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#0082FB" d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
+            </svg>
+            Meta
+          </button>
+          <button class="social-btn" type="button" data-provider="x">
+            <svg class="social-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            X
+          </button>
+          <button class="auth-prompt-cancel" id="btn-auth-cancel" type="button">cancelar</button>
+        </div>
+      </div>
+      <p class="auth-error" id="auth-error" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <!-- Lista de comentários (preenchida via JS) -->
+  <ul class="comments-list" id="comments-list" role="list" hidden></ul>
+  <p class="comments-empty" id="comments-empty" hidden>&gt; nenhum comentário ainda. seja o primeiro.</p>
+  <p class="comments-loading" id="comments-loading">&gt; carregando comentários...</p>
+</section>
+
+<style>
+  .comments-section {
+    margin-top: 64px;
+    animation: fade-up 0.55s ease 0.38s both;
+  }
+
+  .comments-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-star-16);
+  }
+
+  .comments-kicker {
+    font-family: monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .comments-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    border: 1px solid var(--color-accent-40);
+    background: var(--color-accent-06);
+    font-family: monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    letter-spacing: 0.06em;
+  }
+
+  /* Success banner */
+  .comments-success {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--color-star-22);
+    border-radius: 10px;
+    background: var(--color-star-05);
+    margin-bottom: 20px;
+    animation: fade-up 0.3s ease both;
+  }
+
+  .comments-success p {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--color-star);
+  }
+
+  .comments-success-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-star);
+    box-shadow: 0 0 10px var(--color-star);
+    flex-shrink: 0;
+    animation: pulse 1.8s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* Compose */
+  .comments-compose {
+    margin-bottom: 32px;
+  }
+
+  .comments-textarea-wrap {
+    position: relative;
+    border: 1px solid var(--color-star-22);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .comments-textarea-wrap:focus-within {
+    border-color: var(--color-star-45);
+    box-shadow: 0 0 14px var(--color-star-10);
+  }
+
+  .comments-textarea {
+    display: block;
+    width: 100%;
+    background: var(--color-star-05);
+    border: none;
+    outline: none;
+    padding: 14px 16px 32px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--color-text);
+    letter-spacing: 0.03em;
+    resize: none;
+    box-sizing: border-box;
+  }
+
+  .comments-textarea::placeholder {
+    color: var(--color-star);
+    opacity: 0.28;
+  }
+
+  .comments-char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    font-family: monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+    color: var(--color-star);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .compose-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .comments-moderation-note {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--color-star);
+    opacity: 0.35;
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .comments-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px outset var(--color-star);
+    background: transparent;
+    color: var(--color-star);
+    font-family: monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+
+  .comments-submit-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-accent-08);
+    box-shadow: 0 0 14px var(--color-accent-20);
+    transform: translateY(-1px);
+  }
+
+  .comments-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Auth prompt */
+  .compose-auth-prompt {
+    margin-top: 12px;
+    padding: 20px 24px;
+    border: 1px solid var(--color-star-22);
+    border-radius: 10px;
+    background: var(--color-star-05);
+  }
+
+  .auth-prompt-inner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .auth-prompt-copy {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+  }
+
+  .auth-prompt-kicker {
+    font-family: monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .auth-prompt-text {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.76rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    opacity: 0.7;
+  }
+
+  .auth-prompt-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-star-22);
+    background: var(--color-star-08);
+    color: var(--color-star);
+    font-family: monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .social-btn:hover {
+    border-color: var(--color-star-40);
+    background: var(--color-star-10);
+    box-shadow: 0 0 14px var(--color-star-10);
+  }
+
+  .social-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .social-btn-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .auth-prompt-cancel {
+    background: none;
+    border: none;
+    font-family: monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    opacity: 0.4;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: opacity 0.2s ease, color 0.2s ease;
+  }
+
+  .auth-prompt-cancel:hover {
+    opacity: 1;
+    color: var(--color-accent);
+  }
+
+  .auth-error {
+    margin: 10px 0 0;
+    font-family: monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    color: var(--color-accent);
+    min-height: 1em;
+  }
+
+  /* Comment list */
+  .comments-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .comment-item {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 14px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--color-star-10);
+  }
+
+  .comment-item:last-child {
+    border-bottom: none;
+  }
+
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-star-22), var(--color-accent-08));
+    border: 1px solid var(--color-star-18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--color-star);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    margin-top: 2px;
+    overflow: hidden;
+  }
+
+  .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .comment-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: monospace;
+  }
+
+  .comment-name {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-star);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .comment-sep {
+    color: var(--color-star);
+    opacity: 0.3;
+    font-size: 0.6rem;
+  }
+
+  .comment-date {
+    font-size: 0.6rem;
+    color: var(--color-star);
+    opacity: 0.4;
+    letter-spacing: 0.06em;
+  }
+
+  .comment-text {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: var(--color-text);
+    opacity: 0.82;
+  }
+
+  .comments-empty,
+  .comments-loading {
+    margin: 0;
+    padding: 28px 0;
+    font-family: monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-star);
+    opacity: 0.35;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .compose-actions {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .comments-submit-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .auth-prompt-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .auth-prompt-actions {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  const section      = document.getElementById('comments') as HTMLElement;
+  const slug         = section?.dataset.slug ?? '';
+  const dashboardUrl = section?.dataset.dashboard ?? '';
+
+  const textarea     = document.getElementById('comments-textarea') as HTMLTextAreaElement | null;
+  const charCount    = document.getElementById('comments-char-count');
+  const btnComentar  = document.getElementById('btn-comentar') as HTMLButtonElement | null;
+  const btnCancel    = document.getElementById('btn-auth-cancel');
+  const authError    = document.getElementById('auth-error');
+  const composeWrite = document.getElementById('compose-write');
+  const composeAuth  = document.getElementById('compose-auth-prompt');
+  const successBanner = document.getElementById('comments-success');
+  const listEl       = document.getElementById('comments-list');
+  const emptyEl      = document.getElementById('comments-empty');
+  const loadingEl    = document.getElementById('comments-loading');
+  const countEl      = document.getElementById('comments-count');
+
+  // ── Helpers ────────────────────────────────────────────────────
+
+  const setState = (s: 'writing' | 'auth-prompt') => {
+    if (!composeWrite || !composeAuth) return;
+    composeWrite.hidden = s === 'auth-prompt';
+    composeAuth.hidden  = s === 'writing';
+    if (authError) authError.textContent = '';
+  };
+
+  const timeAgo = (iso: string) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return 'agora mesmo';
+    if (m < 60) return `há ${m} min`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `há ${h}h`;
+    const d = Math.floor(h / 24);
+    return `há ${d} dia${d > 1 ? 's' : ''}`;
+  };
+
+  const initials = (name: string) =>
+    name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+  // ── Carregar comentários aprovados ─────────────────────────────
+
+  const loadComments = async () => {
+    try {
+      const res = await fetch(`${dashboardUrl}/api/comments?slug=${encodeURIComponent(slug)}`);
+      const { comments } = await res.json() as {
+        comments: { id: number; authorName: string; authorImage: string | null; body: string; createdAt: string }[]
+      };
+
+      if (loadingEl) loadingEl.hidden = true;
+
+      if (!comments.length) {
+        if (emptyEl) emptyEl.hidden = false;
+        return;
+      }
+
+      if (countEl) countEl.textContent = String(comments.length);
+      if (listEl)  listEl.hidden = false;
+
+      comments.forEach(c => {
+        const li = document.createElement('li');
+        li.className = 'comment-item';
+
+        const avatarContent = c.authorImage
+          ? `<img src="${c.authorImage}" alt="${c.authorName}" loading="lazy" />`
+          : initials(c.authorName ?? 'A');
+
+        li.innerHTML = `
+          <div class="comment-avatar" aria-hidden="true">${avatarContent}</div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="comment-name">${c.authorName ?? 'Anônimo'}</span>
+              <span class="comment-sep" aria-hidden="true">·</span>
+              <span class="comment-date">${timeAgo(c.createdAt)}</span>
+            </div>
+            <p class="comment-text">${c.body.replace(/</g, '&lt;')}</p>
+          </div>
+        `;
+        listEl?.appendChild(li);
+      });
+    } catch {
+      if (loadingEl) loadingEl.hidden = true;
+      if (emptyEl)   emptyEl.hidden = false;
+    }
+  };
+
+  // ── Verificar retorno do OAuth ─────────────────────────────────
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('commented') === 'true') {
+    if (successBanner) successBanner.hidden = false;
+    // Remove o parâmetro da URL sem recarregar
+    params.delete('commented');
+    const clean = [window.location.pathname, params.toString()].filter(Boolean).join('?');
+    window.history.replaceState({}, '', clean);
+  }
+
+  // ── Eventos ────────────────────────────────────────────────────
+
+  textarea?.addEventListener('input', () => {
+    if (charCount) charCount.textContent = `${textarea.value.length} / 1000`;
+  });
+
+  btnComentar?.addEventListener('click', () => {
+    if (!textarea?.value.trim()) { textarea?.focus(); return; }
+    setState('auth-prompt');
+  });
+
+  btnCancel?.addEventListener('click', () => {
+    setState('writing');
+    textarea?.focus();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-provider]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const provider = btn.dataset.provider!;
+      const text = textarea?.value.trim();
+      if (!text) return;
+
+      // Desabilita botões durante a requisição
+      document.querySelectorAll<HTMLButtonElement>('[data-provider], #btn-auth-cancel').forEach(b => {
+        b.disabled = true;
+      });
+      if (authError) authError.textContent = '';
+
+      try {
+        const res = await fetch(`${dashboardUrl}/api/comments/draft`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug,
+            text,
+            provider,
+            redirectTo: window.location.href,
+          }),
+        });
+
+        if (!res.ok) throw new Error('Erro ao registrar comentário');
+
+        const { signInUrl } = await res.json() as { signInUrl: string };
+        window.location.href = signInUrl;
+      } catch {
+        if (authError) authError.textContent = '> erro ao conectar com o servidor. tente novamente.';
+        document.querySelectorAll<HTMLButtonElement>('[data-provider], #btn-auth-cancel').forEach(b => {
+          b.disabled = false;
+        });
+      }
+    });
+  });
+
+  // ── Init ───────────────────────────────────────────────────────
+  loadComments();
+</script>

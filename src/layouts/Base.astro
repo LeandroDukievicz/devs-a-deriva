@@ -86,8 +86,8 @@ const adminSvgInline = adminRaw
   }
 
   #admin-cta {
-    width: 22px;
-    height: 22px;
+    width: 29px;
+    height: 29px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -105,8 +105,8 @@ const adminSvgInline = adminRaw
   }
 
   #admin-cta svg {
-    width: 13px;
-    height: 13px;
+    width: 17px;
+    height: 17px;
   }
 
   #admin-link {
@@ -137,8 +137,8 @@ const adminSvgInline = adminRaw
 
   #admin-link .admin-svg :global(svg) {
     display: block;
-    width: 24px;
-    height: 24px;
+    width: 29px;
+    height: 29px;
     color: var(--color-star);
   }
 
@@ -149,13 +149,16 @@ const adminSvgInline = adminRaw
 
   @media (max-width: 480px) {
     #admin-wrap {
+      top: auto;
       right: auto;
-      left: 4px;
-      flex-direction: row-reverse;
+      bottom: 14px;
+      left: 14px;
+      flex-direction: row;
     }
 
     #admin-link {
-      transform: translateX(12px);
+      order: 1;
+      transform: translateX(-12px);
     }
 
     #admin-wrap:hover #admin-link {
@@ -183,7 +186,7 @@ const adminSvgInline = adminRaw
 
   #admin-link .admin-label {
     font-family: monospace;
-    font-size: 0.4rem;
+    font-size: 0.48rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--color-star);
