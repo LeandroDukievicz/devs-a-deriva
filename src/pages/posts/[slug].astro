@@ -58,7 +58,15 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 
           <h1 class="post-title">{post.title}</h1>
           <p class="post-excerpt">{post.excerpt}</p>
-          <p class="post-theme" data-home-only="true">Tema: {post.category}</p>
+          <div class="post-theme-row" data-home-only="true">
+            <p class="post-theme">Tema: {post.category}</p>
+            <div class="post-reading-time post-reading-time-mobile">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {post.readTime} de leitura
+            </div>
+          </div>
 
           <div class="post-meta">
             <div class="post-author">
@@ -253,8 +261,11 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     max-width: 520px;
   }
 
-  .post-theme {
+  .post-theme-row {
     display: none;
+  }
+
+  .post-theme {
     margin: -4px 0 0;
     font-family: monospace;
     font-size: 0.66rem;
@@ -334,6 +345,10 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+
+  .post-reading-time-mobile {
+    display: none;
   }
 
   .post-divider {
@@ -845,6 +860,34 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
       line-height: 1.5;
     }
 
+    .post-theme-row {
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      font-family: monospace;
+    }
+
+    .post-theme-row .post-theme {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+    }
+
+    .post-header-copy.is-home-origin .post-meta .post-reading-time {
+      display: none;
+    }
+
+    .post-header-copy.is-home-origin .post-reading-time-mobile {
+      display: inline-flex;
+      flex-shrink: 0;
+      color: var(--color-star);
+      font-size: 0.56rem;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+      white-space: nowrap;
+    }
+
     .post-meta {
       align-items: flex-start;
       gap: 12px;
@@ -945,6 +988,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     const footerNext = document.querySelector<HTMLAnchorElement>('.post-next-footer');
     const footerNextLabel = document.querySelector<HTMLElement>('.post-next-label');
     const footerNextTitle = document.querySelector<HTMLElement>('.post-next-title');
+    const postHeaderCopy = document.querySelector<HTMLElement>('.post-header-copy');
     const homeOnlyTheme = document.querySelector<HTMLElement>('[data-home-only="true"]');
 
     if (topBack) {
@@ -983,8 +1027,10 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
         : (footerNext?.dataset.categoryTitle ?? '');
     }
 
+    postHeaderCopy?.classList.toggle('is-home-origin', useHome);
+
     if (homeOnlyTheme) {
-      homeOnlyTheme.style.display = useHome ? 'block' : 'none';
+      homeOnlyTheme.style.display = useHome ? 'flex' : 'none';
     }
   };
 
