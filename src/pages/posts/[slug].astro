@@ -35,7 +35,7 @@ const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 ---
 
-<Base title={`${post.title} · Devs à Deriva`}>
+<Base title={`${post.title} · Devs à Deriva`} description={post.excerpt}>
   <StarBackground />
 
   <article class="post-page">

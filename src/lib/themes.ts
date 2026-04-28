@@ -111,7 +111,8 @@ export function applyTheme(key: ThemeKey): void {
   document.documentElement.dataset.theme = key;
   setThemeVariables(key);
   (window as Record<string, unknown>)['__bgColor'] = config.bg;
-  sessionStorage.setItem(THEME_STORAGE_KEY, key);
+  try { localStorage.setItem(THEME_STORAGE_KEY, key); } catch {}
+  try { sessionStorage.setItem(THEME_STORAGE_KEY, key); } catch {}
 }
 
 /**
@@ -121,10 +122,13 @@ export function applyTheme(key: ThemeKey): void {
  */
 export function getSavedTheme(): ThemeKey {
   try {
-    const saved = sessionStorage.getItem(THEME_STORAGE_KEY) as ThemeKey | null;
+    const saved = (
+      sessionStorage.getItem(THEME_STORAGE_KEY) ??
+      localStorage.getItem(THEME_STORAGE_KEY)
+    ) as ThemeKey | null;
     if (saved && Object.prototype.hasOwnProperty.call(themes, saved)) return saved;
   } catch {
-    // localStorage unavailable (e.g. private mode restrictions)
+    // Web storage unavailable (e.g. private mode restrictions)
   }
   return DEFAULT_THEME;
 }

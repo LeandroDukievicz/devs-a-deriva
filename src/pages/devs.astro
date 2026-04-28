@@ -2,66 +2,14 @@
 import Base from '../layouts/Base.astro';
 import BlackHole from '../components/BlackHole.astro';
 
-const devs = [
-  {
-    name: 'Leandro Dukievicz',
-    role: 'Engenheiro de Software',
-    tag: '@leandro',
-    bio: 'Apaixonado por sistemas distribuídos e café mal feito às 2 da manhã.',
-    accent: 'star',
-    photo: 'https://i.pravatar.cc/150?img=11',
-  },
-  {
-    name: 'Ana Lima',
-    role: 'Frontend Developer',
-    tag: '@analima',
-    bio: 'Transforma designs em pixels com precisão cirúrgica e muito CSS obscuro.',
-    accent: 'accent',
-    photo: 'https://i.pravatar.cc/150?img=47',
-  },
-  {
-    name: 'Carlos Mendes',
-    role: 'DevOps & SRE',
-    tag: '@cmendes',
-    bio: 'Se está queimando em produção, provavelmente é culpa do deploy de sexta.',
-    accent: 'star',
-    photo: 'https://i.pravatar.cc/150?img=33',
-  },
-  {
-    name: 'Julia Ferraz',
-    role: 'Backend Engineer',
-    tag: '@juliaferraz',
-    bio: 'Arquiteta de APIs que ninguém sabe como funcionam, nem ela mesma.',
-    accent: 'accent',
-    photo: 'https://i.pravatar.cc/150?img=54',
-  },
-];
+const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 ---
 
 <Base title="Devs · Devs à Deriva">
   <div class="devs-page">
     <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
 
-    <div class="cards-overlay">
-      {devs.map((dev) => (
-        <div
-          class="dev-card-anchor"
-          data-name={dev.name}
-          data-role={dev.role}
-          data-bio={dev.bio}
-          data-accent={dev.accent}
-        >
-          <div class={`dev-card dev-card--${dev.accent}`}>
-            <img
-              class="dev-card__photo"
-              src={dev.photo}
-              alt={dev.name}
-              draggable="false"
-            />
-          </div>
-        </div>
-      ))}
-    </div>
+    <div class="cards-overlay" id="cards-overlay" data-dashboard={dashboardUrl}></div>
 
     <!-- Popup único, reposicionado pelo JS -->
     <div id="dev-popup" class="dev-popup" aria-hidden="true">
@@ -89,8 +37,8 @@ const devs = [
     pointer-events: none;
   }
 
-  /* Âncora animada pelo JS */
-  .dev-card-anchor {
+  /* Âncora animada pelo JS — :global porque é criada dinamicamente */
+  :global(.dev-card-anchor) {
     position: absolute;
     top: 0;
     left: 0;
@@ -99,13 +47,14 @@ const devs = [
     will-change: transform, opacity;
   }
 
-  /* ── Círculo ───────────────────────────────────────────────── */
-  .dev-card {
+  /* ── Círculo — :global porque os elementos são criados via JS ── */
+  :global(.dev-card) {
     pointer-events: auto;
     cursor: pointer;
     width: 100%;
     height: 100%;
     border-radius: 50%;
+    overflow: hidden;
     background: var(--color-bg-88);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -116,30 +65,30 @@ const devs = [
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
 
-  .dev-card--star {
+  :global(.dev-card--star) {
     border: 1px solid var(--color-star-25);
     box-shadow: 0 0 18px var(--color-star-10), inset 0 0 18px var(--color-star-05);
   }
 
-  .dev-card--accent {
+  :global(.dev-card--accent) {
     border: 1px solid var(--color-accent-20);
     box-shadow: 0 0 18px var(--color-accent-08), inset 0 0 18px var(--color-accent-06);
   }
 
-  .dev-card:hover { transform: scale(1.1); }
+  :global(.dev-card:hover) { transform: scale(1.1); }
 
-  .dev-card--star:hover {
+  :global(.dev-card--star:hover) {
     border-color: var(--color-star-45);
     box-shadow: 0 0 32px var(--color-star-22), inset 0 0 24px var(--color-star-10);
   }
 
-  .dev-card--accent:hover {
+  :global(.dev-card--accent:hover) {
     border-color: var(--color-accent-40);
     box-shadow: 0 0 32px var(--color-accent-16), inset 0 0 24px var(--color-accent-08);
   }
 
   /* ── Foto ──────────────────────────────────────────────────── */
-  .dev-card__photo {
+  :global(.dev-card__photo) {
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -215,7 +164,7 @@ const devs = [
       inset: 56px 0 0;
     }
 
-    .dev-card-anchor  { width: 70px; height: 70px; }
+    :global(.dev-card-anchor) { width: 70px; height: 70px; }
 
     .dev-popup {
       width: min(calc(100vw - 32px), 320px);
@@ -243,6 +192,73 @@ const devs = [
 </style>
 
 <script>
+// ── Helpers ────────────────────────────────────────────────────
+function githubAvatar(githubUrl: string | null): string | null {
+  if (!githubUrl) return null;
+  try {
+    const match = new URL(githubUrl).pathname.replace(/^\//, '').split('/')[0];
+    return match ? `https://github.com/${match}.png?size=200` : null;
+  } catch { return null; }
+}
+
+function initials(name: string): string {
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// ── Busca devs do dashboard e cria os cards ─────────────────────
+const overlay      = document.getElementById('cards-overlay') as HTMLElement;
+const dashboardUrl = overlay?.dataset.dashboard ?? 'http://localhost:3000';
+
+interface Dev { name: string; role: string; bio: string; photoUrl: string | null; githubUrl: string | null; isOwner: boolean }
+
+async function loadDevs() {
+  try {
+    const res  = await fetch(`${dashboardUrl}/api/devs`);
+    const { devs } = await res.json() as { devs: Dev[] };
+
+    devs.forEach((dev, i) => {
+      const accent  = i % 2 === 0 ? 'star' : 'accent';
+      // Prioridade: foto do OAuth (Gmail/Google) → avatar do GitHub → iniciais
+      const photoUrl = dev.photoUrl ?? githubAvatar(dev.githubUrl);
+
+      const anchor  = document.createElement('div');
+      anchor.className = 'dev-card-anchor';
+      anchor.dataset.name   = dev.name;
+      anchor.dataset.role   = dev.role;
+      anchor.dataset.bio    = dev.bio;
+      anchor.dataset.accent = accent;
+
+      const card = document.createElement('div');
+      card.className = `dev-card dev-card--${accent}`;
+
+      if (photoUrl) {
+        const img = document.createElement('img');
+        img.className   = 'dev-card__photo';
+        img.src         = photoUrl;
+        img.alt         = dev.name;
+        img.draggable   = false;
+        img.onerror     = () => {
+          img.remove();
+          card.textContent = initials(dev.name);
+          card.style.fontSize = '1.1rem';
+        };
+        card.appendChild(img);
+      } else {
+        card.textContent = initials(dev.name);
+        card.style.fontSize = '1.1rem';
+      }
+
+      anchor.appendChild(card);
+      overlay.appendChild(anchor);
+    });
+
+    initAnimation();
+  } catch (err) {
+    console.error('[devs] erro ao carregar:', err);
+  }
+}
+
+// ── Animação ────────────────────────────────────────────────────
 const FADE_ZONE_MULT  = 9;    // fade começa a 9× o raio do BH
 const ACCEL_THRESHOLD = 0.35; // opacidade abaixo disso → aceleração gravitacional
 const ACCEL_PEAK      = 28;   // multiplicador máximo de velocidade no momento da sucção
@@ -351,6 +367,7 @@ function initOnScreen(d: CardData) {
   d.state   = 'orbiting';
 }
 
+function initAnimation() {
 const popup   = document.getElementById('dev-popup') as HTMLElement;
 const anchors = Array.from(document.querySelectorAll<HTMLElement>('.dev-card-anchor'));
 let activeAnchor: HTMLElement | null = null;
@@ -507,4 +524,7 @@ document.addEventListener('click', (event) => {
 });
 
 tick();
+} // end initAnimation
+
+loadDevs();
 </script>

@@ -33,6 +33,36 @@
       }
     };
 
+    var STORAGE_KEY = 'dda-theme';
+
+    function isThemeKey(key) {
+      return !!key && !!palettes[key];
+    }
+
+    function persistTheme(key) {
+      try { localStorage.setItem(STORAGE_KEY, key); } catch (_) {}
+      try { sessionStorage.setItem(STORAGE_KEY, key); } catch (_) {}
+    }
+
+    function readSavedTheme() {
+      var localTheme = null;
+      var sessionTheme = null;
+
+      try { sessionTheme = sessionStorage.getItem(STORAGE_KEY); } catch (_) {}
+      if (isThemeKey(sessionTheme)) {
+        persistTheme(sessionTheme);
+        return sessionTheme;
+      }
+
+      try { localTheme = localStorage.getItem(STORAGE_KEY); } catch (_) {}
+      if (isThemeKey(localTheme)) {
+        persistTheme(localTheme);
+        return localTheme;
+      }
+
+      return null;
+    }
+
     function rgb(c, alpha) {
       return alpha === undefined
         ? 'rgb(' + c[0] + ' ' + c[1] + ' ' + c[2] + ')'
@@ -77,15 +107,22 @@
     window.__applyDdaTheme = function(key) {
       if (!palettes[key]) return false;
       setThemeVars(key);
-      sessionStorage.setItem('dda-theme', key);
+      persistTheme(key);
       window.__bgColor = rgb(palettes[key].bg);
       window.dispatchEvent(new CustomEvent('dda-theme-change', { detail: { theme: key } }));
       return true;
     };
 
-    var t = sessionStorage.getItem('dda-theme');
-    if (t && palettes[t]) {
+    var t = readSavedTheme();
+    if (t) {
       window.__applyDdaTheme(t);
     }
+
+    window.addEventListener('pageshow', function() {
+      var restoredTheme = readSavedTheme();
+      if (restoredTheme && document.documentElement.dataset.theme !== restoredTheme) {
+        window.__applyDdaTheme(restoredTheme);
+      }
+    });
   } catch (_) {}
 </script>

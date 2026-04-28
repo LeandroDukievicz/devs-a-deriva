@@ -8,11 +8,16 @@ import { resolve } from 'path';
 
 interface Props {
   title?: string;
+  description?: string;
   /** Esconde a Navbar (ex: páginas de erro) */
   hideNavbar?: boolean;
 }
 
-const { title = 'Devs à Deriva', hideNavbar = false } = Astro.props;
+const {
+  title = 'Devs à Deriva',
+  description = 'Devs à Deriva é um blog sobre tecnologia, carreira, cultura nerd e vida real no desenvolvimento de software.',
+  hideNavbar = false,
+} = Astro.props;
 
 const adminRaw = readFileSync(resolve('./public/astronaut-admin.svg'), 'utf-8');
 const adminSvgInline = adminRaw
@@ -26,6 +31,9 @@ const adminSvgInline = adminRaw
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:description" content={description} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
     <ThemeProvider />
