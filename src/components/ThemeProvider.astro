@@ -5,6 +5,10 @@
  * Restores the saved theme from localStorage before the first paint
  * to prevent flash of wrong background.
  *
+ * When Base.astro renders <html data-theme="..."> server-side, this script
+ * reads that attribute and treats it as the authoritative initial theme,
+ * overriding whatever is stored in sessionStorage/localStorage.
+ *
  * CSS variables and theme overrides live in src/styles/tokens.css,
  * imported once by src/layouts/Base.astro.
  */
@@ -113,9 +117,18 @@
       return true;
     };
 
-    var t = readSavedTheme();
-    if (t) {
-      window.__applyDdaTheme(t);
+    // If the page was server-rendered with a specific data-theme attribute,
+    // that value is the authoritative initial theme — persist it and apply it,
+    // overriding whatever the user had stored from previous sessions.
+    var serverTheme = document.documentElement.getAttribute('data-theme');
+    if (serverTheme && isThemeKey(serverTheme)) {
+      persistTheme(serverTheme);
+      window.__applyDdaTheme(serverTheme);
+    } else {
+      var t = readSavedTheme();
+      if (t) {
+        window.__applyDdaTheme(t);
+      }
     }
 
     window.addEventListener('pageshow', function() {
