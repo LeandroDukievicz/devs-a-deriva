@@ -132,6 +132,11 @@
     }
 
     window.addEventListener('pageshow', function() {
+      if (serverTheme && isThemeKey(serverTheme)) {
+        window.__applyDdaTheme(serverTheme);
+        return;
+      }
+
       var restoredTheme = readSavedTheme();
       if (restoredTheme && document.documentElement.dataset.theme !== restoredTheme) {
         window.__applyDdaTheme(restoredTheme);
