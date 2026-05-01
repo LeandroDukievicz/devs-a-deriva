@@ -1,6 +1,6 @@
 # Devs à Deriva
 
-**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. Não é um blog genérico: a proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e uma base preparada para evoluir para conteúdo dinâmico.
+**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. Não é um blog genérico: a proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e conteúdo já sincronizado com o dashboard.
 
 ## Propósito
 
@@ -15,31 +15,30 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - CSS escopado em componentes/páginas Astro para interações visuais específicas.
 - Canvas e JavaScript nativo para experiências interativas.
 - Dashboard/admin em desenvolvimento para gerenciamento de posts.
-- Backend e banco de dados planejados para conteúdo dinâmico.
+- Backend e banco de dados já fornecem posts publicados, dados do autor e progresso de leitura.
 - [Vercel Analytics](https://vercel.com/analytics) integrado ao projeto.
 
 ## Funcionalidades
 
 ### Atual
 
-- Home com experiência visual imersiva.
-- Cards de posts com interação e progresso de leitura.
+- Home com experiência visual imersiva e cards abastecidos pelo dashboard.
+- Cards de posts com interação, progresso de leitura em tempo real e estado de conclusão.
 - Categorias editoriais.
-- Páginas individuais de posts com hero, metadados, imagem de capa e navegação contextual.
+- Páginas individuais de posts com hero, metadados, imagem de capa, navegação contextual e leitura sincronizada.
 - CTA de newsletter com validação básica e animação de confirmação visual.
 - Página de manifesto com crawl scroll-driven em perspectiva.
 - Sistema de temas visuais.
 - Páginas de erro customizadas.
 - Página inicial de login/admin.
+- Links sociais do autor refletidos a partir da configuração do dashboard.
 
 ### Planejado
 
-- Sistema real de posts.
 - Dashboard/admin para criar, editar e publicar conteúdos.
-- Banco de dados para conteúdo dinâmico.
 - Gestão de categorias e autores.
 - Comentários ou reações.
-- Integrações futuras com analytics, busca e métricas de leitura.
+- Integrações futuras com analytics, busca e métricas editoriais.
 
 ## Estrutura do Projeto
 
@@ -102,3 +101,5 @@ Em desenvolvimento.
 ## Documentação
 
 A documentação técnica e decisões de produto devem ficar centralizadas na pasta [`/docs`](./docs).
+
+O fluxo atual de conteúdo sai do dashboard, passa pela API e alimenta a home, as páginas de post e os cards de progresso de leitura.
