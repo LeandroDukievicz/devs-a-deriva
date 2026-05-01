@@ -2,6 +2,12 @@ export interface Author {
   name: string;
   role: string;
   photo: string;
+  socialLinks: {
+    linkedin: string | null;
+    github: string | null;
+    instagram: string | null;
+    twitter: string | null;
+  };
 }
 
 export interface Post {
@@ -11,334 +17,259 @@ export interface Post {
   categorySlug: string;
   excerpt: string;
   content: string;
+  contentHtml: string;
   readTime: string;
   hashtag: string;
   author: Author;
+  thumbUrl?: string | null;
   featured?: boolean;
 }
 
-const authors = {
-  leandro: {
-    name: 'Leandro Dukievicz',
-    role: 'Engenheiro de Software',
-    photo: 'https://i.pravatar.cc/150?img=11',
-  },
-  ana: {
-    name: 'Ana Lima',
-    role: 'Frontend Developer',
-    photo: 'https://i.pravatar.cc/150?img=47',
-  },
-  carlos: {
-    name: 'Carlos Mendes',
-    role: 'DevOps & SRE',
-    photo: 'https://i.pravatar.cc/150?img=33',
-  },
-  julia: {
-    name: 'Julia Ferraz',
-    role: 'Backend Engineer',
-    photo: 'https://i.pravatar.cc/150?img=54',
-  },
-} satisfies Record<string, Author>;
+const CATEGORY_MAP: Record<string, { label: string; hashtag: string }> = {
+  aleatoriedades: { label: 'Aleatoriedades', hashtag: '#devaneios' },
+  carreira:       { label: 'Carreira Profissional', hashtag: '#carreira' },
+  livros:         { label: 'Livros & Leituras', hashtag: '#livros' },
+  musica:         { label: 'Música', hashtag: '#musica' },
+  noticias:       { label: 'Notícias', hashtag: '#noticias' },
+  tech:           { label: 'Tech', hashtag: '#tech' },
+};
 
-export const posts: Post[] = [
-  {
-    slug: 'portas-que-nao-levam-a-lugar-nenhum',
-    title: 'Portas que não levam a lugar nenhum',
-    category: 'Aleatoriedades',
-    categorySlug: 'aleatoriedades',
-    excerpt: 'Às vezes, o caminho mais interessante é aquele que não tem destino.',
-    readTime: '5 min',
-    hashtag: '#devaneios',
-    author: authors.leandro,
+function estimateReadTime(content: string): string {
+  const words = content.trim().split(/\s+/).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function slugText(value: string): string {
+  return value
+    .replace(/[#>*_`[\]()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function stripTitleHeading(content: string, title: string): string {
+  const normalizedTitle = slugText(title);
+  return content
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .filter((line) => {
+      const match = line.match(/^#{1,6}\s+(.+)$/);
+      return !match || slugText(match[1]) !== normalizedTitle;
+    })
+    .join('\n')
+    .trim();
+}
+
+function markdownToText(value: string): string {
+  return value
+    .replace(/\r\n?/g, '\n')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/^\s*[-*_]{3,}\s*$/gm, '')
+    .replace(/!?\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/[`*_~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function formatInline(value: string): string {
+  let html = escapeHtml(value);
+
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g, (_match, label, href) => {
+    return `<a href="${href}" target="${href.startsWith('http') ? '_blank' : '_self'}" rel="noopener noreferrer">${label}</a>`;
+  });
+
+  return html;
+}
+
+function formatImage(alt: string, src: string): string {
+  const safeSrc = escapeHtml(src);
+  const safeAlt = escapeHtml(alt);
+  return `<figure class="post-content-image"><img src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async" /></figure>`;
+}
+
+function markdownToHtml(markdown: string): string {
+  const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+  const blocks: string[] = [];
+  let paragraph: string[] = [];
+  let list: string[] = [];
+  let quote: string[] = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    blocks.push(`<p>${formatInline(paragraph.join(' '))}</p>`);
+    paragraph = [];
+  };
+
+  const flushList = () => {
+    if (!list.length) return;
+    blocks.push(`<ul>${list.map((item) => `<li>${formatInline(item)}</li>`).join('')}</ul>`);
+    list = [];
+  };
+
+  const flushQuote = () => {
+    if (!quote.length) return;
+    blocks.push(`<blockquote><p>${formatInline(quote.join(' '))}</p></blockquote>`);
+    quote = [];
+  };
+
+  const flushAll = () => {
+    flushParagraph();
+    flushList();
+    flushQuote();
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushAll();
+      continue;
+    }
+
+    const image = trimmed.match(/^!\[([^\]]*)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)(?:\s+"[^"]*")?\)$/);
+    if (image) {
+      flushAll();
+      blocks.push(formatImage(image[1], image[2]));
+      continue;
+    }
+
+    const heading = trimmed.match(/^(#{2,6})\s+(.+)$/);
+    if (heading) {
+      flushAll();
+      const level = Math.min(4, heading[1].length);
+      blocks.push(`<h${level}>${formatInline(heading[2])}</h${level}>`);
+      continue;
+    }
+
+    if (/^[-*_]{3,}$/.test(trimmed)) {
+      flushAll();
+      blocks.push('<hr>');
+      continue;
+    }
+
+    const quoteMatch = trimmed.match(/^>\s?(.*)$/);
+    if (quoteMatch) {
+      flushParagraph();
+      flushList();
+      quote.push(quoteMatch[1]);
+      continue;
+    }
+
+    const listMatch = trimmed.match(/^[-*]\s+(.+)$/);
+    if (listMatch) {
+      flushParagraph();
+      flushQuote();
+      list.push(listMatch[1]);
+      continue;
+    }
+
+    flushList();
+    flushQuote();
+    paragraph.push(trimmed);
+  }
+
+  flushAll();
+  return blocks.join('\n');
+}
+
+function hasValidSlug(raw: unknown): raw is { slug: string } {
+  return (
+    typeof raw === 'object' &&
+    raw !== null &&
+    typeof (raw as { slug?: unknown }).slug === 'string' &&
+    (raw as { slug: string }).slug.trim().length > 0
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPost(raw: any): Post {
+  const categorySlug = raw.category ?? '';
+  const cat = CATEGORY_MAP[categorySlug] ?? { label: categorySlug, hashtag: `#${categorySlug}` };
+  const title = raw.title ?? 'Post sem titulo';
+  const content = stripTitleHeading(raw.content ?? '', title);
+  const excerpt = markdownToText(raw.excerpt ?? content).slice(0, 240);
+  const author: Author = raw.author?.displayName
+    ? {
+        name: raw.author.displayName,
+        role: raw.author.jobTitle ?? 'Colaborador',
+        photo: raw.author.photoUrl ?? '/logo-high-color.webp',
+        socialLinks: {
+          linkedin: raw.author.socialLinks?.linkedin ?? raw.author.linkedinUrl ?? null,
+          github: raw.author.socialLinks?.github ?? raw.author.githubUrl ?? null,
+          instagram: raw.author.socialLinks?.instagram ?? raw.author.instagramUrl ?? null,
+          twitter: raw.author.socialLinks?.twitter ?? raw.author.twitterUrl ?? null,
+        },
+      }
+    : {
+        name: 'Devs à Deriva',
+        role: 'Editorial',
+        photo: '/logo-high-color.webp',
+        socialLinks: {
+          linkedin: null,
+          github: null,
+          instagram: null,
+          twitter: null,
+        },
+      };
+
+  return {
+    slug: raw.slug,
+    title,
+    category: cat.label,
+    categorySlug,
+    excerpt,
+    content,
+    contentHtml: markdownToHtml(content),
+    readTime: estimateReadTime(content),
+    hashtag: cat.hashtag,
+    author,
+    thumbUrl: raw.thumbUrl ?? null,
     featured: true,
-    content: `Existe uma porta nos fundos do escritório que ninguém abre. Não porque esteja trancada — a maçaneta gira, a dobradiça range, o vão existe. Mas ninguém abre.
-
-Passei semanas observando isso antes de entender: às vezes as pessoas constroem saídas que não pretendem usar. A porta existe como promessa, não como caminho.
-
-No código é igual. Quantas abstrações você já escreveu pra casos de uso que nunca vieram? Quantas interfaces genéricas que só têm uma implementação? A porta existe. O outro lado, não.
-
-Tem algo de honesto em admitir que você construiu uma saída de emergência que é mais decoração do que contingência. O problema é quando você confunde as duas coisas na hora de tomar decisões.
-
-A porta dos fundos do escritório agora tem uma planta na frente. Ninguém moveu a planta. Ninguém vai mover. E tá tudo bem — algumas portas existem pra lembrar que você poderia sair, não pra você sair de fato.
-
-Só não confunda isso com covardia. Às vezes você escolhe ficar não porque não tem saída, mas porque o que tem aqui vale mais do que o que pode ter lá fora.
-
-A diferença importa.`,
-  },
-  {
-    slug: 'navegando-em-mares-que-inventei',
-    title: 'Navegando em mares que inventei',
-    category: 'Aleatoriedades',
-    categorySlug: 'aleatoriedades',
-    excerpt: 'Construo barcos de papel para cruzar oceanos imaginários.',
-    readTime: '6 min',
-    hashtag: '#pensamentos',
-    author: authors.ana,
-    featured: true,
-    content: `Todo projeto começa como um oceano que você inventou. Você não sabe a profundidade, não tem mapa, e o barco que você tem é o que você conseguiu construir com o que sabia até ontem.
-
-Aí você navega.
-
-No começo parece irresponsável — partir sem saber onde vai chegar. Mas com o tempo você percebe que o oceano vai tomando forma conforme você avança nele. O mapa não existe antes da viagem. O mapa é a viagem.
-
-O problema é que a maioria das pessoas espera o mapa pronto antes de sair do porto. E o porto fica cheio de barcos bem construídos que nunca navegaram.
-
-Barcos de papel parecem frágeis. E são. Mas um barco de papel no oceano aprende mais sobre oceanos do que o barco perfeito que ficou na prateleira esperando condições ideais.
-
-Condições ideais não existem. Só existem condições reais e o que você faz com elas.
-
-Construa o barco. Entre no mar. Aprenda a nadar enquanto o barco afunda se necessário. Mas vá.`,
-  },
-  {
-    slug: 'cartas-para-meu-eu-do-futuro',
-    title: 'Cartas para meu eu do futuro',
-    category: 'Aleatoriedades',
-    categorySlug: 'aleatoriedades',
-    excerpt: 'Se alguém encontrar isso um dia, me lembra de quem eu era.',
-    readTime: '7 min',
-    hashtag: '#reflexões',
-    author: authors.julia,
-    featured: false,
-    content: `Eu comecei a escrever cartas para mim mesmo depois de perceber que estava esquecendo quem eu era antes de saber o que sei agora.
-
-É uma armadilha curiosa do aprendizado: quanto mais você aprende, mais difícil fica de lembrar como era não saber. O código que parecia impossível um dia vira trivial, e junto vai embora a memória de como era estar diante do impossível.
-
-As cartas são um arquivo contra esse esquecimento.
-
-Não cartas do tipo "invista em bitcoin" ou "não namora fulana". Cartas que registram como eu pensava um problema antes de resolvê-lo. A lógica torta que eu usava. As perguntas que eu tinha medo de fazer porque pareciam óbvias demais.
-
-Você pode chamar de journaling técnico. Mas pra mim é arqueologia do próprio raciocínio.
-
-Quando leio uma carta de dois anos atrás, às vezes fico surpreso com o quão perto eu estava de uma solução sem saber. Às vezes fico surpreso com o quão longe. Mas sempre fico grato por ter guardado as evidências.
-
-A pessoa que vai ler essa carta daqui a dois anos vai sorrir pra algumas partes. Vai franzir o cenho pra outras. E vai, espero, entender que o caminho entre um ponto e o outro não foi linha reta.
-
-Raramente é.`,
-  },
-  {
-    slug: 'o-estado-atual-da-ia-no-desenvolvimento',
-    title: 'O estado atual da IA no desenvolvimento — sem hype',
-    category: 'Tech',
-    categorySlug: 'tech',
-    excerpt: 'Depois de um ano usando IA no dia a dia, o que realmente mudou e o que é só ruído.',
-    readTime: '8 min',
-    hashtag: '#ia',
-    author: authors.leandro,
-    featured: true,
-    content: `Deixa eu ser direto: a IA não vai te substituir. Mas vai substituir quem não souber usá-la — e essa distinção importa mais do que parece.
-
-Faz um ano que tenho IA integrada no meu fluxo de trabalho de verdade, não no modo "testei uma vez e achei legal". De verdade mesmo, dia a dia, produção, decisões que importam.
-
-O que mudou:
-
-Autocomplete ficou inteligente de verdade. Não é mais sugestão de variável — é sugestão de intenção. Você começa a digitar uma lógica e ela termina. Certo talvez 60% das vezes. 60% é muito.
-
-Debugging melhorou. Jogar um stack trace e receber não só a causa mas contexto histórico de erros similares — isso tem valor real.
-
-Documentação... ainda é ruim. A IA gera documentação, mas gera documentação que parece documentação. O problema é que documentação que parece documentação geralmente não serve pra nada.
-
-O que não mudou:
-
-Arquitetura ainda é sua. A IA não sabe o que você não sabe dizer. Se você não consegue articular o problema, ela vai articular um problema diferente do seu muito bem.
-
-Code review ainda precisa de humano. A IA não pega o erro de negócio. Pega o erro de sintaxe, o erro de padrão, o erro óbvio. O erro que importa — o que está certo mas errado — ainda é com você.
-
-O ruído vai diminuir. O sinal vai ficar mais claro. E o sinal é: a IA é uma ferramenta que amplifica o que você já é. Se você é bom, fica melhor mais rápido. Se você é ruim, fica ruim mais rápido também.`,
-  },
-  {
-    slug: 'typescript-strict-mode-vale-a-pena',
-    title: 'TypeScript strict mode: vale a dor de cabeça?',
-    category: 'Tech',
-    categorySlug: 'tech',
-    excerpt: 'Habilitei strict em um projeto legado. Aqui está o que aprendi.',
-    readTime: '6 min',
-    hashtag: '#typescript',
-    author: authors.julia,
-    featured: true,
-    content: `Sim. Vale. Mas deixa eu te dar contexto.
-
-Habilitei strict mode em um projeto que tinha dois anos de TypeScript "relaxado". Levou três dias de correções antes de conseguir um build limpo. Foram três dias úteis, não de horas — dias.
-
-O que apareceu:
-
-Nulls por toda parte. O código estava cheio de "isso nunca vai ser null na prática" que eram só esperança disfarçada de certeza. O compilador não aceita esperança.
-
-Tipos any escondidos. Você descobre quantos any implícitos você estava carregando sem saber. Cada um é uma dívida técnica com juros compostos.
-
-Funções sem retorno declarado. Parece frescura. Não é. Quando você força o tipo de retorno, você descobre inconsistências que o runtime ia te mostrar em produção, não em desenvolvimento.
-
-O que vale:
-
-Depois dos três dias, o código ficou honesto. Não mais rápido, não mais bonito — honesto. O compilador passou a ser documentação viva do que o código realmente faz versus o que você achou que fazia.
-
-A manutenção depois ficou mais fácil. Não dramaticamente — mas cada mudança passou a ter feedback imediato sobre o que ela quebra. Isso tem valor que só aparece no décimo segundo mês do projeto, não no segundo.
-
-Se você vai começar um projeto novo, ativa strict desde o dia um. Se é legado: planeja uma semana, não um sprint.`,
-  },
-  {
-    slug: 'mercado-tech-2024-sem-maquiagem',
-    title: 'Mercado tech em 2024: sem maquiagem',
-    category: 'Carreira Profissional',
-    categorySlug: 'carreira',
-    excerpt: 'O que realmente está acontecendo no mercado e como navegar isso.',
-    readTime: '9 min',
-    hashtag: '#mercado',
-    author: authors.carlos,
-    featured: true,
-    content: `Vou falar o que eu vejo, não o que é confortável de ouvir.
-
-O mercado está difícil. Não "difícil" como "precisa de esforço" — difícil como "as regras mudaram e muita gente ainda não percebeu".
-
-O que mudou de fato:
-
-O volume de vagas sênior caiu, mas a exigência subiu. Antes, sênior era quem sabia fazer. Agora, sênior é quem sabe fazer, decide quando não fazer, e consegue explicar os dois para não-técnicos.
-
-Fullstack virou expectativa mínima em startup, não diferencial. Especialização profunda ainda tem valor em enterprise, mas a maioria das vagas quer T-shaped.
-
-Soft skills deixaram de ser bonus. Comunicação escrita assíncrona, gestão de expectativas, autonomia sem supervisão — isso está na mesma lista de requisitos que as stacks técnicas.
-
-O que não mudou:
-
-Quem resolve problemas reais ainda é contratado. O mercado está rejeitando quem sabe fazer demos, não quem entrega.
-
-Referência ainda é o canal mais eficiente. LinkedIn frio funciona muito menos do que uma conversa com alguém que já trabalhou com você.
-
-O que fazer:
-
-Construa evidências, não só currículo. Um projeto real no ar vale mais do que dez certificados em tecnologias que você estudou mas não usou.
-
-Escolha onde quer chegar e trace o caminho para trás. "Quero ser senior em dois anos" é um plano. "Quero crescer na área" não é.
-
-O mercado está mais honesto, não mais cruel. Apenas exige que você também seja.`,
-  },
-  {
-    slug: 'como-pedir-aumento-sendo-dev',
-    title: 'Como pedir aumento sendo dev — o guia que ninguém te deu',
-    category: 'Carreira Profissional',
-    categorySlug: 'carreira',
-    excerpt: 'A conversa mais difícil da sua carreira não precisa ser um tiro no escuro.',
-    readTime: '7 min',
-    hashtag: '#carreira',
-    author: authors.ana,
-    featured: false,
-    content: `A maioria dos devs que pede aumento e não recebe cometeu o mesmo erro: não preparou o caso. Chegou na reunião com "acho que mereço mais" e saiu com "vamos conversar no próximo ciclo".
-
-"Vamos conversar no próximo ciclo" é não, com prazo indeterminado.
-
-Como preparar o caso:
-
-Documente entregas nos últimos seis meses. Não "participei do projeto X" — "implementei a feature Y que resultou em Z mensurável". Se você não tem Z mensurável, encontre o mais próximo de Z que você tiver.
-
-Pesquise o mercado. Glassdoor, LinkedIn Salary, conversa com pessoas do mercado. Você precisa de um número ancorado em dados, não em expectativa.
-
-Escolha o momento. Depois de uma entrega grande. Depois de uma avaliação positiva. Não na semana em que o time está apagando incêndio.
-
-A conversa:
-
-Não peça. Apresente. "Nos últimos seis meses entregamos X, Y e Z. O mercado paga R$ [número] para esse perfil. Quero entender se existe caminho para chegar nesse valor aqui."
-
-Isso é diferente de "acho que mereço mais".
-
-Um é dado. O outro é opinião. Dado é mais difícil de negar.
-
-Se a resposta for não: peça o que precisaria mudar para ser sim, e com qual prazo. Resposta vaga não é resposta — é adiamento.`,
-  },
-  {
-    slug: 'dune-e-o-que-aprendi-sobre-lideranca',
-    title: 'Dune e o que aprendi sobre liderança técnica',
-    category: 'Livros & Leituras',
-    categorySlug: 'livros',
-    excerpt: 'Reli Dune e não consegui parar de pensar em arquitetura de sistemas.',
-    readTime: '7 min',
-    hashtag: '#livros',
-    author: authors.leandro,
-    featured: true,
-    content: `Eu sei que parece forçado. Mas me ouça.
-
-Reli Dune faz três semanas e não consigo parar de pensar em um trecho específico — o momento em que Paul percebe que suas visões do futuro não são certeza, são probabilidade. Quanto mais você age baseado nelas, mais você colapsa as outras possibilidades.
-
-Em arquitetura de sistemas isso se chama lock-in.
-
-Toda decisão técnica é uma aposta em um futuro. Quando você escolhe a stack, o banco, o padrão arquitetural — você está colapsando possibilidades. O problema não é a escolha. É quando a escolha vira certeza antes de ser validada.
-
-O que Herbert estava descrevendo em Arrakis é o custo da previsibilidade forçada. Paul sabe o que vai acontecer. E isso é mais prisão do que poder.
-
-Os melhores líderes técnicos que trabalhei junto tinham algo em comum: tomavam decisões reversíveis o maior tempo possível. Não porque eram indecisos — porque entendiam que o custo de reverter uma decisão errada é muito maior do que o custo de esperar mais um sprint por informação.
-
-Dune tem 800 páginas de consequence driven design. De como sistemas complexos se comportam quando as decisões de hoje constrangem as escolhas de amanhã.
-
-Isso é o que boas arquiteturas evitam.
-
-Leia Dune. Pense em microsserviços. Não é tão absurdo quanto parece.`,
-  },
-  {
-    slug: 'playlists-que-uso-pra-codar',
-    title: 'As playlists que uso pra codar — e por quê funcionam',
-    category: 'Música',
-    categorySlug: 'musica',
-    excerpt: 'Não é qualquer música que serve. Tem ciência por trás disso.',
-    readTime: '5 min',
-    hashtag: '#musica',
-    author: authors.ana,
-    featured: true,
-    content: `Existe um tipo específico de música que me faz codar bem e outro que me faz codar rápido. Não são a mesma coisa.
-
-Codar bem — problemas complexos, arquitetura, debugging difícil — precisa de música sem letra, preferencialmente instrumental. Lo-fi, jazz eletrônico, post-rock. A letra compete com o monólogo interno que você usa pra pensar no problema. Música com letra vence essa disputa e você perde o fio.
-
-Codar rápido — tarefas mecânicas, refatoração óbvia, testes repetitivos — funciona bem com qualquer coisa que te energize. Letra, batida forte, o que for. Você não está processando, está executando.
-
-As playlists que funcionam pra mim:
-
-Para foco profundo: álbuns do Explosions in the Sky, Boards of Canada, Jon Hopkins. Sem shuffle — a ordem importa, foi curada por alguém.
-
-Para energia: Tame Impala, MGMT, coisas com groove constante. O objetivo é manter cadência, não inspiração.
-
-Para transições (aquele momento entre terminar uma coisa e começar outra): silêncio. Sério. Cinco minutos sem nada antes de entrar em algo novo fazem diferença.
-
-O que não funciona: podcast enquanto coda. Você está processando linguagem para entender o podcast E para escrever código. Um dos dois vai sair pior. Geralmente o código.
-
-Teste isso por uma semana. Mude só a música e veja o que acontece com seu foco.`,
-  },
-  {
-    slug: 'open-ai-o1-o-que-muda-na-pratica',
-    title: 'OpenAI o1: o que muda na prática pra quem desenvolve',
-    category: 'Notícias',
-    categorySlug: 'noticias',
-    excerpt: 'Testei por duas semanas antes de escrever. Aqui está o que é real.',
-    readTime: '6 min',
-    hashtag: '#openai',
-    author: authors.carlos,
-    featured: true,
-    content: `Passei duas semanas usando o o1 antes de escrever qualquer coisa sobre ele. Queria ter opinião, não impressão.
-
-O que é diferente de verdade:
-
-Raciocínio em cadeia visível. O modelo "pensa" antes de responder — e esse processo de pensamento é trackeável. Para debugging complexo e problemas de lógica, isso muda o resultado, não só a velocidade.
-
-Matemática e algoritmos melhoraram de forma notável. Problemas que o GPT-4 resolvia pela metade agora chegam ao fim com mais consistência. Não é perfeito, mas a diferença é perceptível.
-
-Código em linguagens menos populares melhorou. Elixir, Rust, coisas com menos presença no training data parecem se beneficiar mais do raciocínio explícito do que do padrão de completude dos modelos anteriores.
-
-O que não mudou:
-
-Alucinação ainda existe. Menor, mas existe. Continue validando referências externas.
-
-Contexto longo ainda é ponto fraco. Documentos grandes, codebases complexas — o modelo ainda perde fio com mais de 50k tokens de contexto relevante.
-
-Velocidade é menor. O raciocínio custa tempo. Para tarefas simples, GPT-4o ainda é mais prático.
-
-O o1 não é "melhor" no sentido absoluto. É melhor em um conjunto específico de tarefas que se sobrepõem bastante com o trabalho de desenvolvimento de software. Vale o teste controlado antes de mudar seu fluxo de trabalho.`,
-  },
-];
-
-export function getPost(slug: string): Post | undefined {
+  };
+}
+
+const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
+
+let _cache: Post[] | null = null;
+
+export async function fetchPosts(): Promise<Post[]> {
+  if (_cache && import.meta.env.PROD) return _cache;
+  try {
+    const res = await fetch(`${DASHBOARD_URL}/api/posts?status=PUBLISHED`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    _cache = (data as unknown[]).filter(hasValidSlug).map(mapPost);
+    return _cache;
+  } catch {
+    return [];
+  }
+}
+
+export async function getPost(slug: string): Promise<Post | undefined> {
+  const posts = await fetchPosts();
   return posts.find(p => p.slug === slug);
 }
 
-export function getPostsByCategory(categorySlug: string): Post[] {
+export async function getPostsByCategory(categorySlug: string): Promise<Post[]> {
+  const posts = await fetchPosts();
   return posts.filter(p => p.categorySlug === categorySlug);
 }
 
-export function getFeaturedByCategory(categorySlug: string): Post[] {
-  return posts.filter(p => p.categorySlug === categorySlug && p.featured);
+export async function getFeaturedByCategory(categorySlug: string): Promise<Post[]> {
+  return getPostsByCategory(categorySlug);
 }

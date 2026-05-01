@@ -2,19 +2,18 @@
 import Base from '../../layouts/Base.astro';
 import StarBackground from '../../components/StarBackground.astro';
 import Comments from '../../components/Comments.astro';
-import { posts, getPost } from '../../lib/posts';
+import { fetchPosts, type Post } from '../../lib/posts';
 
-export function getStaticPaths() {
-  return posts.map(post => ({ params: { slug: post.slug } }));
+export async function getStaticPaths() {
+  const posts = await fetchPosts();
+  return posts.map((post, index) => ({
+    params: { slug: post.slug },
+    props: { post, nextPost: posts[index + 1] ?? posts[0] },
+  }));
 }
 
-const { slug } = Astro.params;
-const post = getPost(slug);
-
-if (!post) return Astro.redirect('/404');
-
-const currentIndex = posts.findIndex(p => p.slug === slug);
-const nextPost = posts[currentIndex + 1] ?? posts[0];
+const { post, nextPost } = Astro.props as { post: Post; nextPost: Post };
+const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 const postImages: Record<string, string> = {
   'portas-que-nao-levam-a-lugar-nenhum': '/home-portas-que-nao-levam-a-lugar-nenhum.png',
   'navegando-em-mares-que-inventei': '/home-navegando-em-mares-que-inventei.png',
@@ -30,7 +29,7 @@ const categoryImages: Record<string, string> = {
   noticias: '/noticias-astronaut.webp',
   tech: '/tech-astronaut.webp',
 };
-const postHeroImage = postImages[post.slug] ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp';
+const postHeroImage = post.thumbUrl ?? postImages[post.slug] ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp';
 const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 ---
@@ -38,7 +37,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 <Base title={`${post.title} · Devs à Deriva`} description={post.excerpt}>
   <StarBackground />
 
-  <article class="post-page">
+  <article class="post-page" data-post-slug={post.slug} data-dashboard-url={DASHBOARD_URL}>
     <header class="post-header">
       <div class="post-header-main">
         <div class="post-header-copy">
@@ -65,6 +64,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
               {post.readTime} de leitura
+              <span class="post-reading-progress" data-progress-label>0% lido</span>
             </div>
           </div>
 
@@ -90,6 +90,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
               {post.readTime} de leitura
+              <span class="post-reading-progress" data-progress-label>0% lido</span>
             </div>
           </div>
         </div>
@@ -102,11 +103,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 
     <div class="post-divider"></div>
 
-    <div class="post-body">
-      {post.content.split('\n\n').map(paragraph => (
-        <p>{paragraph}</p>
-      ))}
-    </div>
+    <div class="post-body" set:html={post.contentHtml}></div>
 
     <Comments postSlug={post.slug} />
 
@@ -388,13 +385,87 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     animation: fade-up 0.55s ease 0.3s both;
   }
 
-  .post-body p {
+  .post-body :global(p),
+  .post-body :global(li),
+  .post-body :global(blockquote) {
     margin: 0;
     font-family: monospace;
     font-size: 0.88rem;
     line-height: 1.9;
     color: var(--color-text);
     opacity: 0.85;
+  }
+
+  .post-body :global(h2),
+  .post-body :global(h3),
+  .post-body :global(h4) {
+    margin: 10px 0 -6px;
+    font-family: monospace;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-star);
+    letter-spacing: 0.04em;
+  }
+
+  .post-body :global(h2) {
+    font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  }
+
+  .post-body :global(h3),
+  .post-body :global(h4) {
+    font-size: 0.98rem;
+  }
+
+  .post-body :global(blockquote) {
+    padding: 14px 18px;
+    border-left: 2px solid var(--color-accent);
+    background: var(--color-star-05);
+  }
+
+  .post-body :global(ul) {
+    margin: 0;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .post-body :global(hr) {
+    width: 100%;
+    height: 1px;
+    margin: 4px 0;
+    border: 0;
+    background: linear-gradient(to right, transparent, var(--color-star-25), transparent);
+  }
+
+  .post-body :global(.post-content-image) {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0;
+  }
+
+  .post-body :global(.post-content-image img) {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 680px;
+    border-radius: 14px;
+    object-fit: contain;
+  }
+
+  .post-body :global(a) {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-accent-40);
+  }
+
+  .post-body :global(code) {
+    padding: 2px 5px;
+    border: 1px solid var(--color-star-16);
+    border-radius: 4px;
+    background: var(--color-star-05);
+    color: var(--color-star);
   }
 
   .newsletter-block {
@@ -911,7 +982,9 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
       font-size: 0.56rem;
     }
 
-    .post-body p {
+    .post-body :global(p),
+    .post-body :global(li),
+    .post-body :global(blockquote) {
       font-size: 0.82rem;
       line-height: 1.8;
     }
