@@ -20,7 +20,7 @@ Estes são os únicos itens que bloqueiam a produção. Nada mais precisa estar 
 - [x] **Corrigir XSS nos comentários** — refatorar `src/components/Comments.astro` para não usar `innerHTML` com dados externos; montar DOM com `textContent` e `createElement`
 - [x] **Atualizar dependências vulneráveis** — atualizar Astro, Vite, esbuild e PostCSS; rodar `npm audit` até não restar advisory alto/crítico
 - [x] **Criar `.env.example`** — listar todas as variáveis necessárias sem valores reais para que o projeto possa ser configurado
-- [ ] **Deploy na Vercel** — configurar o blog com `PUBLIC_DASHBOARD_URL` apontando para o backend de produção; confirmar que `npm run build` passa sem erro
+- [x] **Deploy na Vercel** — configurar o blog com `PUBLIC_DASHBOARD_URL` apontando para o backend de produção; confirmar que `npm run build` passa sem erro
 - [ ] **Verificar conteúdo real** — confirmar que posts publicados no banco aparecem no blog em produção e que falha de API não quebra o site
 
 **Critério único:** se os seis itens acima estiverem feitos, o projeto pode ir ao ar.
