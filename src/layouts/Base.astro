@@ -5,14 +5,10 @@ import Navbar from '../components/Navbar.astro';
 import Analytics from '@vercel/analytics/astro';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import type { ThemeKey } from '../lib/themes';
 
 interface Props {
   title?: string;
   description?: string;
-  /** Define o tema inicial server-side via data-theme no <html>.
-   *  O ThemeProvider lê este valor e sobrescreve qualquer tema salvo em storage. */
-  initialTheme?: ThemeKey;
   /** Esconde a Navbar (ex: páginas de erro) */
   hideNavbar?: boolean;
 }
@@ -20,7 +16,6 @@ interface Props {
 const {
   title = 'Devs à Deriva',
   description = 'Devs à Deriva é um blog sobre tecnologia, carreira, cultura nerd e vida real no desenvolvimento de software.',
-  initialTheme,
   hideNavbar = false,
 } = Astro.props;
 
@@ -32,7 +27,7 @@ const adminSvgInline = adminRaw
   .replace(/height="[^"]*"/, 'height="48"');
 ---
 
-<html lang="pt-BR" data-theme={initialTheme}>
+<html lang="pt-BR" data-theme="orbita-baixa" style="background-color: #020b18;">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

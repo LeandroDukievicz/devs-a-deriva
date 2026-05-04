@@ -114,6 +114,15 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
         <p class="newsletter-desc">Se quiser ficar por dentro dos novos posts, opiniões sem filtro e saber o que tá rolando no mundo tech, entra na lista. Sem spam, sem aquela encheção que faz você querer cancelar no segundo e-mail.</p>
       </div>
       <form class="newsletter-form" id="newsletter-form" novalidate>
+        <input
+          type="text"
+          class="newsletter-honeypot"
+          id="newsletter-website"
+          name="website"
+          autocomplete="off"
+          tabindex="-1"
+          aria-hidden="true"
+        />
         <div class="newsletter-input-wrap">
           <input
             type="email"
@@ -121,6 +130,8 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
             id="newsletter-email"
             placeholder="seu@email.com"
             autocomplete="email"
+            inputmode="email"
+            maxlength="254"
             aria-label="Seu e-mail"
             required
           />
@@ -131,6 +142,15 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
             </svg>
           </button>
         </div>
+        <label class="newsletter-consent">
+          <input type="checkbox" id="newsletter-consent" required />
+          <span class="newsletter-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span>Autorizo o uso deste e-mail para receber a newsletter e sei que posso solicitar exclusão a qualquer momento.</span>
+        </label>
         <p class="newsletter-status" id="newsletter-status" aria-live="polite"></p>
       </form>
       <div class="newsletter-overlay" id="newsletter-overlay" aria-live="polite" aria-hidden="true">
@@ -566,6 +586,15 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
   }
 
+  .newsletter-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .newsletter-block.is-confirmed .newsletter-content,
   .newsletter-block.is-confirmed .newsletter-form {
     opacity: 0;
@@ -629,6 +658,101 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
   .newsletter-btn:hover {
     background: var(--color-star-22);
     color: var(--color-accent);
+  }
+
+  .newsletter-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .newsletter-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-family: monospace;
+    font-size: 0.6rem;
+    line-height: 1.55;
+    letter-spacing: 0.05em;
+    color: var(--color-star);
+    opacity: 0.5;
+    cursor: pointer;
+  }
+
+  .newsletter-consent input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .newsletter-check {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+    border-radius: 4px;
+    border: 1px solid var(--color-star-40);
+    background:
+      linear-gradient(135deg, var(--color-star-08), transparent),
+      var(--color-star-05);
+    color: var(--color-bg);
+    box-shadow: inset 0 0 0 1px transparent;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+
+  .newsletter-check svg {
+    width: 11px;
+    height: 11px;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+
+  .newsletter-consent:hover .newsletter-check {
+    border-color: var(--color-star);
+    box-shadow: 0 0 12px var(--color-star-18);
+  }
+
+  .newsletter-consent input:focus-visible + .newsletter-check {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .newsletter-consent input:checked + .newsletter-check {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-bg);
+    box-shadow: 0 0 16px var(--color-accent-30);
+    transform: translateY(-1px);
+  }
+
+  .newsletter-consent input:checked + .newsletter-check svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .newsletter-consent input:not(:checked) + .newsletter-check {
+    animation: newsletter-check-pulse 2.6s ease-in-out infinite;
+  }
+
+  @keyframes newsletter-check-pulse {
+    0%, 100% {
+      box-shadow: inset 0 0 0 1px transparent, 0 0 0 rgba(255, 0, 180, 0);
+      transform: scale(1);
+    }
+    48% {
+      box-shadow: inset 0 0 0 1px rgba(255, 0, 180, 0.2), 0 0 14px rgba(255, 0, 180, 0.36);
+      transform: scale(1.05);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .newsletter-consent input:not(:checked) + .newsletter-check {
+      animation: none;
+    }
   }
 
   .newsletter-status {
@@ -1042,6 +1166,7 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 </style>
 
 <script>
+  import { validateAndNormalizeEmail } from '../../lib/newsletter-email';
   import {
     getLocalProgress,
     pushReadingProgress,
@@ -1201,8 +1326,12 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
   const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
   const status = document.getElementById('newsletter-status') as HTMLElement | null;
   const input = document.getElementById('newsletter-email') as HTMLInputElement | null;
+  const consent = document.getElementById('newsletter-consent') as HTMLInputElement | null;
+  const honeypot = document.getElementById('newsletter-website') as HTMLInputElement | null;
   const newsletterBlock = document.querySelector<HTMLElement>('.newsletter-block');
   const overlay = document.getElementById('newsletter-overlay') as HTMLElement | null;
+  const newsletterEndpoint = dashboardUrl ? `${dashboardUrl}/api/newsletter/subscribe` : '';
+  const newsletterMountedAt = Date.now();
   let overlayTimeout: ReturnType<typeof window.setTimeout> | undefined;
 
   const showNewsletterOverlay = () => {
@@ -1224,29 +1353,65 @@ const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
     }, 2400);
   };
 
-  form?.addEventListener('submit', (e) => {
+  form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!input || !status) return;
 
-    const email = input.value.trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const emailResult = validateAndNormalizeEmail(input.value);
+    if (!emailResult.isValid) {
       status.textContent = '> e-mail inválido.';
       status.className = 'newsletter-status error';
       return;
     }
 
-    // Visual only — backend será conectado posteriormente
+    if (!consent?.checked) {
+      status.textContent = '> confirme o recebimento da newsletter.';
+      status.className = 'newsletter-status error';
+      return;
+    }
+
+    if (!newsletterEndpoint) {
+      status.textContent = '> captação indisponível no momento.';
+      status.className = 'newsletter-status error';
+      return;
+    }
+
     const btn = form.querySelector<HTMLButtonElement>('.newsletter-btn');
     if (btn) btn.disabled = true;
     status.textContent = '> enviando...';
     status.className = 'newsletter-status';
 
-    setTimeout(() => {
+    try {
+      const response = await fetch(newsletterEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailResult.normalizedEmail,
+          originalEmail: emailResult.originalEmail,
+          source: 'post_newsletter',
+          postSlug,
+          consent: true,
+          consentText: 'Autorizo o uso deste e-mail para receber a newsletter e sei que posso solicitar exclusão a qualquer momento.',
+          website: honeypot?.value ?? '',
+          elapsedMs: Date.now() - newsletterMountedAt,
+          pageUrl: window.location.href,
+        }),
+      });
+
+      if (!response.ok && response.status >= 500) {
+        throw new Error('Newsletter endpoint unavailable');
+      }
+
       input.value = '';
-      status.textContent = '> você está na órbita. bem-vindo(a).';
+      if (consent) consent.checked = false;
+      status.textContent = '> se esse e-mail puder entrar na órbita, você receberá a confirmação.';
       status.className = 'newsletter-status success';
       showNewsletterOverlay();
+    } catch {
+      status.textContent = '> não foi possível registrar agora. tente novamente.';
+      status.className = 'newsletter-status error';
+    } finally {
       if (btn) btn.disabled = false;
-    }, 800);
+    }
   });
 </script>

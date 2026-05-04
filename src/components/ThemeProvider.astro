@@ -1,146 +1,31 @@
 ---
 /**
- * ThemeProvider — drop inside <head> on every page.
+ * ThemeProvider — keeps the single site theme stable before first paint.
  *
- * Restores the saved theme from localStorage before the first paint
- * to prevent flash of wrong background.
- *
- * When Base.astro renders <html data-theme="..."> server-side, this script
- * reads that attribute and treats it as the authoritative initial theme,
- * overriding whatever is stored in sessionStorage/localStorage.
- *
- * CSS variables and theme overrides live in src/styles/tokens.css,
- * imported once by src/layouts/Base.astro.
+ * Orbita Baixa is the only supported theme. The inline script removes old
+ * persisted theme values so previous sessions cannot force legacy themes.
  */
 ---
 
 <script is:inline>
   try {
-    var palettes = {
-      'orbita-baixa': {
-        bg: [2, 11, 24],
-        star: [0, 212, 232],
-        accent: [232, 0, 212],
-        text: [232, 244, 248]
-      },
-      'espaco-profundo': {
-        bg: [0, 0, 0],
-        star: [0, 122, 143],
-        accent: [148, 0, 184],
-        text: [232, 244, 248]
-      },
-      limbo: {
-        bg: [255, 255, 255],
-        star: [0, 0, 0],
-        accent: [0, 0, 0],
-        text: [0, 0, 0]
-      }
-    };
-
+    var THEME = 'orbita-baixa';
     var STORAGE_KEY = 'dda-theme';
-
-    function isThemeKey(key) {
-      return !!key && !!palettes[key];
-    }
-
-    function persistTheme(key) {
-      try { localStorage.setItem(STORAGE_KEY, key); } catch (_) {}
-      try { sessionStorage.setItem(STORAGE_KEY, key); } catch (_) {}
-    }
-
-    function readSavedTheme() {
-      var localTheme = null;
-      var sessionTheme = null;
-
-      try { sessionTheme = sessionStorage.getItem(STORAGE_KEY); } catch (_) {}
-      if (isThemeKey(sessionTheme)) {
-        persistTheme(sessionTheme);
-        return sessionTheme;
-      }
-
-      try { localTheme = localStorage.getItem(STORAGE_KEY); } catch (_) {}
-      if (isThemeKey(localTheme)) {
-        persistTheme(localTheme);
-        return localTheme;
-      }
-
-      return null;
-    }
-
-    function rgb(c, alpha) {
-      return alpha === undefined
-        ? 'rgb(' + c[0] + ' ' + c[1] + ' ' + c[2] + ')'
-        : 'rgb(' + c[0] + ' ' + c[1] + ' ' + c[2] + ' / ' + alpha + ')';
-    }
-
-    function mix(c, other, amount) {
-      var inverse = 1 - amount;
-      return rgb([
-        Math.round(c[0] * amount + other[0] * inverse),
-        Math.round(c[1] * amount + other[1] * inverse),
-        Math.round(c[2] * amount + other[2] * inverse)
-      ]);
-    }
-
-    function setThemeVars(key) {
-      var palette = palettes[key];
-      if (!palette) return;
-
-      var root = document.documentElement;
-      root.dataset.theme = key;
-      root.style.setProperty('--color-bg', rgb(palette.bg));
-      root.style.setProperty('--color-star', rgb(palette.star));
-      root.style.setProperty('--color-accent', rgb(palette.accent));
-      root.style.setProperty('--color-text', rgb(palette.text));
-      root.style.setProperty('--color-star-light', mix(palette.star, [255, 255, 255], 0.7));
-      root.style.setProperty('--color-star-dark', mix(palette.star, [0, 0, 0], 0.7));
-
-      [5, 8, 10, 16, 18, 22, 25, 40, 45, 70, 90].forEach(function(value) {
-        root.style.setProperty('--color-star-' + String(value).padStart(2, '0'), rgb(palette.star, value / 100));
-      });
-
-      [6, 8, 14, 16, 18, 20, 40, 60].forEach(function(value) {
-        root.style.setProperty('--color-accent-' + String(value).padStart(2, '0'), rgb(palette.accent, value / 100));
-      });
-
-      [70, 88, 90, 95].forEach(function(value) {
-        root.style.setProperty('--color-bg-' + value, rgb(palette.bg, value / 100));
-      });
-    }
-
-    window.__applyDdaTheme = function(key) {
-      if (!palettes[key]) return false;
-      setThemeVars(key);
-      persistTheme(key);
-      window.__bgColor = rgb(palettes[key].bg);
-      window.dispatchEvent(new CustomEvent('dda-theme-change', { detail: { theme: key } }));
-      return true;
+    var root = document.documentElement;
+    var vars = {
+      '--color-bg': '#020b18',
+      '--color-star': '#00d4e8',
+      '--color-accent': '#e800d4',
+      '--color-text': '#e8f4f8'
     };
 
-    // If the page was server-rendered with a specific data-theme attribute,
-    // that value is the authoritative initial theme — persist it and apply it,
-    // overriding whatever the user had stored from previous sessions.
-    var serverTheme = document.documentElement.getAttribute('data-theme');
-    if (serverTheme && isThemeKey(serverTheme)) {
-      persistTheme(serverTheme);
-      window.__applyDdaTheme(serverTheme);
-    } else {
-      var t = readSavedTheme();
-      if (t) {
-        window.__applyDdaTheme(t);
-      }
-    }
-
-    window.addEventListener('pageshow', function() {
-      if (serverTheme && isThemeKey(serverTheme)) {
-        window.__applyDdaTheme(serverTheme);
-        return;
-      }
-
-      var restoredTheme = readSavedTheme();
-      if (restoredTheme && document.documentElement.dataset.theme !== restoredTheme) {
-        window.__applyDdaTheme(restoredTheme);
-      }
+    document.documentElement.dataset.theme = THEME;
+    Object.keys(vars).forEach(function(key) {
+      root.style.setProperty(key, vars[key]);
     });
+    root.style.backgroundColor = '#020b18';
+    window.__bgColor = '#020b18';
+    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
   } catch (_) {}
 </script>

@@ -4,7 +4,7 @@ import CategoriaPage from '../../components/CategoriaPage.astro';
 import StarBackground from '../../components/StarBackground.astro';
 ---
 
-<Base title="Aleatoriedades · Devs à Deriva" initialTheme="orbita-baixa">
+<Base title="Aleatoriedades · Devs à Deriva">
   <StarBackground />
   <CategoriaPage
     category="Aleatoriedades"
@@ -13,27 +13,4 @@ import StarBackground from '../../components/StarBackground.astro';
     cornerIllustration="/aleatoriedades-astronaut-body.webp"
     animateIllustration
   />
-
-  <script is:inline>
-    (() => {
-      const THEME = 'orbita-baixa';
-      const STORAGE_KEY = 'dda-theme';
-
-      function forceInitialTheme() {
-        try { localStorage.setItem(STORAGE_KEY, THEME); } catch (_) {}
-        try { sessionStorage.setItem(STORAGE_KEY, THEME); } catch (_) {}
-
-        if (typeof window.__applyDdaTheme === 'function') {
-          window.__applyDdaTheme(THEME);
-          return;
-        }
-
-        document.documentElement.dataset.theme = THEME;
-      }
-
-      forceInitialTheme();
-      requestAnimationFrame(forceInitialTheme);
-      window.addEventListener('pageshow', forceInitialTheme);
-    })();
-  </script>
 </Base>

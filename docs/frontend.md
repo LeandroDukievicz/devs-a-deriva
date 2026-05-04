@@ -58,10 +58,10 @@ Responsabilidades:
 - renderizar título, resumo, autor, tempo de leitura e imagem principal;
 - exibir o corpo do post com foco em leitura;
 - adaptar links de retorno e CTA final de acordo com a origem da navegação;
-- apresentar CTA de newsletter com feedback visual de sucesso;
+- apresentar CTA de newsletter conectado ao backend publico via `PUBLIC_DASHBOARD_URL`, com validacao de UX, consentimento e feedback generico;
 - manter consistência responsiva entre header, corpo, newsletter e footer.
 
-No estado atual, o formulário da newsletter é visual e ainda não está conectado a backend.
+No estado atual, o formulário da newsletter nos posts envia leads para `/api/newsletter/subscribe` na origem configurada em `PUBLIC_DASHBOARD_URL`. O backend do dashboard faz validação definitiva, deduplicação, rate limit, persistência com consentimento e double opt-in. O frontend continua responsável apenas por validação de UX e feedback genérico.
 
 ## Organização de Componentes
 

@@ -11,7 +11,7 @@
     "@astrojs/tailwind": "^6.0.2",
     "@vercel/analytics": "^2.0.1",
     "aeo.js": "^0.0.12",
-    "astro": "^4.16.0",
+    "astro": "^6.2.1",
     "tailwindcss": "^3.4.19"
   }
 }

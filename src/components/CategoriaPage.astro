@@ -17,8 +17,8 @@ const {
   animateIllustration = false,
 } = Astro.props;
 
-const featuredPosts = getFeaturedByCategory(categorySlug);
-const allPosts = getPostsByCategory(categorySlug);
+const featuredPosts = await getFeaturedByCategory(categorySlug);
+const allPosts = await getPostsByCategory(categorySlug);
 ---
 
 <div class="categoria-page">

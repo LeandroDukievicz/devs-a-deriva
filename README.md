@@ -26,7 +26,7 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - Cards de posts com interação, progresso de leitura em tempo real e estado de conclusão.
 - Categorias editoriais.
 - Páginas individuais de posts com hero, metadados, imagem de capa, navegação contextual e leitura sincronizada.
-- CTA de newsletter com validação básica e animação de confirmação visual.
+- CTA de newsletter conectado ao dashboard, com validação de UX, consentimento, resposta genérica e double opt-in no backend.
 - Página de manifesto com crawl scroll-driven em perspectiva.
 - Sistema de temas visuais.
 - Páginas de erro customizadas.
@@ -102,4 +102,4 @@ Em desenvolvimento.
 
 A documentação técnica e decisões de produto devem ficar centralizadas na pasta [`/docs`](./docs).
 
-O fluxo atual de conteúdo sai do dashboard, passa pela API e alimenta a home, as páginas de post e os cards de progresso de leitura.
+O fluxo atual de conteúdo sai do dashboard, passa pela API e alimenta a home, as páginas de post e os cards de progresso de leitura. A newsletter dos posts também usa o dashboard como backend público por meio de `PUBLIC_DASHBOARD_URL`.

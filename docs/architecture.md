@@ -41,7 +41,7 @@ O backend será responsável por persistência, autenticação, autorização e 
 - backend dedicado;
 - serviço BaaS, caso faça sentido para a fase do projeto.
 
-## Fluxo de Dados Planejado
+## Fluxo de Dados Atual
 
 ```txt
 Autor cria post no dashboard
@@ -54,6 +54,20 @@ Frontend consulta ou recebe conteúdo gerado
         ↓
 Blog renderiza páginas públicas
 ```
+
+Além do fluxo editorial, o blog envia interações públicas para o dashboard por meio de `PUBLIC_DASHBOARD_URL`:
+
+```txt
+Leitor envia comentário, progresso de leitura ou newsletter
+        ↓
+Blog chama endpoint público no dashboard
+        ↓
+Dashboard valida, aplica regras de segurança e persiste no PostgreSQL
+        ↓
+Blog recebe resposta pública mínima
+```
+
+No fluxo de newsletter, a inscrição só deve ser considerada ativa após double opt-in confirmado no backend.
 
 ## Estratégia de Deploy
 
@@ -69,12 +83,14 @@ O frontend pode ser publicado na Vercel, aproveitando:
 
 ### Backend e Banco
 
-Para a camada dinâmica, as opções prováveis são:
+Para a camada dinâmica, o projeto usa hoje um dashboard/backend separado em `dashboard-ldstudio`, com Next.js, Prisma e PostgreSQL. Esse backend concentra:
 
-- VPS para API e banco;
-- banco gerenciado;
-- serviços serverless;
-- arquitetura híbrida com frontend na Vercel e backend separado.
+- API pública consumida pelo blog;
+- persistência editorial;
+- comentários;
+- progresso de leitura;
+- captação de newsletter;
+- autenticação e rotas administrativas do dashboard.
 
 ## Escalabilidade
 

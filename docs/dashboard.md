@@ -37,6 +37,29 @@ Quando o sistema de comentários existir, o dashboard deve permitir:
 - bloquear spam;
 - revisar histórico por post.
 
+### Newsletter
+
+O dashboard também é responsável pelo backend da newsletter consumida pelo blog público.
+
+Responsabilidades atuais:
+
+- receber `POST /api/newsletter/subscribe`;
+- validar e normalizar e-mails no servidor;
+- persistir leads com status explícito;
+- evitar duplicidade por hash do e-mail normalizado;
+- responder de forma genérica para evitar enumeração;
+- aplicar rate limit por hash de IP e hash de e-mail;
+- enviar confirmação double opt-in;
+- confirmar inscrição por token hasheado;
+- permitir descadastro por token próprio.
+
+Responsabilidades pendentes:
+
+- tela administrativa real para inscritos;
+- filtros por status, origem, post e data;
+- ações seguras de supressão/descadastro;
+- documentação operacional de retenção e exclusão.
+
 ### Autores
 
 O sistema deve estar preparado para:
@@ -54,6 +77,7 @@ O dashboard deve manipular entidades como:
 - `Category`;
 - `Author`;
 - `Comment`;
+- `NewsletterSubscriber`;
 - `MediaAsset`;
 - `Tag` ou `Topic`, se necessário.
 
