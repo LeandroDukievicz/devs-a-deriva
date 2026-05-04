@@ -626,9 +626,8 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   const loadComments = async () => {
     try {
       const res = await fetch(`${dashboardUrl}/api/comments?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
-      const { comments } = await res.json() as {
-        comments: { id: number; authorName: string; authorImage: string | null; provider: string | null; body: string; createdAt: string }[]
-      };
+      const json = await res.json();
+      const comments: { id: number; authorName: string; authorImage: string | null; provider: string | null; body: string; createdAt: string }[] = json?.data?.comments ?? [];
 
       if (loadingEl) loadingEl.hidden = true;
 
@@ -791,7 +790,9 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 
         if (!res.ok) throw new Error('Erro ao registrar comentário');
 
-        const { signInUrl } = await res.json() as { signInUrl: string };
+        const draftJson = await res.json();
+        const signInUrl = draftJson?.data?.signInUrl as string | undefined;
+        if (!signInUrl) throw new Error('URL de login não retornada');
         window.location.href = signInUrl;
       } catch {
         if (authError) authError.textContent = '> erro ao conectar com o servidor. tente novamente.';

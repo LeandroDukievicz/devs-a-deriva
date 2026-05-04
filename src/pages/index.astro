@@ -28,6 +28,11 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
   <BlackHole />
     <main class="page-overlay">
       <div id="sections-container" class="sections-container" data-dashboard-url={DASHBOARD_URL}>
+        {homePosts.length === 0 && (
+          <div class="empty-state">
+            <p>&gt; nenhum post publicado ainda. volte em breve.</p>
+          </div>
+        )}
         {homePosts.map((post) => (
           <div class="content-section" data-section-id={post.sectionId} data-post-slug={post.slug} data-post-href={post.href} role="link" tabindex="0">
             <div class="section-image"><img src={post.imageSrc} alt={post.category} class="section-img" /></div>
@@ -127,6 +132,22 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
       opacity: 0;
       transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
       pointer-events: auto;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+    }
+
+    .empty-state p {
+      font-family: monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: var(--color-star);
+      opacity: 0.35;
+      margin: 0;
     }
 
     .load-more-wrap {

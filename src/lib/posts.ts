@@ -198,7 +198,7 @@ function hasValidSlug(raw: unknown): raw is { slug: string } {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPost(raw: any): Post {
-  const categorySlug = raw.category ?? '';
+  const categorySlug = raw.category?.slug ?? raw.category ?? '';
   const cat = CATEGORY_MAP[categorySlug] ?? { label: categorySlug, hashtag: `#${categorySlug}` };
   const title = raw.title ?? 'Post sem titulo';
   const content = stripTitleHeading(raw.content ?? '', title);
@@ -252,8 +252,9 @@ export async function fetchPosts(): Promise<Post[]> {
   try {
     const res = await fetch(`${DASHBOARD_URL}/api/posts?status=PUBLISHED`);
     if (!res.ok) return [];
-    const data = await res.json();
-    _cache = (data as unknown[]).filter(hasValidSlug).map(mapPost);
+    const json = await res.json();
+    const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
+    _cache = items.filter(hasValidSlug).map(mapPost);
     return _cache;
   } catch {
     return [];
