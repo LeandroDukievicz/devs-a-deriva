@@ -60,7 +60,13 @@ const adminSvgInline = adminRaw
           <circle cx="12" cy="13.5" r="0.8" fill="currentColor" stroke="none"/>
         </svg>
       </div>
-      <a href="/admin/login" id="admin-link" aria-label="Entrar no painel">
+      <a
+        href="https://dashboard.devsaderiva.com.br/"
+        id="admin-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Entrar no painel"
+      >
         <span class="admin-svg" set:html={adminSvgInline}></span>
         <span class="admin-label">Admin</span>
       </a>
