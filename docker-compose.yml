@@ -1,0 +1,9 @@
+services:
+  blog:
+    build:
+      context: .
+      args:
+        PUBLIC_DASHBOARD_URL: ${PUBLIC_DASHBOARD_URL:-https://dashboard.devsaderiva.com.br}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4321:80"
