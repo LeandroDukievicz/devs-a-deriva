@@ -393,6 +393,10 @@ const logoForCanvas = Buffer.from(
     pointer-events: none;
   }
 
+  .nav-label-short {
+    display: none;
+  }
+
   .nav-link--home:hover .nav-home-prefix         { opacity: 0; }
   .nav-link--home:hover .globe-canvas            { opacity: 1; }
 
@@ -402,7 +406,7 @@ const logoForCanvas = Buffer.from(
   .nav-link--devs:hover .nav-devs-prefix     { opacity: 0; }
   .nav-link--devs:hover .devs-canvas         { opacity: 1; }
 
-  .nav-link--manifesto:hover .nav-manifesto-prefix { opacity: 0; }
+.nav-link--manifesto:hover .nav-manifesto-prefix { opacity: 0; }
   .nav-link--manifesto:hover .manifesto-canvas     { opacity: 1; }
 
   @media (max-width: 480px) {
@@ -463,6 +467,14 @@ const logoForCanvas = Buffer.from(
     .manifesto-canvas {
       width: 18px;
       height: 18px;
+    }
+
+    .nav-label-full {
+      display: none;
+    }
+
+    .nav-label-short {
+      display: inline;
     }
 
     .has-dropdown {
