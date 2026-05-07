@@ -1,6 +1,6 @@
 # Milestones - Devs à Deriva
 
-Revisado em: 2026-05-06
+Revisado em: 2026-05-07
 
 ## Contexto
 
@@ -10,7 +10,7 @@ O projeto tem duas partes em operação:
 
 Newsletter, progresso de leitura e comentários já têm backend implementado. O objetivo agora é remover os bloqueadores e subir para produção.
 
-**Concluído nesta sprint (2026-05-05/06):** SEO/AEO completo (canonical, OG, JSON-LD, sitemap, robots.txt, llms.txt), fix da página `/devs` (CORS server-to-server no dashboard, fetch client-side no blog), CI/CD estabilizado nos dois repos.
+**Concluído nesta sprint (2026-05-05/07):** SEO/AEO completo (canonical, OG, JSON-LD, sitemap, robots.txt, llms.txt), fix da página `/devs`, CORS público estabilizado, CI/CD com build + testes unitários no blog, headers de segurança no blog, comentários com OAuth state assinado, rate limit no draft de comentários, comentários `PENDING` por padrão após autenticação, paginação client-side na home/categorias e testes mínimos com Vitest/Playwright.
 
 ---
 
@@ -22,8 +22,8 @@ Estes são os únicos itens que bloqueiam a produção. Nada mais precisa estar 
 - [x] **Corrigir XSS nos comentários** — refatorar `src/components/Comments.astro` para não usar `innerHTML` com dados externos; montar DOM com `textContent` e `createElement`
 - [x] **Atualizar dependências vulneráveis** — atualizar Astro, Vite, esbuild e PostCSS; rodar `npm audit` até não restar advisory alto/crítico
 - [x] **Criar `.env.example`** — listar todas as variáveis necessárias sem valores reais para que o projeto possa ser configurado
-- [x] **Deploy na Vercel** — configurar o blog com `PUBLIC_DASHBOARD_URL` apontando para o backend de produção; confirmar que `npm run build` passa sem erro
-- [ ] **Verificar conteúdo real** — confirmar que posts publicados no banco aparecem no blog em produção e que falha de API não quebra o site
+- [x] **Deploy em produção** — blog servido por Docker + Nginx atrás do Caddy na VPS, com `PUBLIC_DASHBOARD_URL` apontando para o dashboard de produção; `npm run build` passa sem erro
+- [x] **Verificar conteúdo real** — `fetchPosts()` consome `/api/posts?status=PUBLISHED`, filtra slugs válidos, retorna `[]` em falha de API e alimenta home/categorias/posts no build
 
 **Critério único:** se os seis itens acima estiverem feitos, o projeto pode ir ao ar.
 
@@ -37,21 +37,21 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 ### Segurança e infraestrutura
 
-- [ ] Headers de segurança no host: CSP, HSTS, X-Content-Type-Options, Referrer-Policy, frame-ancestors — via Vercel config ou `astro.config.mjs`
-- [ ] GitHub Actions básico: install → typecheck → build, bloqueando merge com build quebrado
+- [x] Headers de segurança no host: CSP, HSTS, X-Content-Type-Options, Referrer-Policy, frame-ancestors e Permissions-Policy via `nginx.conf`; Caddyfile alinhado para o domínio do blog
+- [x] GitHub Actions básico: install → build → unit tests, bloqueando merge com build/test quebrado
 - [ ] Deploy preview automático por PR
-- [ ] Bloquear URLs com `javascript:` e `data:` fora de allowlist nos comentários
+- [x] Bloquear URLs com `javascript:` e `data:` fora de allowlist nos comentários — `Comments.astro` só aceita avatar `https:` e renderiza dados externos com `textContent`
 - [ ] Checklist OWASP para PRs que toquem em auth, comentários ou HTML dinâmico
 
 ---
 
 ### Sistema de comentários completo
 
-- [ ] OAuth com `state` assinado, PKCE e `redirectTo` validado por allowlist
-- [ ] Rate limit por IP, conta, post e janela de tempo
+- [x] OAuth com `state` assinado, PKCE e `redirectTo` validado por allowlist — `lib/comment-state.ts`, `checks: ['pkce', 'state']` e validação do host no schema do draft
+- [x] Rate limit por IP e janela de tempo no draft de comentários — endpoint `comment-draft`, 5 tentativas por minuto via `ApiRateLimitAttempt`
 - [ ] Honeypot ou captcha adaptativo para comportamento suspeito
-- [ ] Comentários salvos como `pending` por padrão — expostos publicamente apenas quando `approved`
-- [ ] Tela de moderação no dashboard com filtros e ações em lote
+- [x] Comentários salvos como `PENDING` após OAuth — fluxo `AWAITING_AUTH -> PENDING`, expostos publicamente apenas quando `APPROVED`
+- [x] Tela de moderação no dashboard para pendentes e histórico por post
 
 ---
 
@@ -70,17 +70,19 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 ### Testes automatizados
 
-- [ ] Vitest para helpers de validação de e-mail, segurança de comentários e adapters
+- [x] Vitest para helpers do blog — `paginatePosts()` e `getPost()`
 - [ ] Testes com payloads XSS para `Comments.astro`
-- [ ] Playwright para home, post e categoria
+- [x] Playwright para smoke de home e post
+- [ ] Playwright para categoria
 - [ ] `npm run test:ci` agregando unit + e2e mínimo + audit
 
 ---
 
 ### Newsletter: tela administrativa e compliance
 
-- [ ] **Double opt-in:** ao cadastrar, enviar e-mail de confirmação antes de ativar a inscrição
-- [ ] Tela no dashboard para listar inscritos com status, origem e data de consentimento
+- [x] **Double opt-in:** ao cadastrar, enviar e-mail de confirmação antes de ativar a inscrição
+- [x] Endpoints administrativos para listar inscritos e atualizar status
+- [ ] Tela final no dashboard com KPIs totalmente derivados do banco
 - [ ] Ações de supressão e descadastro manual
 - [ ] Testes unitários do validador de e-mail
 - [ ] Testes de integração do endpoint de inscrição
@@ -109,8 +111,8 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 ### Polimento editorial e UX
 
-- [ ] Paginação para home e páginas de categoria
+- [x] Paginação para home e páginas de categoria — render inicial de 10 posts e botão client-side "carregar mais"
 - [ ] Busca (página ou endpoint)
 - [ ] Histórico de revisões de post com restauração controlada
-- [ ] Gestão de categorias, autores e media assets no dashboard
+- [x] Gestão de categorias e autores no dashboard; media assets via upload R2
 - [ ] RSS/Atom para distribuição editorial

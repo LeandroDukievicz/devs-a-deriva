@@ -14,31 +14,38 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - [Tailwind CSS](https://tailwindcss.com/) para utilitários de estilo.
 - CSS escopado em componentes/páginas Astro para interações visuais específicas.
 - Canvas e JavaScript nativo para experiências interativas.
-- Dashboard/admin em desenvolvimento para gerenciamento de posts.
-- Backend e banco de dados já fornecem posts publicados, dados do autor e progresso de leitura.
+- Dashboard/admin separado em `dashboard-ldstudio` para posts, categorias, autores, comentários, newsletter, analytics e leitura.
+- Backend e banco de dados fornecem posts publicados, dados do autor, comentários moderados, newsletter e progresso de leitura.
 - [Vercel Analytics](https://vercel.com/analytics) integrado ao projeto.
+- Nginx em produção com headers de segurança e CSP.
+- Vitest e Playwright para testes automatizados mínimos.
 
 ## Funcionalidades
 
 ### Atual
 
 - Home com experiência visual imersiva e cards abastecidos pelo dashboard.
+- Home e categorias com paginação client-side baseada no array de posts carregado no build.
 - Cards de posts com interação, progresso de leitura em tempo real e estado de conclusão.
 - Categorias editoriais.
 - Páginas individuais de posts com hero, metadados, imagem de capa, navegação contextual e leitura sincronizada.
+- Comentários integrados ao dashboard: envio de draft, login social, moderação e exibição apenas de comentários aprovados.
 - CTA de newsletter conectado ao dashboard, com validação de UX, consentimento, resposta genérica e double opt-in no backend.
 - Página de manifesto com crawl scroll-driven em perspectiva.
 - Sistema de temas visuais.
 - Páginas de erro customizadas.
 - Página inicial de login/admin.
 - Links sociais do autor refletidos a partir da configuração do dashboard.
+- Headers de segurança configurados no `nginx.conf`: CSP, HSTS, `nosniff`, `DENY`, `Referrer-Policy` e `Permissions-Policy`.
+- Suite mínima de testes unitários para helpers de posts e smoke tests Playwright para home/post.
 
 ### Planejado
 
-- Dashboard/admin para criar, editar e publicar conteúdos.
-- Gestão de categorias e autores.
-- Comentários ou reações.
-- Integrações futuras com analytics, busca e métricas editoriais.
+- Busca pública.
+- Paginação estática por URL para SEO de longo prazo.
+- RSS/Atom.
+- Mais cobertura de testes para comentários, categoria e payloads XSS.
+- Integrações futuras com automação e IA editorial assistiva.
 
 ## Estrutura do Projeto
 
@@ -51,6 +58,10 @@ devs-a-deriva/
 │   ├── lib/             # Utilitários e configurações compartilhadas
 │   ├── pages/           # Rotas e páginas Astro
 │   └── styles/          # Tokens e estilos globais
+├── tests/               # Testes unitários e smoke tests Playwright
+├── nginx.conf           # Servidor estático e headers HTTP de segurança
+├── playwright.config.ts # Configuração dos smoke tests e2e
+├── vitest.config.ts     # Configuração dos testes unitários
 ├── astro.config.mjs     # Configuração do Astro
 ├── tailwind.config.mjs  # Configuração do Tailwind
 └── package.json         # Scripts e dependências
@@ -89,6 +100,21 @@ npm run preview
 | `npm run dev` | Inicia o servidor local de desenvolvimento. |
 | `npm run build` | Gera a versão estática de produção. |
 | `npm run preview` | Executa um preview local do build. |
+| `npm test` | Executa testes unitários com Vitest. |
+| `npm run test:watch` | Executa Vitest em modo watch. |
+| `npm run test:e2e` | Executa smoke tests Playwright contra `https://devsaderiva.com.br`. |
+
+## Milestones Implementados
+
+Revisado em 2026-05-07.
+
+- SEO/AEO base: canonical, Open Graph, JSON-LD, sitemap, `robots.txt` e `llms.txt`.
+- Comentários seguros no frontend: `Comments.astro` monta DOM com `createElement` e dados externos entram por `textContent`; o único `innerHTML` restante é SVG estático de provider/reply.
+- Comentários moderados: o blog só consome `GET /api/comments?slug=...` com comentários `APPROVED`, e a UI informa que comentários passam por moderação.
+- Headers de segurança no host: `nginx.conf` define CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` e `Permissions-Policy`. O CSP ainda usa `'unsafe-inline'` porque o Astro estático usa scripts inline via `is:inline`; nonce por request fica como débito técnico se houver SSR/middleware.
+- Paginação na home e categorias: render inicial de 10 posts e botão de carregar mais usando o array completo já carregado no SSG.
+- Testes automatizados mínimos: Vitest cobre `paginatePosts()` e `getPost()`, Playwright cobre smoke de home e abertura de post, e o CI roda `npm test` após o build.
+- Integração com dashboard: posts, newsletter, comentários e progresso de leitura usam `PUBLIC_DASHBOARD_URL`.
 
 ## Status
 
@@ -102,4 +128,4 @@ Em desenvolvimento.
 
 A documentação técnica e decisões de produto devem ficar centralizadas na pasta [`/docs`](./docs).
 
-O fluxo atual de conteúdo sai do dashboard, passa pela API e alimenta a home, as páginas de post e os cards de progresso de leitura. A newsletter dos posts também usa o dashboard como backend público por meio de `PUBLIC_DASHBOARD_URL`.
+O fluxo atual de conteúdo sai do dashboard, passa pela API e alimenta a home, as categorias, as páginas de post, comentários e cards de progresso de leitura. A newsletter dos posts também usa o dashboard como backend público por meio de `PUBLIC_DASHBOARD_URL`.

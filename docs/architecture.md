@@ -2,7 +2,7 @@
 
 ## Visão de Alto Nível
 
-O projeto é estruturado como uma aplicação Astro focada em performance, renderização eficiente e forte controle visual. A arquitetura separa a camada pública do blog, o futuro painel administrativo e a camada de dados que deve sustentar conteúdo dinâmico.
+O projeto é estruturado como uma aplicação Astro focada em performance, renderização eficiente e forte controle visual. A arquitetura separa a camada pública do blog, o painel administrativo em `dashboard-ldstudio` e a camada de dados em PostgreSQL/Prisma.
 
 ## Camadas do Sistema
 
@@ -21,25 +21,27 @@ Astro é a base ideal para essa camada por permitir páginas estáticas rápidas
 
 ### Dashboard/Admin
 
-O painel administrativo será responsável por gerenciar o conteúdo editorial:
+O painel administrativo é uma aplicação Next.js separada responsável por gerenciar o conteúdo editorial e os fluxos públicos dinâmicos:
 
 - criar posts;
 - editar posts;
 - publicar ou despublicar conteúdos;
 - gerenciar categorias;
-- revisar comentários ou reações;
-- acompanhar métricas editoriais.
-
-Inicialmente pode viver dentro do próprio projeto Astro em rotas como `/admin`. Conforme a complexidade crescer, pode ser separado em uma aplicação própria.
+- revisar comentários;
+- moderar histórico por post;
+- gerenciar newsletter e colaboradores;
+- acompanhar métricas editoriais e progresso de leitura.
 
 ### Backend
 
-O backend será responsável por persistência, autenticação, autorização e regras de publicação. Ele pode ser implementado como:
+O backend fica no dashboard e é responsável por persistência, autenticação, autorização e regras de publicação. Ele usa:
 
-- API server em VPS;
-- serverless functions;
-- backend dedicado;
-- serviço BaaS, caso faça sentido para a fase do projeto.
+- Next.js App Router e Route Handlers;
+- Prisma;
+- PostgreSQL;
+- NextAuth v5;
+- Caddy na borda da VPS;
+- Nginx dentro do container do blog estático.
 
 ## Fluxo de Dados Atual
 
@@ -69,17 +71,22 @@ Blog recebe resposta pública mínima
 
 No fluxo de newsletter, a inscrição só deve ser considerada ativa após double opt-in confirmado no backend.
 
+No fluxo de comentários, o dashboard cria um draft `AWAITING_AUTH`, gera um `state` assinado por HMAC com expiração de 10 minutos, valida o OAuth e só então move o comentário para `PENDING`. A exposição pública continua limitada a comentários `APPROVED`.
+
 ## Estratégia de Deploy
 
 ### Frontend
 
-O frontend pode ser publicado na Vercel, aproveitando:
+O frontend público roda como build estático servido por Nginx em container e proxy reverso Caddy na VPS. O Nginx define headers de segurança:
 
-- build estático;
-- CDN;
-- preview deployments;
-- integração simples com domínio;
-- analytics.
+- `Content-Security-Policy`;
+- `Strict-Transport-Security`;
+- `X-Content-Type-Options`;
+- `X-Frame-Options`;
+- `Referrer-Policy`;
+- `Permissions-Policy`.
+
+O CSP usa `'unsafe-inline'` em `script-src` porque o blog ainda usa scripts inline gerados por Astro `is:inline`. Nonce por request exigiria SSR/middleware e fica como débito técnico.
 
 ### Backend e Banco
 
@@ -100,11 +107,13 @@ O projeto deve preservar:
 - conteúdo modelado de forma explícita;
 - componentes reutilizáveis sem excesso de abstração;
 - páginas públicas rápidas mesmo com aumento de posts;
+- listagens com paginação client-side enquanto o site permanecer 100% estático;
 - separação clara entre experiência visual e regras editoriais.
 
 ## Decisões Importantes
 
 - Astro permanece como camada pública principal.
 - JavaScript no cliente deve ser usado apenas quando a interação exige.
-- Conteúdo deve migrar de mock/hardcoded para uma fonte estruturada.
+- Conteúdo principal já vem do dashboard; mocks/hardcoded devem ser mantidos apenas como fallback visual ou conteúdo institucional.
 - O dashboard não deve contaminar a complexidade da experiência pública.
+- Testes mínimos de helpers e smoke e2e fazem parte do baseline de CI.

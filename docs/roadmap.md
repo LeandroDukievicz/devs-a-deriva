@@ -2,34 +2,38 @@
 
 ## Curto Prazo
 
-- Transformar cards mockados em dados estruturados.
-- Criar páginas individuais de posts.
-- Definir modelo inicial de post.
-- Implementar rotas reais para leitura completa.
-- Refinar responsividade da home.
-- Consolidar tokens de tema em todas as páginas.
-- Criar primeiros documentos em `/docs`.
+- [x] Transformar cards mockados em dados estruturados vindos do dashboard.
+- [x] Criar páginas individuais de posts.
+- [x] Definir modelo inicial de post no dashboard.
+- [x] Implementar rotas reais para leitura completa.
+- [x] Refinar responsividade da home.
+- [x] Consolidar tokens de tema em todas as páginas principais.
+- [x] Criar primeiros documentos em `/docs`.
+- [x] Adicionar headers de segurança no host.
+- [x] Adicionar paginação client-side na home e categorias.
+- [x] Adicionar testes automatizados mínimos.
 
 ## Médio Prazo
 
-- Implementar dashboard/admin funcional.
-- Criar fluxo de autenticação.
-- Salvar posts em banco de dados.
-- Gerenciar categorias pelo painel.
-- Implementar upload ou seleção de imagens.
-- Criar fallback de capa por categoria.
-- Adicionar sistema de autores.
+- [x] Implementar dashboard/admin funcional.
+- [x] Criar fluxo de autenticação.
+- [x] Salvar posts em banco de dados.
+- [x] Gerenciar categorias pelo painel.
+- [x] Implementar upload de imagens via Cloudflare R2.
+- [x] Criar fallback de capa por categoria.
+- [x] Adicionar sistema de autores.
+- [x] Adicionar comentários moderados com OAuth.
+- [x] Adicionar newsletter com double opt-in.
 - Adicionar busca.
 - Melhorar métricas de leitura.
 
 ## Longo Prazo
 
-- Sistema de comentários ou reações.
-- Moderação pelo dashboard.
-- Analytics editorial.
+- [x] Sistema de comentários.
+- [x] Moderação pelo dashboard.
+- [x] Newsletter com double opt-in.
+- Analytics editorial completo.
 - Recomendações de posts relacionados.
-- Newsletter ou notificações.
-  - **[Pendente]** Adicionar fluxo de double opt-in: ao cadastrar, enviar e-mail de confirmação para o assinante autorizar o recebimento antes de ativar a inscrição.
 - Automação de publicação.
 - Integrações com IA para apoio editorial, sem substituir autoria humana.
 - API pública ou privada para consumo de conteúdo.

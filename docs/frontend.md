@@ -26,11 +26,15 @@ Responsabilidades:
 - exibir chamadas de posts;
 - apresentar progresso de leitura quando disponível;
 - direcionar o usuário para o conteúdo completo;
+- renderizar os primeiros 10 posts no build;
+- carregar mais posts no cliente a partir do array completo já carregado por `fetchPosts()`;
 - preservar impacto visual sem comprometer navegação.
 
 ### Categorias
 
 As páginas de categoria organizam conteúdos por tema editorial.
+
+Cada categoria renderiza os primeiros 10 posts estaticamente e usa botão "Carregar mais" para revelar novos cards no cliente. A abordagem atual preserva o site estático e evita depender de paginação server-side no Astro. Para SEO de longo prazo, a próxima evolução recomendada é gerar páginas estáticas por índice, como `/categorias/[slug]/pagina/[n]`.
 
 Categorias atuais ou previstas:
 
@@ -47,7 +51,7 @@ Página editorial especial, com texto em perspectiva e movimento controlado por 
 
 ### Admin/Login
 
-Página inicial para autenticação administrativa. Deve evoluir para um dashboard real.
+Página inicial de acesso ao dashboard externo. A operação administrativa real vive em `dashboard-ldstudio`.
 
 ### Posts
 
@@ -59,9 +63,13 @@ Responsabilidades:
 - exibir o corpo do post com foco em leitura;
 - adaptar links de retorno e CTA final de acordo com a origem da navegação;
 - apresentar CTA de newsletter conectado ao backend publico via `PUBLIC_DASHBOARD_URL`, com validacao de UX, consentimento e feedback generico;
+- carregar comentários aprovados via `GET /api/comments?slug=...`;
+- enviar draft de comentário para `POST /api/comments/draft`, deixando OAuth, state assinado e moderação sob responsabilidade do dashboard;
 - manter consistência responsiva entre header, corpo, newsletter e footer.
 
 No estado atual, o formulário da newsletter nos posts envia leads para `/api/newsletter/subscribe` na origem configurada em `PUBLIC_DASHBOARD_URL`. O backend do dashboard faz validação definitiva, deduplicação, rate limit, persistência com consentimento e double opt-in. O frontend continua responsável apenas por validação de UX e feedback genérico.
+
+Os comentários seguem a mesma divisão: o blog monta DOM com APIs seguras (`createElement`, `textContent`) e nunca confia em HTML vindo do dashboard. O dashboard valida origem, aplica rate limit, autentica via OAuth e só retorna comentários aprovados.
 
 ## Organização de Componentes
 
@@ -86,7 +94,7 @@ Tokens globais de tema vivem em `src/styles/tokens.css` e devem ser preferidos e
 
 ## Renderização de Conteúdo
 
-No estado atual, parte do conteúdo está hardcoded. A direção planejada é renderizar posts a partir de uma fonte estruturada, como banco de dados ou CMS.
+No estado atual, posts vêm do dashboard por `src/lib/posts.ts`, que consulta `PUBLIC_DASHBOARD_URL/api/posts?status=PUBLISHED` no build. Conteúdo institucional e assets visuais continuam no próprio repositório.
 
 O frontend deve estar preparado para receber:
 
@@ -100,7 +108,15 @@ O frontend deve estar preparado para receber:
 - status de publicação;
 - datas de criação e publicação.
 
-Enquanto a origem dinâmica não existe, `src/lib/posts.ts` funciona como fonte estática de verdade para listagem, `getStaticPaths()` e navegação entre posts.
+`src/lib/posts.ts` é o adapter do blog para a API pública. Ele normaliza autor, categoria, HTML renderizado e fornece helpers como `getPost()`, `getPostsByCategory()` e `paginatePosts()`.
+
+## Testes
+
+O baseline atual inclui:
+
+- Vitest para helpers de posts (`paginatePosts()` e `getPost()`);
+- Playwright para smoke tests de home e página de post;
+- CI executando `npm test` depois do build.
 
 ## Imagens
 
