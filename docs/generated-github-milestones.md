@@ -1,6 +1,6 @@
 # Milestones - Devs à Deriva
 
-Revisado em: 2026-05-07
+Revisado em: 2026-05-07 (auditoria de código)
 
 ## Contexto
 
@@ -10,7 +10,7 @@ O projeto tem duas partes em operação:
 
 Newsletter, progresso de leitura e comentários já têm backend implementado. O objetivo agora é remover os bloqueadores e subir para produção.
 
-**Concluído nesta sprint (2026-05-05/07):** SEO/AEO completo (canonical, OG, JSON-LD, sitemap, robots.txt, llms.txt), fix da página `/devs`, CORS público estabilizado, CI/CD com build + testes unitários no blog, headers de segurança no blog, comentários com OAuth state assinado, rate limit no draft de comentários, comentários `PENDING` por padrão após autenticação, paginação client-side na home/categorias e testes mínimos com Vitest/Playwright.
+**Concluído nesta sprint (2026-05-05/07):** SEO/AEO completo (canonical, OG, JSON-LD, sitemap, robots.txt, llms.txt), fix da página `/devs`, CORS servidor-a-servidor e dev environment (localhost:4321), redirect `www → devsaderiva.com.br` no Caddy, remoção do Vercel Analytics (gerava 404 fora da Vercel), CI/CD com build + testes unitários no blog, headers de segurança no blog, comentários com OAuth state assinado, rate limit no draft de comentários, comentários `PENDING` por padrão após autenticação, paginação client-side na home/categorias, Lighthouse CI e testes mínimos com Vitest/Playwright.
 
 ---
 
@@ -49,7 +49,7 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 - [x] OAuth com `state` assinado, PKCE e `redirectTo` validado por allowlist — `lib/comment-state.ts`, `checks: ['pkce', 'state']` e validação do host no schema do draft
 - [x] Rate limit por IP e janela de tempo no draft de comentários — endpoint `comment-draft`, 5 tentativas por minuto via `ApiRateLimitAttempt`
-- [ ] Honeypot ou captcha adaptativo para comportamento suspeito
+- [ ] Honeypot ou captcha adaptativo para comportamento suspeito — newsletter tem honeypot, comentários não têm
 - [x] Comentários salvos como `PENDING` após OAuth — fluxo `AWAITING_AUTH -> PENDING`, expostos publicamente apenas quando `APPROVED`
 - [x] Tela de moderação no dashboard para pendentes e histórico por post
 
@@ -71,10 +71,10 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 ### Testes automatizados
 
 - [x] Vitest para helpers do blog — `paginatePosts()` e `getPost()`
-- [ ] Testes com payloads XSS para `Comments.astro`
-- [x] Playwright para smoke de home e post
-- [ ] Playwright para categoria
-- [ ] `npm run test:ci` agregando unit + e2e mínimo + audit
+- [ ] Testes com payloads XSS para `Comments.astro` — nenhum arquivo de teste cobre o componente
+- [x] Playwright smoke de home e abertura de post
+- [ ] Playwright para página de categoria
+- [ ] Script `test:ci` no package.json agregando unit + e2e + audit (só existe `test` e `test:e2e` separados)
 
 ---
 
@@ -91,28 +91,28 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 ### Observabilidade
 
-- [ ] Captura de erros frontend com Sentry ou equivalente
-- [ ] Logs estruturados no backend com `requestId`
-- [ ] Alertas para erro 5xx e falha de OAuth
-- [ ] Runbook para incidente de segurança e indisponibilidade
+- [ ] Captura de erros frontend com Sentry ou equivalente — sem dependência nem inicialização no blog
+- [ ] Logs estruturados no backend com `requestId` — dashboard
+- [ ] Alertas para erro 5xx e falha de OAuth — dashboard/infra
+- [ ] Runbook para incidente de segurança e indisponibilidade — nenhum arquivo em docs/
 
 ---
 
 ### Performance e acessibilidade
 
-- [ ] `width`/`height` ou `aspect-ratio` nas imagens principais (evitar layout shift)
-- [ ] Lazy loading em imagens não críticas
-- [ ] `prefers-reduced-motion` aplicado nas animações
-- [ ] Navegação por teclado em navbar, comentários e formulários
+- [ ] `width`/`height` ou `aspect-ratio` nas imagens principais (evitar layout shift) — hero images e section-img sem dimensões explícitas
+- [x] Lazy loading em imagens não críticas — `loading="lazy"` em fotos de autor (index.astro) e imagens de comentários
+- [ ] `prefers-reduced-motion` aplicado em todas as animações — presente em CategoriaPage e slug, falta em index.astro (orbita/sections) e devs.astro (cards + blackhole)
+- [ ] Navegação por teclado em navbar, comentários e formulários — Navbar tem Escape; falta navegação por Tab/Enter em comentários e formulários
 - [ ] Contraste validado em todos os temas incluindo Limbo e páginas com canvas
-- [ ] Lighthouse em home, post e categoria
+- [x] Lighthouse CI automatizado em PR/push para monitorar Core Web Vitals
 
 ---
 
 ### Polimento editorial e UX
 
 - [x] Paginação para home e páginas de categoria — render inicial de 10 posts e botão client-side "carregar mais"
-- [ ] Busca (página ou endpoint)
-- [ ] Histórico de revisões de post com restauração controlada
+- [ ] Busca (página ou endpoint) — sem implementação no blog
+- [ ] Histórico de revisões de post com restauração controlada — dashboard
 - [x] Gestão de categorias e autores no dashboard; media assets via upload R2
-- [ ] RSS/Atom para distribuição editorial
+- [ ] RSS/Atom para distribuição editorial — sem feed em src/pages/
