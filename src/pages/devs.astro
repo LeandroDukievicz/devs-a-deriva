@@ -6,7 +6,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 ---
 
 <Base title="Devs · Devs à Deriva">
-  <div class="devs-page">
+  <main id="main-content" class="devs-page">
     <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
 
     <div class="cards-overlay" id="cards-overlay" data-dashboard={dashboardUrl}></div>
@@ -17,7 +17,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
       <span class="dev-popup__role"></span>
       <p class="dev-popup__bio"></p>
     </div>
-  </div>
+  </main>
 </Base>
 
 <style>

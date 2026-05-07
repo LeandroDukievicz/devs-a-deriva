@@ -21,7 +21,7 @@ const featuredPosts = await getFeaturedByCategory(categorySlug);
 const allPosts = await getPostsByCategory(categorySlug);
 ---
 
-<div class="categoria-page">
+<main id="main-content" class="categoria-page">
   {cornerIllustration && (
     <div
       class={`categoria-corner-illustration${animateIllustration ? ' is-animated' : ''}`}
@@ -132,7 +132,7 @@ const allPosts = await getPostsByCategory(categorySlug);
       </button>
     </div>
   </section>
-</div>
+</main>
 
 <style is:global>
   #nav-logo-link {

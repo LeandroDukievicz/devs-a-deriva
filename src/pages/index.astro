@@ -26,7 +26,7 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
 
 <Base title="Devs à Deriva">
   <BlackHole />
-    <main class="page-overlay">
+    <main id="main-content" class="page-overlay">
       <div id="sections-container" class="sections-container" data-dashboard-url={DASHBOARD_URL}>
         {homePosts.length === 0 && (
           <div class="empty-state">
