@@ -14,7 +14,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
     "@vercel/analytics": "^2.0.1",
-    "aeo.js": "^0.0.12",
+    "aeo.js": "^0.0.13",
     "astro": "^6.2.1",
     "tailwindcss": "^4.2.4"
   },
