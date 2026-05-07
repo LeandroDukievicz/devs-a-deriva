@@ -6,7 +6,9 @@ export type ReadingProgressEntry = {
 };
 
 const STORAGE_KEY = 'devs-a-deriva:reading-progress';
-const READER_KEY = 'devs-a-deriva:reader-id';
+const READER_KEY  = 'devs-a-deriva:reader-id';
+const STORAGE_VERSION = 1;
+const VERSION_KEY = 'devs-a-deriva:reading-progress:v';
 
 function clampProgress(progress: number): number {
   if (!Number.isFinite(progress)) return 0;
@@ -28,6 +30,12 @@ export function getReaderId(): string {
 
 export function readProgressStore(): Record<string, ReadingProgressEntry> {
   try {
+    const storedVersion = Number(localStorage.getItem(VERSION_KEY) ?? '0');
+    if (storedVersion !== STORAGE_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(VERSION_KEY, String(STORAGE_VERSION));
+      return {};
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as Record<string, ReadingProgressEntry>;
