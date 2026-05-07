@@ -1,0 +1,368 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import StarBackground from '../../../../components/StarBackground.astro';
+import { getPostsByCategory, paginatePosts } from '../../../../lib/posts';
+import { CATEGORIES, getCategoryBySlug } from '../../../../lib/categories';
+
+export async function getStaticPaths() {
+  const PAGE_SIZE = 10;
+  const paths = [];
+
+  for (const cat of CATEGORIES) {
+    const posts = await getPostsByCategory(cat.slug);
+    const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+
+    for (let page = 2; page <= totalPages; page++) {
+      paths.push({
+        params: { categoria: cat.slug, n: String(page) },
+        props: { cat },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { categoria, n } = Astro.params;
+const page = parseInt(n, 10);
+const cat = getCategoryBySlug(categoria)!;
+
+const allPosts = await getPostsByCategory(categoria);
+const { items: posts, hasMore, total } = paginatePosts(allPosts, page, PAGE_SIZE);
+const totalPages = Math.ceil(total / PAGE_SIZE);
+
+const base = `/categorias/${categoria}`;
+const prevUrl = page === 2 ? `${base}/` : `${base}/pagina/${page - 1}/`;
+const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
+---
+
+<Base
+  title={`${cat.label} · Página ${page} · Devs à Deriva`}
+  description={cat.description}
+>
+  <Fragment slot="head">
+    <link rel="prev" href={`https://devsaderiva.com.br${prevUrl}`} />
+    {nextUrl && <link rel="next" href={`https://devsaderiva.com.br${nextUrl}`} />}
+  </Fragment>
+
+  <StarBackground />
+
+  <main id="main-content" class="categoria-page">
+    <header class="categoria-header">
+      <div class="categoria-info">
+        <h1 class="categoria-title">
+          <span class="cat-prefix">&gt;_</span>{cat.label}
+        </h1>
+        <p class="categoria-desc">{cat.description}</p>
+        <span class="categoria-count">{total} {total === 1 ? 'post' : 'posts'}</span>
+      </div>
+    </header>
+
+    <div class="categoria-divider"></div>
+
+    <section class="posts-section">
+      <div class="section-label">
+        Página {page} de {totalPages}
+      </div>
+
+      <div class="posts-grid">
+        {posts.map(post => (
+          <a href={`/posts/${post.slug}?from=category`} class="post-card">
+            <div class="post-card-body">
+              <span class="card-tag">{cat.label.toUpperCase()}</span>
+              <h2 class="post-card-title">{post.title}</h2>
+              <p class="post-card-excerpt">{post.excerpt}</p>
+              <div class="post-card-meta">
+                <span class="card-meta">{post.readTime}</span>
+                <span class="post-hashtag">{post.hashtag}</span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <nav class="pagination" aria-label="Paginação">
+        <a href={prevUrl} class="page-btn" rel="prev" aria-label="Página anterior">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Anterior
+        </a>
+
+        <div class="page-numbers">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <a
+              href={p === 1 ? `${base}/` : `${base}/pagina/${p}/`}
+              class={`page-num${p === page ? ' active' : ''}`}
+              aria-current={p === page ? 'page' : undefined}
+            >
+              {p}
+            </a>
+          ))}
+        </div>
+
+        {nextUrl ? (
+          <a href={nextUrl} class="page-btn" rel="next" aria-label="Próxima página">
+            Próxima
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        ) : (
+          <span class="page-btn disabled" aria-disabled="true">
+            Próxima
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        )}
+      </nav>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .categoria-page {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    padding-top: 72px;
+  }
+
+  .categoria-header {
+    padding: 24px 48px 28px;
+  }
+
+  .categoria-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    animation: cat-fade-info 0.65s ease 0.25s forwards;
+  }
+
+  @keyframes cat-fade-info {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .categoria-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-star);
+    text-shadow: 0 0 20px var(--color-star-40);
+    line-height: 1.1;
+  }
+
+  .cat-prefix {
+    color: var(--color-accent);
+    margin-right: 6px;
+  }
+
+  .categoria-desc {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--color-star);
+    opacity: 0.5;
+    line-height: 1.6;
+    max-width: 480px;
+  }
+
+  .categoria-count {
+    font-family: monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+    opacity: 0.7;
+  }
+
+  .categoria-divider {
+    margin: 0 48px;
+    height: 1px;
+    background: linear-gradient(to right, var(--color-star), var(--color-accent), transparent);
+    opacity: 0.35;
+  }
+
+  .posts-section {
+    padding: 40px 48px 48px;
+  }
+
+  .section-label {
+    font-family: monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    margin-bottom: 20px;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .post-card {
+    background: transparent;
+    border: 1px solid var(--color-star);
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.22s ease;
+  }
+
+  .post-card:hover {
+    border-color: var(--color-accent);
+  }
+
+  .post-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-family: monospace;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+  }
+
+  .post-card-title {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-text);
+  }
+
+  .post-card-excerpt {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.68rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    opacity: 0.55;
+  }
+
+  .post-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .card-meta {
+    font-family: monospace;
+    font-size: 0.62rem;
+    color: var(--color-star);
+    opacity: 0.55;
+  }
+
+  .post-hashtag {
+    font-family: monospace;
+    font-size: 0.6rem;
+    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
+  /* ── Pagination ────────────────────────────────────────────── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px dashed var(--color-accent);
+    border-radius: 6px;
+    transition: box-shadow 0.22s ease, background 0.22s ease;
+  }
+
+  .page-btn:hover {
+    box-shadow: 0 0 14px var(--color-accent-20);
+    background: transparent;
+  }
+
+  .page-btn.disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 6px;
+  }
+
+  .page-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    color: var(--color-star);
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: border-color 0.22s ease, color 0.22s ease;
+  }
+
+  .page-num:hover {
+    border-color: var(--color-star);
+  }
+
+  .page-num.active {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent-20);
+  }
+
+  @media (max-width: 900px) {
+    .posts-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .categoria-header { padding: 20px 20px 24px; }
+    .categoria-divider { margin: 0 20px; }
+    .posts-section { padding: 32px 20px 40px; }
+    .posts-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('.post-card[href*="/posts/"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      sessionStorage.setItem('post-nav-origin', 'category');
+    });
+  });
+</script>
