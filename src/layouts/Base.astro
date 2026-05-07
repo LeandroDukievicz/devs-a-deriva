@@ -80,6 +80,12 @@ const adminSvgInline = adminRaw
 
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
 
+    <!-- AEO/GEO: recursos para AI crawlers -->
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs summary" />
+    <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs full content" />
+    <link rel="alternate" type="application/json" href="/ai-index.json" title="AI content index" />
+    <link rel="alternate" type="application/json" href="/docs.json" title="Site documentation manifest" />
+
     <!-- Schema.org: Organization -->
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
 

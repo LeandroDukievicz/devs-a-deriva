@@ -1,0 +1,27 @@
+{
+  "name": "Devs à Deriva",
+  "url": "https://devsaderiva.com.br",
+  "language": "pt-BR",
+  "type": "blog",
+  "description": "Blog independente em português do Brasil sobre tecnologia, carreira e a vida real no desenvolvimento de software.",
+  "ai_policy": "allowed",
+  "ai_attribution": "required",
+  "resources": {
+    "llms": "https://devsaderiva.com.br/llms.txt",
+    "llms_full": "https://devsaderiva.com.br/llms-full.txt",
+    "sitemap": "https://devsaderiva.com.br/sitemap.xml",
+    "ai_index": "https://devsaderiva.com.br/ai-index.json",
+    "robots": "https://devsaderiva.com.br/robots.txt"
+  },
+  "categories": [
+    { "slug": "tech", "label": "Tech", "url": "https://devsaderiva.com.br/categorias/tech" },
+    { "slug": "carreira", "label": "Carreira Profissional", "url": "https://devsaderiva.com.br/categorias/carreira" },
+    { "slug": "livros", "label": "Livros & Leituras", "url": "https://devsaderiva.com.br/categorias/livros" },
+    { "slug": "musica", "label": "Música", "url": "https://devsaderiva.com.br/categorias/musica" },
+    { "slug": "aleatoriedades", "label": "Aleatoriedades", "url": "https://devsaderiva.com.br/categorias/aleatoriedades" },
+    { "slug": "noticias", "label": "Notícias", "url": "https://devsaderiva.com.br/categorias/noticias" }
+  ],
+  "social": {
+    "instagram": "https://www.instagram.com/devsaderiva"
+  }
+}

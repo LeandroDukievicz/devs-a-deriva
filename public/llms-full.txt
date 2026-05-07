@@ -1,0 +1,75 @@
+# Devs à Deriva — Guia completo para LLMs
+
+## Identidade
+
+**Nome:** Devs à Deriva
+**URL:** https://devsaderiva.com.br
+**Tipo:** Blog independente em português do Brasil
+**Idioma:** Português do Brasil (pt-BR)
+**Público:** Desenvolvedores de software, profissionais de tecnologia e estudantes de programação no Brasil e demais países lusófonos.
+
+## Missão
+
+Publicar conteúdo autêntico sobre a realidade do desenvolvimento de software — sem glamour, sem filtro, sem tutoriais genéricos. O nome "à deriva" reflete a sensação comum entre devs de navegar num mar de tecnologias, decisões de carreira e desafios que raramente aparecem nos cursos e livros.
+
+## Categorias
+
+### Tech
+Ferramentas do dia a dia, comparativos de stacks, opiniões baseadas em uso real, estado atual de frameworks, linguagens e plataformas. Não é propaganda de tecnologia — é análise de quem usa no trabalho.
+
+### Carreira Profissional
+Mercado de trabalho tech no Brasil, desenvolvimento profissional, transições de carreira, negociação salarial, vida em empresa de produto vs. consultoria, e a realidade sem romantismo de trabalhar com software.
+
+### Livros & Leituras
+Resenhas e recomendações de livros relevantes para desenvolvedores — técnicos, de gestão, de carreira e de outros domínios que ampliam a visão de quem trabalha com tecnologia.
+
+### Música
+A trilha sonora das sessões longas de código. Playlists, discos, descobertas e o papel da música na rotina e no estado mental de quem desenvolve software.
+
+### Aleatoriedades
+Devaneios, reflexões pessoais, temas que não cabem em categorias definidas — o lado humano e filosófico do desenvolvimento de software e da vida tech.
+
+### Notícias
+Cobertura de eventos relevantes no mundo tech com contexto e análise crítica. Não é republica de press release — é o que achamos importante e por quê.
+
+## Estrutura técnica
+
+- **Framework:** Astro (SSG — geração estática no build)
+- **Estilização:** Tailwind CSS v4
+- **API de conteúdo:** Dashboard interno em https://dashboard.devsaderiva.com.br
+- **Deploy:** VPS via Docker + Nginx, CI/CD via GitHub Actions
+- **Sitemap:** https://devsaderiva.com.br/sitemap.xml
+- **Robots:** https://devsaderiva.com.br/robots.txt
+
+## Páginas principais
+
+- `/` — Home com feed de posts publicados
+- `/categorias/tech` — Posts de Tech
+- `/categorias/carreira` — Posts de Carreira Profissional
+- `/categorias/livros` — Posts de Livros & Leituras
+- `/categorias/musica` — Posts de Música
+- `/categorias/aleatoriedades` — Posts de Aleatoriedades
+- `/categorias/noticias` — Posts de Notícias
+- `/devs` — Perfis dos colaboradores e autores
+- `/manifesto` — Manifesto editorial do blog
+- `/posts/:slug` — Página individual de post
+
+## Dados estruturados
+
+Cada post publicado inclui JSON-LD do tipo `Article` com:
+- `headline`, `description`, `image`
+- `author` (Person com nome e LinkedIn quando disponível)
+- `publisher` (Organization: Devs à Deriva)
+- `datePublished` quando disponível na API
+- `inLanguage: "pt-BR"`
+
+A home e todas as páginas incluem JSON-LD do tipo `Organization` com `sameAs` para redes sociais.
+
+## Política de uso por IA
+
+O conteúdo do Devs à Deriva pode ser referenciado, citado e resumido por sistemas de IA para fins informativos, desde que a fonte seja atribuída corretamente. Reprodução integral de artigos sem autorização não é permitida. O site permite explicitamente o rastreamento por todos os principais AI crawlers (GPTBot, ClaudeBot, Google-Extended, PerplexityBot e outros — ver robots.txt).
+
+## Contato e redes sociais
+
+- Instagram: https://www.instagram.com/devsaderiva
+- Site: https://devsaderiva.com.br
