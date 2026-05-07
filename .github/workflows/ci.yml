@@ -23,9 +23,10 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build
+        # CI não tem acesso ao dashboard interno do VPS — usa o localhost (padrão),
+        # que falhará silenciosamente e produzirá um build válido com dados vazios.
+        # O build real com dados reais acontece no VPS via Docker (deploy job).
         run: npm run build
-        env:
-          PUBLIC_DASHBOARD_URL: https://dashboard.devsaderiva.com.br
 
   deploy:
     name: Deploy to VPS

@@ -1,15 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
 import BlackHole from '../components/BlackHole.astro';
+import { fetchDevs } from '../lib/devs';
 
-const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
+const devs = await fetchDevs();
+const devsJson = JSON.stringify(devs);
 ---
 
 <Base title="Devs · Devs à Deriva">
   <div class="devs-page">
     <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
 
-    <div class="cards-overlay" id="cards-overlay" data-dashboard={dashboardUrl}></div>
+    <div class="cards-overlay" id="cards-overlay" data-devs={devsJson}></div>
 
     <!-- Popup único, reposicionado pelo JS -->
     <div id="dev-popup" class="dev-popup" aria-hidden="true">
@@ -205,57 +207,58 @@ function initials(name: string): string {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
-// ── Busca devs do dashboard e cria os cards ─────────────────────
-const overlay      = document.getElementById('cards-overlay') as HTMLElement;
-const dashboardUrl = overlay?.dataset.dashboard ?? 'http://localhost:3000';
+// ── Lê os devs do atributo injetado no build time ───────────────
+const overlay = document.getElementById('cards-overlay') as HTMLElement;
 
 interface Dev { name: string; role: string; bio: string; photoUrl: string | null; githubUrl: string | null; isOwner: boolean }
 
-async function loadDevs() {
+function loadDevs() {
+  let devs: Dev[] = [];
   try {
-    const res  = await fetch(`${dashboardUrl}/api/devs`);
-    const { devs } = await res.json() as { devs: Dev[] };
+    devs = JSON.parse(overlay?.dataset.devs ?? '[]') as Dev[];
+  } catch {
+    devs = [];
+  }
 
-    devs.forEach((dev, i) => {
-      const accent  = i % 2 === 0 ? 'star' : 'accent';
-      // Prioridade: foto do OAuth (Gmail/Google) → avatar do GitHub → iniciais
-      const photoUrl = dev.photoUrl ?? githubAvatar(dev.githubUrl);
+  if (devs.length === 0) return;
 
-      const anchor  = document.createElement('div');
-      anchor.className = 'dev-card-anchor';
-      anchor.dataset.name   = dev.name;
-      anchor.dataset.role   = dev.role;
-      anchor.dataset.bio    = dev.bio;
-      anchor.dataset.accent = accent;
+  devs.forEach((dev, i) => {
+    const accent  = i % 2 === 0 ? 'star' : 'accent';
+    // Prioridade: foto do OAuth (Gmail/Google) → avatar do GitHub → iniciais
+    const photoUrl = dev.photoUrl ?? githubAvatar(dev.githubUrl);
 
-      const card = document.createElement('div');
-      card.className = `dev-card dev-card--${accent}`;
+    const anchor  = document.createElement('div');
+    anchor.className = 'dev-card-anchor';
+    anchor.dataset.name   = dev.name;
+    anchor.dataset.role   = dev.role;
+    anchor.dataset.bio    = dev.bio;
+    anchor.dataset.accent = accent;
 
-      if (photoUrl) {
-        const img = document.createElement('img');
-        img.className   = 'dev-card__photo';
-        img.src         = photoUrl;
-        img.alt         = dev.name;
-        img.draggable   = false;
-        img.onerror     = () => {
-          img.remove();
-          card.textContent = initials(dev.name);
-          card.style.fontSize = '1.1rem';
-        };
-        card.appendChild(img);
-      } else {
+    const card = document.createElement('div');
+    card.className = `dev-card dev-card--${accent}`;
+
+    if (photoUrl) {
+      const img = document.createElement('img');
+      img.className   = 'dev-card__photo';
+      img.src         = photoUrl;
+      img.alt         = dev.name;
+      img.draggable   = false;
+      img.onerror     = () => {
+        img.remove();
         card.textContent = initials(dev.name);
         card.style.fontSize = '1.1rem';
-      }
+      };
+      card.appendChild(img);
+    } else {
+      card.textContent = initials(dev.name);
+      card.style.fontSize = '1.1rem';
+    }
 
-      anchor.appendChild(card);
-      overlay.appendChild(anchor);
-    });
+    anchor.appendChild(card);
+    overlay.appendChild(anchor);
+  });
 
-    initAnimation();
-  } catch (err) {
-    console.error('[devs] erro ao carregar:', err);
-  }
+  initAnimation();
 }
 
 // ── Animação ────────────────────────────────────────────────────
