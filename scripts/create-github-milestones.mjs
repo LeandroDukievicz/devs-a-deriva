@@ -105,7 +105,8 @@ Preparar o conteúdo para indexação e compartilhamento.
 - [ ] Open Graph (title, description, image) por post e categoria
 - [ ] \`sitemap.xml\` com apenas conteúdo publicado
 - [ ] \`robots.txt\` coerente com produção
-- [ ] JSON-LD Article para posts publicados`,
+- [ ] JSON-LD Article para posts publicados
+- [ ] Checar por último o relatório AEO: https://check.aeojs.org/scan/devsaderiva.com.br/20260506-014013`,
   },
   {
     title: 'DEPOIS 3 — Sistema de comentários completo',

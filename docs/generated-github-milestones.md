@@ -60,6 +60,7 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 - [ ] `sitemap.xml` com apenas conteúdo publicado
 - [ ] `robots.txt` coerente com produção
 - [ ] JSON-LD `Article` para posts publicados
+- [ ] Checar por último o relatório AEO: https://check.aeojs.org/scan/devsaderiva.com.br/20260506-014013
 
 ---
 
