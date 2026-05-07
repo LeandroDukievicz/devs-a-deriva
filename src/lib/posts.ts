@@ -49,7 +49,7 @@ export function formatDate(dateStr: string): string {
   return `${day} ${month} ${year}`;
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
