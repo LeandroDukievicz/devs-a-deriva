@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Manifesto · Devs à Deriva">
-  <main id="main-content" aria-label="Manifesto">
+  <main id="main-content" class="manifesto-crawl" aria-label="Manifesto">
     <div class="crawl-stars" aria-hidden="true"></div>
 
     <section class="crawl-viewport" aria-label="Manifesto em perspectiva controlado pelo scroll">
@@ -33,7 +33,7 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <script>
-  const section = document.getElementById('manifesto-crawl');
+  const section = document.querySelector<HTMLElement>('.manifesto-crawl');
   const crawlText = document.getElementById('manifesto-crawl-text');
   const firstParagraph = crawlText?.querySelector('p');
 
@@ -72,7 +72,7 @@ import Base from '../layouts/Base.astro';
 </script>
 
 <style>
-  #manifesto-crawl {
+  .manifesto-crawl {
     position: relative;
     min-height: 260vh;
     min-height: 260dvh;
@@ -83,21 +83,21 @@ import Base from '../layouts/Base.astro';
     scrollbar-width: thin;
   }
 
-  :global(html:has(#manifesto-crawl)),
-  :global(body:has(#manifesto-crawl)) {
+  :global(html:has(.manifesto-crawl)),
+  :global(body:has(.manifesto-crawl)) {
     scrollbar-color: var(--color-star) var(--color-star-08);
     scrollbar-width: thin;
   }
 
-  :global(body:has(#manifesto-crawl)::-webkit-scrollbar) {
+  :global(body:has(.manifesto-crawl)::-webkit-scrollbar) {
     width: 8px;
   }
 
-  :global(body:has(#manifesto-crawl)::-webkit-scrollbar-track) {
+  :global(body:has(.manifesto-crawl)::-webkit-scrollbar-track) {
     background: var(--color-star-08);
   }
 
-  :global(body:has(#manifesto-crawl)::-webkit-scrollbar-thumb) {
+  :global(body:has(.manifesto-crawl)::-webkit-scrollbar-thumb) {
     background: linear-gradient(180deg, var(--color-star-light) 0%, var(--color-star) 55%, var(--color-star-dark) 100%);
     border: 1px solid var(--color-bg-90);
     border-radius: 999px;
@@ -207,23 +207,43 @@ import Base from '../layouts/Base.astro';
   }
 
   @media (max-width: 768px) {
-    #manifesto-crawl {
-      min-height: 240vh;
-      min-height: 240dvh;
+    .manifesto-crawl {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: visible;
     }
 
     .crawl-viewport {
-      perspective: 520px;
-      perspective-origin: 50% 40%;
+      position: relative;
+      height: auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: visible;
+      perspective: none;
+      padding: 112px 0 56px;
     }
 
     .manifesto-section {
       width: min(90vw, 620px);
-      transform: rotateX(36deg) translate3d(0, var(--crawl-y), 0);
+      position: relative;
+      top: auto;
+      transform: none !important;
+      transform-style: flat;
+      opacity: 1 !important;
+      text-align: left;
+      text-shadow: 0 0 10px var(--color-star-25);
+      will-change: auto;
     }
 
     .manifesto-title {
-      margin-bottom: 28px;
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0 0 28px;
+      padding: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
       font-size: 1rem;
       letter-spacing: 0.1em;
     }
@@ -231,7 +251,12 @@ import Base from '../layouts/Base.astro';
     .manifesto-section p {
       margin-bottom: 24px;
       font-size: 1rem;
-      line-height: 1.48;
+      line-height: 1.72;
+      text-align-last: auto;
+    }
+
+    .crawl-fade {
+      display: none;
     }
   }
 </style>

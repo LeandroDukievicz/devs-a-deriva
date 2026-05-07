@@ -161,7 +161,7 @@ Qualidade técnica da experiência pública.
 - [ ] \`prefers-reduced-motion\` aplicado nas animações
 - [ ] Navegação por teclado em navbar, comentários e formulários
 - [ ] Contraste validado em todos os temas incluindo Limbo e páginas com canvas
-- [ ] Lighthouse em home, post e categoria`,
+- [x] Lighthouse CI automatizado em PR/push para monitorar Core Web Vitals em categoria, devs e manifesto`,
   },
   {
     title: 'DEPOIS 7 — Polimento editorial e UX',

@@ -35,7 +35,7 @@ Checklist:
 - [x] `robots.txt` com allowlist de crawlers e link para sitemap.
 - [x] Vercel Analytics integrado via `@vercel/analytics/astro`.
 - [x] Google Analytics (gtag.js) integrado em Base.astro.
-- [ ] [P2] Lighthouse CI automatizado no PR/push para monitorar Core Web Vitals.
+- [x] [P2] Lighthouse CI automatizado no PR/push para monitorar Core Web Vitals.
 
 ---
 
@@ -61,7 +61,7 @@ Checklist:
 - [x] [P0] Fluxo OAuth para comentários usa `state` assinado com HMAC no dashboard. `lib/comment-state.ts` gera nonce de 32 bytes, `exp` de 10 minutos e HMAC-SHA256 com `AUTH_SECRET`; `/comment/login` e `/comment/finalize` validam o token antes de seguir.
 - [x] [P0] Rate limit no endpoint `POST /api/comments/draft` do dashboard por IP: endpoint `comment-draft`, janela de 1 min, limite de 5 tentativas, usando `ApiRateLimitAttempt`.
 - [x] [P1] Comentários criados após OAuth entram com `status: PENDING` e nunca `APPROVED` direto. O fluxo confirmado é `AWAITING_AUTH -> PENDING -> APPROVED | REJECTED`.
-- [ ] [P1] Configurar Dependabot no repositório: `.github/dependabot.yml` com atualizações semanais de npm e GitHub Actions.
+- [x] [P1] Configurar Dependabot no repositório: `.github/dependabot.yml` com atualizações semanais de npm e GitHub Actions.
 
 ---
 
