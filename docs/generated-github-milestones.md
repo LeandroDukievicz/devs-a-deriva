@@ -1,6 +1,6 @@
 # Milestones - Devs à Deriva
 
-Revisado em: 2026-05-04
+Revisado em: 2026-05-06
 
 ## Contexto
 
@@ -9,6 +9,8 @@ O projeto tem duas partes em operação:
 - **Dashboard Next.js** (`dashboard-ldstudio`): backend, API, PostgreSQL/Prisma
 
 Newsletter, progresso de leitura e comentários já têm backend implementado. O objetivo agora é remover os bloqueadores e subir para produção.
+
+**Concluído nesta sprint (2026-05-05/06):** SEO/AEO completo (canonical, OG, JSON-LD, sitemap, robots.txt, llms.txt), fix da página `/devs` (CORS server-to-server no dashboard, fetch client-side no blog), CI/CD estabilizado nos dois repos.
 
 ---
 
@@ -53,14 +55,16 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 ---
 
-### SEO básico
+### SEO / AEO
 
-- [ ] Canonical URL em todas as rotas públicas
-- [ ] Open Graph (title, description, image) por post e categoria
-- [ ] `sitemap.xml` com apenas conteúdo publicado
-- [ ] `robots.txt` coerente com produção
-- [ ] JSON-LD `Article` para posts publicados
-- [ ] Checar por último o relatório AEO: https://check.aeojs.org/scan/devsaderiva.com.br/20260506-014013
+- [x] Canonical URL em todas as rotas públicas
+- [x] Open Graph completo (title, description, image, url, type, locale, site_name) por post e categoria
+- [x] `sitemap.xml` dinâmico com páginas estáticas + posts publicados
+- [x] `robots.txt` com allow explícito para 23 AI crawlers
+- [x] JSON-LD `Article` nos posts e `Organization` em todas as páginas
+- [x] `llms.txt` descrevendo o site para LLMs (AEO/GEO)
+- [ ] Subir score AEO de ~44 → 80+: parágrafos longos, seções FAQ, dados estatísticos nos posts
+- [ ] Checar relatório atualizado: https://check.aeojs.org/scan/devsaderiva.com.br/20260506-014013
 
 ---
 
@@ -73,8 +77,9 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 ---
 
-### Newsletter: tela administrativa
+### Newsletter: tela administrativa e compliance
 
+- [ ] **Double opt-in:** ao cadastrar, enviar e-mail de confirmação antes de ativar a inscrição
 - [ ] Tela no dashboard para listar inscritos com status, origem e data de consentimento
 - [ ] Ações de supressão e descadastro manual
 - [ ] Testes unitários do validador de e-mail
