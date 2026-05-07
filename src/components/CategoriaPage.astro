@@ -451,8 +451,14 @@ const clientPosts = allPosts.map((post) => ({
     transition: border-color 0.22s ease;
   }
 
-  .feat-card:hover {
+  .feat-card:hover,
+  .feat-card:focus-visible {
     border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .feat-card:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-accent);
   }
 
   .feat-card-body {
@@ -488,15 +494,16 @@ const clientPosts = allPosts.map((post) => ({
     transition: color 0.2s ease, filter 0.2s ease;
   }
 
-  .carousel-btn:hover {
+  .carousel-btn:hover,
+  .carousel-btn:focus-visible {
     color: var(--color-accent);
     filter: drop-shadow(0 0 6px var(--color-accent));
+    outline: none;
   }
 
-  .carousel-btn:disabled {
-    opacity: 0.25;
-    cursor: default;
-    pointer-events: none;
+  .carousel-btn:focus-visible {
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px var(--color-accent);
   }
 
   .carousel-dots {
@@ -517,6 +524,12 @@ const clientPosts = allPosts.map((post) => ({
     cursor: pointer;
     padding: 0;
     transition: background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  .dot:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    opacity: 1;
   }
 
   .dot.active {
@@ -547,8 +560,14 @@ const clientPosts = allPosts.map((post) => ({
     transition: border-color 0.22s ease;
   }
 
-  .post-card:hover {
+  .post-card:hover,
+  .post-card:focus-visible {
     border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .post-card:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-accent);
   }
 
   .post-card-body {
@@ -615,10 +634,17 @@ const clientPosts = allPosts.map((post) => ({
     transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
   }
 
-  .load-more-btn:hover {
+  .load-more-btn:hover,
+  .load-more-btn:focus-visible {
     border-color: var(--color-accent);
     box-shadow: 0 0 18px var(--color-accent-20);
     background: transparent;
+    outline: none;
+  }
+
+  .load-more-btn:focus-visible {
+    border-style: solid;
+    box-shadow: 0 0 0 2px var(--color-accent), 0 0 18px var(--color-accent-20);
   }
 
   /* ── Mobile ────────────────────────────────────────────────── */

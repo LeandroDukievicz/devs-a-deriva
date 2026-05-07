@@ -94,4 +94,21 @@ Checklist:
 - [x] `tests/e2e/home.spec.ts`: smoke tests Playwright na home e em página de post.
 - [ ] [P1] Adicionar testes unitários para helpers de formatação de data, leitura de tempo e slug.
 - [ ] [P1] Expandir E2E: navegação por categorias, abertura de comentários, subscribe newsletter.
-- [x] [P1] Integrar `npm test` no CI (GitHub Actions) antes do deploy.
+- [ ] [P1] Integrar `npm test` no CI (GitHub Actions) antes do deploy.
+
+---
+
+## Milestone 7 — Refatoração
+
+Checklist:
+
+- [ ] [P0] Centralizar utilitários de string (`escapeHtml`, `initials`) em `src/lib/utils/string.ts`.
+- [ ] [P0] Unificar metadados de categorias em `src/lib/categories.ts`, eliminando a duplicidade com `posts.ts`.
+- [ ] [P0] Remover arquivo `src/pages/delete.astro` (duplicata de `data-deletion.astro`).
+- [ ] [P1] Mover interfaces `Author` e `Post` para `src/types/blog.ts`.
+- [ ] [P1] Extrair o bloco de Newsletter de `[slug].astro` para um componente `src/components/Newsletter.astro`.
+- [ ] [P1] Criar componente `src/components/PostCard.astro` para unificar a exibição de posts na home e categorias.
+- [ ] [P1] Criar `src/layouts/LegalLayout.astro` para centralizar o CSS das páginas de termos, privacidade e exclusão de dados.
+- [ ] [P2] Converter páginas individuais de categoria para uma rota dinâmica `src/pages/categorias/[categoria].astro`.
+- [ ] [P2] Centralizar ícones sociais em um componente `src/components/SocialIcon.astro`.
+

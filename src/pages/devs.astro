@@ -62,7 +62,16 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     align-items: center;
     justify-content: center;
     position: relative;
+    padding: 0;
+    font: inherit;
+    color: inherit;
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+
+  :global(.dev-card:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    transform: scale(1.1);
   }
 
   :global(.dev-card--star) {
@@ -237,14 +246,16 @@ async function loadDevs() {
     anchor.dataset.bio    = dev.bio;
     anchor.dataset.accent = accent;
 
-    const card = document.createElement('div');
+    const card = document.createElement('button');
+    card.type = 'button';
     card.className = `dev-card dev-card--${accent}`;
+    card.setAttribute('aria-label', `Ver perfil de ${dev.name}`);
 
     if (photoUrl) {
       const img = document.createElement('img');
       img.className   = 'dev-card__photo';
       img.src         = photoUrl;
-      img.alt         = dev.name;
+      img.alt         = '';
       img.draggable   = false;
       img.onerror     = () => {
         img.remove();
@@ -418,20 +429,27 @@ function hidePopup() {
 
 // ── Dados de animação ─────────────────────────────────────────
 const data: CardData[] = anchors.map((el, i) => {
-  const card = el.querySelector<HTMLElement>('.dev-card')!;
+  const card = el.querySelector<HTMLButtonElement>('.dev-card')!;
 
-  card.addEventListener('mouseenter', () => {
+  const handleEnter = () => {
     if (isMobile()) return;
     const d = data.find(d => d.el === el);
     if (d) d.paused = true;
     showPopup(el);
-  });
-  card.addEventListener('mouseleave', () => {
+  };
+
+  const handleLeave = () => {
     if (isMobile()) return;
     const d = data.find(d => d.el === el);
     if (d) d.paused = false;
     hidePopup();
-  });
+  };
+
+  card.addEventListener('mouseenter', handleEnter);
+  card.addEventListener('mouseleave', handleLeave);
+  card.addEventListener('focus', handleEnter);
+  card.addEventListener('blur', handleLeave);
+
   card.addEventListener('click', () => {
     if (!isMobile()) return;
 

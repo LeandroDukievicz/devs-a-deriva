@@ -699,7 +699,65 @@ const logoForCanvas = Buffer.from(
     if (target?.closest('.has-dropdown')) return;
     closeAll();
   }, { signal: navSignal });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); }, { signal: navSignal });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAll();
+      // Se o menu estava aberto e fechou, devolve o foco para o botão correspondente
+      if (pinnedMenu) {
+        const dropdown = dropdowns.find(d => d.menu === pinnedMenu);
+        dropdown?.btn?.focus();
+        pinnedMenu = null;
+      }
+    }
+  }, { signal: navSignal });
+
+  // ── Keyboard Navigation for Dropdowns ────────────────────────────
+  dropdowns.forEach(({ btn, menu }) => {
+    if (!btn || !menu) return;
+
+    btn.addEventListener('keydown', (e) => {
+      const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!isExpanded) {
+          setDropdownState(btn, menu, true);
+          pinnedMenu = menu;
+        }
+        const items = menu.querySelectorAll<HTMLElement>('.dropdown-link');
+        if (items.length > 0) {
+          if (e.key === 'ArrowDown') items[0].focus();
+          else items[items.length - 1].focus();
+        }
+      }
+    });
+
+    menu.addEventListener('keydown', (e) => {
+      const items = Array.from(menu.querySelectorAll<HTMLElement>('.dropdown-link'));
+      const index = items.indexOf(document.activeElement as HTMLElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIndex = (index + 1) % items.length;
+        items[nextIndex].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIndex = (index - 1 + items.length) % items.length;
+        items[prevIndex].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        items[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        items[items.length - 1].focus();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setDropdownState(btn, menu, false);
+        btn.focus();
+        pinnedMenu = null;
+      }
+    });
+  });
 
   // ── Globe (Home hover) ────────────────────────────────────────────
   const homeNavLink = document.querySelector<HTMLAnchorElement>('.nav-link--home');

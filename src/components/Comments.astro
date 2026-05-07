@@ -584,7 +584,28 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     composeWrite.hidden = s === 'auth-prompt';
     composeAuth.hidden  = s === 'writing';
     if (authError) authError.textContent = '';
+
+    if (s === 'auth-prompt') {
+      const firstSocialBtn = composeAuth.querySelector<HTMLButtonElement>('.social-btn');
+      firstSocialBtn?.focus();
+    }
   };
+
+  // ── Keyboard Events ───────────────────────────────────────────
+
+  textarea?.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      btnComentar?.click();
+    }
+  });
+
+  composeAuth?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      btnCancel?.click();
+    }
+  });
 
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime();
