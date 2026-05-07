@@ -274,3 +274,19 @@ export async function getPostsByCategory(categorySlug: string): Promise<Post[]> 
 export async function getFeaturedByCategory(categorySlug: string): Promise<Post[]> {
   return getPostsByCategory(categorySlug);
 }
+
+export function paginatePosts(posts: Post[], page: number, pageSize = 10): {
+  items: Post[];
+  hasMore: boolean;
+  total: number;
+} {
+  const safePage = Math.max(1, Math.floor(page));
+  const safePageSize = Math.max(1, Math.floor(pageSize));
+  const start = (safePage - 1) * safePageSize;
+
+  return {
+    items: posts.slice(start, start + safePageSize),
+    hasMore: start + safePageSize < posts.length,
+    total: posts.length,
+  };
+}

@@ -1,5 +1,5 @@
 ---
-import { getFeaturedByCategory, getPostsByCategory } from '../lib/posts';
+import { getFeaturedByCategory, getPostsByCategory, paginatePosts } from '../lib/posts';
 
 interface Props {
   category: string;
@@ -19,6 +19,15 @@ const {
 
 const featuredPosts = await getFeaturedByCategory(categorySlug);
 const allPosts = await getPostsByCategory(categorySlug);
+const firstPage = paginatePosts(allPosts, 1, 10);
+const visiblePosts = firstPage.items;
+const clientPosts = allPosts.map((post) => ({
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  readTime: post.readTime,
+  hashtag: post.hashtag,
+}));
 ---
 
 <main id="main-content" class="categoria-page">
@@ -103,7 +112,7 @@ const allPosts = await getPostsByCategory(categorySlug);
     </div>
 
     <div class="posts-grid">
-      {allPosts.map(post => (
+      {visiblePosts.map(post => (
         <a href={`/posts/${post.slug}?from=category`} class="post-card">
           <div class="post-card-body">
             <span class="card-tag">{category.toUpperCase()}</span>
@@ -124,7 +133,7 @@ const allPosts = await getPostsByCategory(categorySlug);
     </div>
 
     <div class="load-more-wrap">
-      <button class="load-more-btn">
+      <button class="load-more-btn" type="button" hidden={!firstPage.hasMore}>
         CARREGAR MAIS POSTS
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -145,6 +154,55 @@ const allPosts = await getPostsByCategory(categorySlug);
     link.addEventListener('click', () => {
       sessionStorage.setItem('post-nav-origin', 'category');
     });
+  });
+</script>
+
+<script define:vars={{ clientPosts, category }}>
+  const pageSize = 10;
+  let renderedPosts = pageSize;
+  const loadMoreButton = document.querySelector('.load-more-btn');
+  const postsGrid = document.querySelector('.posts-grid');
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function renderPostCard(post) {
+    return `
+      <a href="/posts/${escapeHtml(post.slug)}?from=category" class="post-card">
+        <div class="post-card-body">
+          <span class="card-tag">${escapeHtml(category.toUpperCase())}</span>
+          <h3 class="post-card-title">${escapeHtml(post.title)}</h3>
+          <p class="post-card-excerpt">${escapeHtml(post.excerpt)}</p>
+          <div class="post-card-meta">
+            <div class="card-meta">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              ${escapeHtml(post.readTime)}
+            </div>
+            <span class="post-hashtag">${escapeHtml(post.hashtag)}</span>
+          </div>
+        </div>
+      </a>
+    `;
+  }
+
+  loadMoreButton?.addEventListener('click', () => {
+    const nextPosts = clientPosts.slice(renderedPosts, renderedPosts + pageSize);
+    if (!nextPosts.length || !postsGrid) return;
+
+    postsGrid.insertAdjacentHTML('beforeend', nextPosts.map(renderPostCard).join(''));
+    renderedPosts += nextPosts.length;
+
+    if (renderedPosts >= clientPosts.length) {
+      loadMoreButton.hidden = true;
+    }
   });
 </script>
 

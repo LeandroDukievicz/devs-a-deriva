@@ -28,6 +28,9 @@ jobs:
         # O build real com dados reais acontece no VPS via Docker (deploy job).
         run: npm run build
 
+      - name: Unit tests
+        run: npm test
+
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest

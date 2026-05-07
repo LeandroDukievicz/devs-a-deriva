@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import BlackHole from '../components/BlackHole.astro';
-import { fetchPosts } from '../lib/posts';
+import { fetchPosts, paginatePosts } from '../lib/posts';
 
 const allPosts = await fetchPosts();
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
@@ -15,12 +15,26 @@ const categoryImages: Record<string, string> = {
   tech: '/tech-astronaut.webp',
 };
 
-const homePosts = allPosts.slice(0, 5).map((post, index) => ({
+const homePosts = allPosts.map((post, index) => ({
   ...post,
   sectionId: `section-${index + 1}`,
   href: `/posts/${post.slug}?from=home`,
   authorBio: post.author.role,
   imageSrc: post.thumbUrl ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp',
+}));
+const firstPage = paginatePosts(homePosts, 1, 10);
+const visibleHomePosts = firstPage.items;
+const clientHomePosts = homePosts.map((post) => ({
+  slug: post.slug,
+  title: post.title,
+  category: post.category,
+  categorySlug: post.categorySlug,
+  excerpt: post.excerpt,
+  author: post.author,
+  sectionId: post.sectionId,
+  href: post.href,
+  authorBio: post.authorBio,
+  imageSrc: post.imageSrc,
 }));
 ---
 
@@ -28,12 +42,12 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
   <BlackHole />
     <main id="main-content" class="page-overlay">
       <div id="sections-container" class="sections-container" data-dashboard-url={DASHBOARD_URL}>
-        {homePosts.length === 0 && (
+        {visibleHomePosts.length === 0 && (
           <div class="empty-state">
             <p>&gt; nenhum post publicado ainda. volte em breve.</p>
           </div>
         )}
-        {homePosts.map((post) => (
+        {visibleHomePosts.map((post) => (
           <div class="content-section" data-section-id={post.sectionId} data-post-slug={post.slug} data-post-href={post.href} role="link" tabindex="0">
             <div class="section-image"><img src={post.imageSrc} alt={post.category} class="section-img" /></div>
             <div class="section-body">
@@ -102,7 +116,7 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
         ))}
 
         <div class="load-more-wrap">
-          <a href="#" class="load-more-cta"><span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+          <button class="load-more-cta" type="button" hidden={!firstPage.hasMore} aria-label="Carregar mais posts"><span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></button>
         </div>
       </div>
     </main>
@@ -165,6 +179,7 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
       padding: 8px 16px;
       background: transparent;
       border: none;
+      cursor: pointer;
       color: var(--color-star);
       text-decoration: none;
       font-size: 1.4rem;
@@ -651,6 +666,70 @@ const homePosts = allPosts.slice(0, 5).map((post, index) => ({
       color: var(--color-star);
     }
   </style>
+
+  <script define:vars={{ clientHomePosts }}>
+    const pageSize = 10;
+    let renderedPosts = pageSize;
+    const loadMoreButton = document.querySelector('.load-more-cta');
+    const sectionsContainer = document.getElementById('sections-container');
+    const loadMoreWrap = document.querySelector('.load-more-wrap');
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function renderPostSection(post) {
+      return `
+        <div class="content-section" data-section-id="${escapeHtml(post.sectionId)}" data-post-slug="${escapeHtml(post.slug)}" data-post-href="${escapeHtml(post.href)}" role="link" tabindex="0">
+          <div class="section-image"><img src="${escapeHtml(post.imageSrc)}" alt="${escapeHtml(post.category)}" class="section-img" /></div>
+          <div class="section-body">
+            <div class="section-info">
+              <h2><a href="${escapeHtml(post.href)}" class="title-link">${escapeHtml(post.title)}</a></h2>
+              <div class="post-meta">
+                <img class="post-author-photo" src="${escapeHtml(post.author.photo)}" alt="Foto de ${escapeHtml(post.author.name)}" loading="lazy" decoding="async" />
+                <div class="post-author-copy">
+                  <span class="post-author-name">${escapeHtml(post.author.name)}</span>
+                  <span class="post-author-bio">${escapeHtml(post.authorBio)}</span>
+                </div>
+              </div>
+              <div class="post-topic-row">
+                <span class="post-topic">Tema: ${escapeHtml(post.category)}</span>
+                <div class="reading-progress">
+                  <svg class="progress-ring" width="20" height="20" viewBox="0 0 20 20">
+                    <circle class="progress-ring-bg" cx="10" cy="10" r="7" fill="none" stroke-width="2"></circle>
+                    <circle class="progress-ring-fill" cx="10" cy="10" r="7" fill="none" stroke-width="2" stroke-linecap="round" stroke-dasharray="43.98" stroke-dashoffset="43.98"></circle>
+                  </svg>
+                  <span class="progress-text">0% lido</span>
+                </div>
+              </div>
+            </div>
+            <div class="section-text">
+              <a href="${escapeHtml(post.href)}" class="limbo-cta">Lançar ao limbo</a>
+              <p>${escapeHtml(post.excerpt)}</p>
+              <a href="${escapeHtml(post.href)}" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    loadMoreButton?.addEventListener('click', () => {
+      const nextPosts = clientHomePosts.slice(renderedPosts, renderedPosts + pageSize);
+      if (!nextPosts.length || !sectionsContainer || !loadMoreWrap) return;
+
+      loadMoreWrap.insertAdjacentHTML('beforebegin', nextPosts.map(renderPostSection).join(''));
+      renderedPosts += nextPosts.length;
+
+      if (renderedPosts >= clientHomePosts.length) {
+        loadMoreButton.hidden = true;
+      }
+    });
+  </script>
 
   <script>
     import { renderReadingProgress, syncReadingProgress } from '../lib/reading-progress-client';
