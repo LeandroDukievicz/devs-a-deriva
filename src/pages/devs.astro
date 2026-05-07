@@ -1,17 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
 import BlackHole from '../components/BlackHole.astro';
-import { fetchDevs } from '../lib/devs';
 
-const devs = await fetchDevs();
-const devsJson = JSON.stringify(devs);
+const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 ---
 
 <Base title="Devs · Devs à Deriva">
   <div class="devs-page">
     <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
 
-    <div class="cards-overlay" id="cards-overlay" data-devs={devsJson}></div>
+    <div class="cards-overlay" id="cards-overlay" data-dashboard={dashboardUrl}></div>
 
     <!-- Popup único, reposicionado pelo JS -->
     <div id="dev-popup" class="dev-popup" aria-hidden="true">
@@ -207,15 +205,20 @@ function initials(name: string): string {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
-// ── Lê os devs do atributo injetado no build time ───────────────
-const overlay = document.getElementById('cards-overlay') as HTMLElement;
+// ── Busca devs do dashboard e cria os cards ─────────────────────
+const overlay      = document.getElementById('cards-overlay') as HTMLElement;
+const dashboardUrl = overlay?.dataset.dashboard ?? 'http://localhost:3000';
 
 interface Dev { name: string; role: string; bio: string; photoUrl: string | null; githubUrl: string | null; isOwner: boolean }
 
-function loadDevs() {
+async function loadDevs() {
   let devs: Dev[] = [];
   try {
-    devs = JSON.parse(overlay?.dataset.devs ?? '[]') as Dev[];
+    const res = await fetch(`${dashboardUrl}/api/devs`);
+    if (res.ok) {
+      const json = await res.json() as { devs: Dev[] };
+      devs = json.devs ?? [];
+    }
   } catch {
     devs = [];
   }
