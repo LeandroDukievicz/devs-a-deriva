@@ -43,13 +43,25 @@ const svgForCanvas = Buffer.from(
 </div>
 
 <style>
-  .astronaut {
-    animation: levitate 3.5s ease-in-out infinite, colorshift 4s ease-in-out infinite;
+  :global(#bh-container) {
+    --intro-star: #00d4e8;
+    --intro-accent: #e800d4;
   }
 
-  .astronaut svg {
+  :global(.astronaut) {
+    color: var(--intro-star);
+    -webkit-text-fill-color: var(--intro-star);
+    animation: levitate 3.5s ease-in-out infinite;
+  }
+
+  :global(.astronaut svg) {
     width: 324px;
     height: 324px;
+  }
+
+  :global(.astronaut svg),
+  :global(.astronaut svg *) {
+    fill: var(--intro-star);
   }
 
   @keyframes levitate {
@@ -57,13 +69,17 @@ const svgForCanvas = Buffer.from(
     50%       { transform: translateY(-18px); }
   }
 
-  @keyframes colorshift {
-    0%   { color: var(--color-star); }
-    50%  { color: var(--color-accent); }
-    100% { color: var(--color-star); }
-  }
-
   @media (max-width: 768px) {
+    :global(.astronaut) {
+      color: var(--intro-star);
+      -webkit-text-fill-color: var(--intro-star);
+      animation: levitate 3.5s ease-in-out infinite;
+    }
+
+    :global(.astronaut svg),
+    :global(.astronaut svg *) {
+      fill: var(--intro-star);
+    }
   }
 
 </style>
@@ -73,10 +89,11 @@ const INTRO_KEY  = 'intro_last_shown';
 const TODAY      = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
 const skipIntro  = localStorage.getItem(INTRO_KEY) === TODAY;
 
-// Lê as cores do sistema de tokens CSS
+// Cores fixas da intro. Não dependem dos tokens globais para evitar herança branca no mobile.
 const _css      = getComputedStyle(document.documentElement);
-const COLOR_STAR   = _css.getPropertyValue('--color-star').trim()   || '#00d4e8';
-const COLOR_ACCENT = _css.getPropertyValue('--color-accent').trim() || '#e800d4';
+const _introCss = getComputedStyle(document.getElementById('bh-container') as HTMLElement);
+const COLOR_STAR   = _introCss.getPropertyValue('--intro-star').trim()   || '#00d4e8';
+const COLOR_ACCENT = _introCss.getPropertyValue('--intro-accent').trim() || '#e800d4';
 const COLOR_BG     = _css.getPropertyValue('--color-bg').trim()     || '#020b18';
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
@@ -155,6 +172,26 @@ function initGlyphs() {
 
 function easeInCubic(x: number)  { return x * x * x; }
 function easeInQuint(x: number)  { return x * x * x * x * x; }
+
+function hexToRgb(hex: string) {
+  const value = hex.replace('#', '');
+  return {
+    r: parseInt(value.slice(0, 2), 16),
+    g: parseInt(value.slice(2, 4), 16),
+    b: parseInt(value.slice(4, 6), 16),
+  };
+}
+
+const INTRO_STAR_RGB = hexToRgb(COLOR_STAR);
+const INTRO_ACCENT_RGB = hexToRgb(COLOR_ACCENT);
+
+function introColorAtTimer() {
+  const colorFrac = (Math.sin(textTimer * Math.PI / 180) + 1) / 2;
+  const r = Math.round(INTRO_STAR_RGB.r + (INTRO_ACCENT_RGB.r - INTRO_STAR_RGB.r) * colorFrac);
+  const g = Math.round(INTRO_STAR_RGB.g + (INTRO_ACCENT_RGB.g - INTRO_STAR_RGB.g) * colorFrac);
+  const b = Math.round(INTRO_STAR_RGB.b + (INTRO_ACCENT_RGB.b - INTRO_STAR_RGB.b) * colorFrac);
+  return `rgb(${r},${g},${b})`;
+}
 
 function showLogo() {
   localStorage.setItem(INTRO_KEY, TODAY);
@@ -384,15 +421,10 @@ function getAstroCenter() {
 function applyColorToOffscreen() {
   // Atualiza o offscreen com a cor ciclada — source-atop no offscreen (fundo transparente)
   // não contamina o canvas principal
-  const colorFrac = (Math.sin(textTimer * Math.PI / 180) + 1) / 2;
-  const cr = Math.round(colorFrac * 232);
-  const cg = Math.round((1 - colorFrac) * 212);
-  const cb = Math.round(232 - colorFrac * 20);
-
   astroOCtx.clearRect(0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
   astroOCtx.drawImage(astroImg, 0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
   astroOCtx.globalCompositeOperation = 'source-atop';
-  astroOCtx.fillStyle = `rgb(${cr},${cg},${cb})`;
+  astroOCtx.fillStyle = introColorAtTimer();
   astroOCtx.fillRect(0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
   astroOCtx.globalCompositeOperation = 'source-over';
 }
@@ -448,6 +480,15 @@ function drawAstroSpaghetti(p: number) {
 function updateAstronaut() {
   const hero = document.getElementById('hero') as HTMLElement;
   if (!hero) return;
+  const astronaut = hero.querySelector('.astronaut') as HTMLElement | null;
+  const color = introColorAtTimer();
+  if (astronaut) {
+    astronaut.style.color = color;
+    astronaut.style.webkitTextFillColor = color;
+    astronaut.querySelectorAll<SVGElement>('svg, svg *').forEach((node) => {
+      node.style.fill = color;
+    });
+  }
 
   if (textTimer < ASTRO_PULL_START) {
     hero.style.opacity = '1';
