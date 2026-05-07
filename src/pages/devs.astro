@@ -10,6 +10,9 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
 
     <div class="cards-overlay" id="cards-overlay" data-dashboard={dashboardUrl}></div>
+    <div id="devs-offline" class="devs-offline" hidden>
+      <p>&gt; api indisponível. não foi possível carregar os devs.</p>
+    </div>
 
     <!-- Popup único, reposicionado pelo JS -->
     <div id="dev-popup" class="dev-popup" aria-hidden="true">
@@ -24,6 +27,24 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   .devs-page {
     position: fixed;
     inset: 0;
+  }
+
+  .devs-offline {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .devs-offline p {
+    font-family: monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--color-star);
+    opacity: 0.35;
+    margin: 0;
   }
 
   .devs-page > :global(#bh-container) {
@@ -232,7 +253,11 @@ async function loadDevs() {
     devs = [];
   }
 
-  if (devs.length === 0) return;
+  if (devs.length === 0) {
+    const offlineMsg = document.getElementById('devs-offline');
+    if (offlineMsg) offlineMsg.hidden = false;
+    return;
+  }
 
   devs.forEach((dev, i) => {
     const accent  = i % 2 === 0 ? 'star' : 'accent';

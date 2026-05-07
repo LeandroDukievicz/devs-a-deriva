@@ -256,17 +256,22 @@ function mapPost(raw: any): Post {
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 
 let _cache: Post[] | null = null;
+let _apiOffline = false;
+
+export function isApiOffline(): boolean { return _apiOffline; }
 
 export async function fetchPosts(): Promise<Post[]> {
   if (_cache && import.meta.env.PROD) return _cache;
   try {
     const res = await fetch(`${DASHBOARD_URL}/api/posts?status=PUBLISHED`);
-    if (!res.ok) return [];
+    if (!res.ok) { _apiOffline = true; return []; }
     const json = await res.json();
     const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
+    _apiOffline = false;
     _cache = items.filter(hasValidSlug).map(mapPost);
     return _cache;
   } catch {
+    _apiOffline = true;
     return [];
   }
 }

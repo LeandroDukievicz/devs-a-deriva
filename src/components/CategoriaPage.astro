@@ -1,5 +1,5 @@
 ---
-import { getFeaturedByCategory, getPostsByCategory, paginatePosts } from '../lib/posts';
+import { getFeaturedByCategory, getPostsByCategory, isApiOffline, paginatePosts } from '../lib/posts';
 
 interface Props {
   category: string;
@@ -55,6 +55,15 @@ const clientPosts = allPosts.map((post) => ({
   </header>
 
   <div class="categoria-divider"></div>
+
+  {allPosts.length === 0 && (
+    <div class="empty-state">
+      <p>{isApiOffline()
+        ? '> api indisponível no momento do build. tente novamente mais tarde.'
+        : '> nenhum post nesta categoria ainda. volte em breve.'
+      }</p>
+    </div>
+  )}
 
   <!-- ── Destaques ──────────────────────────────────────────────── -->
   <section class="destaques-section">
@@ -262,6 +271,22 @@ const clientPosts = allPosts.map((post) => ({
     .corner-astronaut {
       animation: none;
     }
+  }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+
+  .empty-state p {
+    font-family: monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--color-star);
+    opacity: 0.35;
+    margin: 0;
   }
 
   /* ── Header ────────────────────────────────────────────────── */
