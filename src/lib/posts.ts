@@ -23,6 +23,7 @@ export interface Post {
   author: Author;
   thumbUrl?: string | null;
   featured?: boolean;
+  publishedAt?: string | null;
 }
 
 const CATEGORY_MAP: Record<string, { label: string; hashtag: string }> = {
@@ -250,6 +251,7 @@ function mapPost(raw: any): Post {
     author,
     thumbUrl: raw.thumbUrl ?? null,
     featured: true,
+    publishedAt: raw.publishedAt ?? raw.createdAt ?? null,
   };
 }
 

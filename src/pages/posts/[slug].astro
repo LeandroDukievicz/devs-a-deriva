@@ -60,6 +60,7 @@ const articleSchema = {
   },
   inLanguage: 'pt-BR',
   keywords: post.category,
+  ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
 };
 ---
 
