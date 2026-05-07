@@ -29,6 +29,7 @@
 - Analytics editorial.
 - Recomendações de posts relacionados.
 - Newsletter ou notificações.
+  - **[Pendente]** Adicionar fluxo de double opt-in: ao cadastrar, enviar e-mail de confirmação para o assinante autorizar o recebimento antes de ativar a inscrição.
 - Automação de publicação.
 - Integrações com IA para apoio editorial, sem substituir autoria humana.
 - API pública ou privada para consumo de conteúdo.

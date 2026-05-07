@@ -14,6 +14,7 @@ export async function getStaticPaths() {
 
 const { post, nextPost } = Astro.props as { post: Post; nextPost: Post };
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
+const SITE = 'https://devsaderiva.com.br';
 const postImages: Record<string, string> = {
   'portas-que-nao-levam-a-lugar-nenhum': '/home-portas-que-nao-levam-a-lugar-nenhum.png',
   'navegando-em-mares-que-inventei': '/home-navegando-em-mares-que-inventei.png',
@@ -30,11 +31,47 @@ const categoryImages: Record<string, string> = {
   tech: '/tech-astronaut.webp',
 };
 const postHeroImage = post.thumbUrl ?? postImages[post.slug] ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp';
+const postHeroImageAbsolute = postHeroImage.startsWith('http') ? postHeroImage : `${SITE}${postHeroImage}`;
 const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.title,
+  description: post.excerpt,
+  image: postHeroImageAbsolute,
+  author: {
+    '@type': 'Person',
+    name: post.author.name,
+    ...(post.author.socialLinks.linkedin ? { url: post.author.socialLinks.linkedin } : {}),
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Devs à Deriva',
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE}/logo-high-color.webp`,
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `${SITE}/posts/${post.slug}`,
+  },
+  inLanguage: 'pt-BR',
+  keywords: post.category,
+};
 ---
 
-<Base title={`${post.title} · Devs à Deriva`} description={post.excerpt}>
+<Base
+  title={`${post.title} · Devs à Deriva`}
+  description={post.excerpt}
+  ogImage={postHeroImageAbsolute}
+  ogType="article"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+  </Fragment>
   <StarBackground />
 
   <article class="post-page" data-post-slug={post.slug} data-dashboard-url={DASHBOARD_URL}>

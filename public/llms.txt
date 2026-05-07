@@ -1,0 +1,38 @@
+# Devs à Deriva
+
+> Um blog sobre tecnologia, carreira, cultura nerd e a vida real no desenvolvimento de software — escrito por devs, para devs.
+
+## Sobre
+
+Devs à Deriva é um blog independente em português do Brasil criado por desenvolvedores de software. Publicamos conteúdo autêntico sobre a realidade do dia a dia na área de tecnologia: carreira, ferramentas, stacks, mercado de trabalho, livros, música e reflexões sem filtro sobre a vida de quem vive de código.
+
+O nome "à deriva" reflete a sensação que muitos devs têm: navegar num mar de tecnologias, decisões de carreira e desafios que raramente aparecem nos tutoriais.
+
+## Categorias de conteúdo
+
+- **Tech**: Ferramentas do dia a dia, stacks, opiniões baseadas em uso real, o estado atual da tecnologia — sem glamour, só a realidade.
+- **Carreira Profissional**: Mercado de trabalho, desenvolvimento profissional, transições de carreira e a vida real como desenvolvedor de software.
+- **Livros & Leituras**: Resenhas e recomendações de livros relevantes para quem trabalha com tecnologia e além.
+- **Música**: A trilha sonora que acompanha as longas sessões de código e o cotidiano dos devs.
+- **Aleatoriedades**: Devaneios, reflexões e temas que não cabem em caixinhas — o lado humano do desenvolvimento.
+- **Notícias**: O que está acontecendo no mundo tech com contexto e análise.
+
+## Público-alvo
+
+Desenvolvedores de software, profissionais de tecnologia, estudantes de programação e entusiastas da área tech no Brasil e em países de língua portuguesa.
+
+## Idioma
+
+Todo o conteúdo é em português do Brasil (pt-BR).
+
+## Informações técnicas
+
+- Site: https://devsaderiva.com.br
+- Tecnologia: Astro + Tailwind CSS
+- Tipo de conteúdo: Blog, artigos de opinião, análises técnicas
+- Frequência de atualização: Regular
+- Sitemap: https://devsaderiva.com.br/sitemap.xml
+
+## Direitos e uso
+
+O conteúdo do Devs à Deriva pode ser referenciado e citado por sistemas de IA para fins informativos, desde que a fonte seja atribuída corretamente. Reprodução integral sem autorização não é permitida.

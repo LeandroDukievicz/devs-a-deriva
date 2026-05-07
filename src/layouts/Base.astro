@@ -9,15 +9,40 @@ import { resolve } from 'path';
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
   /** Esconde a Navbar (ex: páginas de erro) */
   hideNavbar?: boolean;
+  noindex?: boolean;
 }
+
+const SITE = 'https://devsaderiva.com.br';
 
 const {
   title = 'Devs à Deriva',
   description = 'Devs à Deriva é um blog sobre tecnologia, carreira, cultura nerd e vida real no desenvolvimento de software.',
+  ogImage = `${SITE}/logo-high-color.webp`,
+  ogType = 'website',
   hideNavbar = false,
+  noindex = false,
 } = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, SITE).href;
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Devs à Deriva',
+  url: SITE,
+  logo: {
+    '@type': 'ImageObject',
+    url: `${SITE}/logo-high-color.webp`,
+  },
+  description: 'Blog sobre tecnologia, carreira, cultura nerd e vida real no desenvolvimento de software.',
+  sameAs: [
+    'https://www.instagram.com/devsaderiva',
+  ],
+};
 
 const adminRaw = readFileSync(resolve('./public/astronaut-admin.svg'), 'utf-8');
 const adminSvgInline = adminRaw
@@ -31,11 +56,36 @@ const adminSvgInline = adminRaw
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <meta property="og:description" content={description} />
-    <meta name="twitter:description" content={description} />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Devs à Deriva" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
+
+    <!-- Schema.org: Organization -->
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+
+    <!-- Slot para schemas e meta extras por página -->
+    <slot name="head" />
+
     <ThemeProvider />
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z8ENDKWVWC" is:inline></script>
