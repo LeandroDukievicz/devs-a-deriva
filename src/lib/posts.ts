@@ -34,9 +34,19 @@ const CATEGORY_MAP: Record<string, { label: string; hashtag: string }> = {
   tech:           { label: 'Tech', hashtag: '#tech' },
 };
 
-function estimateReadTime(content: string): string {
+export function estimateReadTime(content: string): string {
   const words = content.trim().split(/\s+/).length;
   return `${Math.max(1, Math.ceil(words / 200))} min`;
+}
+
+export function formatDate(dateStr: string): string {
+  const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = months[d.getUTCMonth()];
+  const year = d.getUTCFullYear();
+  return `${day} ${month} ${year}`;
 }
 
 function escapeHtml(value: string): string {
@@ -48,7 +58,7 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function slugText(value: string): string {
+export function slugText(value: string): string {
   return value
     .replace(/[#>*_`[\]()]/g, '')
     .replace(/\s+/g, ' ')
