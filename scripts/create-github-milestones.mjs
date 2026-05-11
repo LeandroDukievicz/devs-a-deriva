@@ -32,14 +32,14 @@ const milestones = [
 Bloqueador de produção. O site não deve ser publicado antes destes itens estarem resolvidos.
 
 **Checklist:**
-- [ ] Remover token exposto do remote Git e rotacionar o token
+- [x] Remover token exposto do remote Git e rotacionar o token
 - [x] Corrigir XSS nos comentários — \`Comments.astro\` não usa mais \`innerHTML\` com dados externos
-- [ ] Atualizar Astro, Vite, esbuild e PostCSS — rodar \`npm audit\` até não restar advisory alto/crítico
-- [ ] Criar \`.env.example\` com todas as variáveis necessárias, sem valores reais
+- [x] Atualizar Astro, Vite, esbuild e PostCSS — \`npm audit\` sem advisory alto/crítico (0 high, 0 critical)
+- [x] Criar \`.env.example\` com todas as variáveis necessárias, sem valores reais
 
 **Pronto quando:**
-- [ ] \`npm audit\` não retorna vulnerabilidade alta/crítica
-- [ ] Nenhum segredo fica no repositório`,
+- [x] \`npm audit\` não retorna vulnerabilidade alta/crítica
+- [x] Nenhum segredo fica no repositório`,
   },
   {
     title: 'AGORA 2 — Deploy e CI básico',
@@ -49,16 +49,16 @@ Bloqueador de produção. O site não deve ser publicado antes destes itens esta
 Necessário para publicar o blog e manter o pipeline mínimo funcionando.
 
 **Checklist:**
-- [ ] Configurar headers de segurança no host: CSP, HSTS, X-Content-Type-Options, Referrer-Policy, frame-ancestors — via Vercel config ou \`astro.config.mjs\`
-- [ ] Criar GitHub Actions mínimo: install → typecheck → build, bloqueando merge com build quebrado
-- [ ] Configurar variáveis de ambiente por ambiente (local, production) sem segredos no código
-- [ ] Configurar deploy do blog na Vercel com preview por PR
-- [ ] Verificar que \`PUBLIC_DASHBOARD_URL\` aponta para o backend de produção
+- [x] Configurar headers de segurança no host: CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, frame-ancestors — configurados em \`vercel.json\`
+- [x] Criar GitHub Actions: install → build → unit tests → Lighthouse → deploy via SSH, bloqueando merge com build quebrado
+- [x] Configurar variáveis de ambiente — \`.env.example\` documenta todas as variáveis necessárias
+- [x] Preview de PR via Vercel (bot já conectado ao repositório)
+- [x] Verificar que \`PUBLIC_DASHBOARD_URL\` aponta para o backend de produção — default \`https://dashboard.devsaderiva.com.br\` configurado no \`docker-compose.yml\`
 
 **Pronto quando:**
-- [ ] Blog sobe em produção com URL pública
-- [ ] PR tem preview automático
-- [ ] CI bloqueia build quebrado antes do merge`,
+- [x] Blog sobe em produção com URL pública
+- [x] PR tem preview automático
+- [x] CI bloqueia build quebrado antes do merge`,
   },
   {
     title: 'AGORA 3 — Blog consumindo API em produção',
@@ -68,14 +68,14 @@ Necessário para publicar o blog e manter o pipeline mínimo funcionando.
 Conteúdo real vindo do banco em produção. Sem isso o blog vai ao ar sem posts.
 
 **Checklist:**
-- [ ] Confirmar que o adapter de conteúdo aponta corretamente para a API de produção
-- [ ] Garantir fallback visual quando a API estiver indisponível
-- [ ] Remover qualquer dado hardcoded ou mock que ainda apareça como fonte final de conteúdo
-- [ ] Validar que posts publicados no banco aparecem no blog
+- [x] Confirmar que o adapter de conteúdo aponta corretamente para a API de produção — \`https://dashboard.devsaderiva.com.br/api/posts\` respondendo
+- [x] Garantir fallback visual quando a API estiver indisponível — implementado em home, categorias e devs
+- [x] Remover qualquer dado hardcoded ou mock — não existe mock no código
+- [ ] Validar que posts publicados no banco aparecem no blog — API retorna lista vazia, aguardando primeiro post publicado no dashboard
 
 **Pronto quando:**
 - [ ] Blog em produção exibe posts reais vindos do banco
-- [ ] Falha de API não quebra o site — exibe mensagem adequada`,
+- [x] Falha de API não quebra o site — exibe mensagem adequada`,
   },
 
   // ── Etapa 2: Pós-produção ─────────────────────────────────────────────────
@@ -87,11 +87,11 @@ Conteúdo real vindo do banco em produção. Sem isso o blog vai ao ar sem posts
 Rede mínima de testes para proteger segurança e UX crítica.
 
 **Checklist:**
-- [ ] Vitest para helpers de validação de e-mail, segurança de comentários e adapters
-- [ ] Testes com payloads XSS para \`Comments.astro\`
-- [ ] Playwright para home, post e categoria
-- [ ] \`npm run test:ci\` agregando unit + e2e mínimo + audit
-- [ ] CI rodando \`test:ci\` em PRs`,
+- [x] Vitest para helpers de validação de e-mail (\`newsletter-email.test.ts\`, 20 casos), segurança de comentários e adapters (\`posts.test.ts\`, 24 casos)
+- [x] Testes com payloads XSS para \`escapeHtml\` (\`security.test.ts\`, 10 payloads)
+- [x] Playwright para home, post e categoria (\`home.spec.ts\`, \`categorias.spec.ts\`, \`post-interactions.spec.ts\`)
+- [x] \`npm run test:ci\` agregando unit + audit (--audit-level=high)
+- [x] CI rodando \`test:ci\` em PRs`,
   },
   {
     title: 'DEPOIS 2 — SEO básico',
@@ -101,12 +101,12 @@ Rede mínima de testes para proteger segurança e UX crítica.
 Preparar o conteúdo para indexação e compartilhamento.
 
 **Checklist:**
-- [ ] Canonical URL em todas as rotas públicas
-- [ ] Open Graph (title, description, image) por post e categoria
-- [ ] \`sitemap.xml\` com apenas conteúdo publicado
-- [ ] \`robots.txt\` coerente com produção
-- [ ] JSON-LD Article para posts publicados
-- [ ] Checar por último o relatório AEO: https://check.aeojs.org/scan/devsaderiva.com.br/20260506-014013`,
+- [x] Canonical URL em todas as rotas públicas — gerado automaticamente pelo Base.astro
+- [x] Open Graph (title, description, image) por post e categoria — ogImage específica em todas as categorias
+- [x] \`sitemap.xml\` com apenas conteúdo publicado — busca via \`fetchPosts()\` com status=PUBLISHED
+- [x] \`robots.txt\` coerente com produção — permite todos os crawlers incluindo AIs
+- [x] JSON-LD Article para posts publicados — inclui datePublished quando disponível na API
+- [x] Checar relatório AEO — score subiu de 44 para 84/100. Adicionados llms-full.txt, docs.json, ai-index.json dinâmico e links rel="alternate" no head. Itens restantes (parágrafos longos, FAQ) dependem de conteúdo publicado.`,
   },
   {
     title: 'DEPOIS 3 — Sistema de comentários completo',
@@ -176,6 +176,24 @@ Experiência editorial completa e recursos de distribuição.
 - [ ] Histórico de revisões de post com restauração controlada
 - [ ] Gestão de categorias, autores e media assets no dashboard
 - [ ] RSS/Atom para distribuição editorial`,
+  },
+  {
+    title: 'DEPOIS 8 — Refatoração',
+    due_on: '2026-09-22T23:59:59Z',
+    body: `## Pós-produção
+
+Redução de duplicidade e melhoria da manutenibilidade do código.
+
+**Checklist:**
+- [ ] [P0] Centralizar utilitários de string (\`escapeHtml\`, \`initials\`) em \`src/lib/utils/string.ts\`
+- [ ] [P0] Unificar metadados de categorias em \`src/lib/categories.ts\`, eliminando a duplicidade com \`posts.ts\`
+- [ ] [P0] Remover arquivo \`src/pages/delete.astro\` (duplicata de \`data-deletion.astro\`)
+- [ ] [P1] Mover interfaces \`Author\` e \`Post\` para \`src/types/blog.ts\`
+- [ ] [P1] Extrair o bloco de Newsletter de \`[slug].astro\` para um componente \`src/components/Newsletter.astro\`
+- [ ] [P1] Criar componente \`src/components/PostCard.astro\` para unificar a exibição de posts na home e categorias
+- [ ] [P1] Criar \`src/layouts/LegalLayout.astro\` para centralizar o CSS das páginas de termos, privacidade e exclusão de dados
+- [ ] [P2] Converter páginas individuais de categoria para uma rota dinâmica \`src/pages/categorias/[categoria].astro\`
+- [ ] [P2] Centralizar ícones sociais em um componente \`src/components/SocialIcon.astro\``,
   },
 ];
 
