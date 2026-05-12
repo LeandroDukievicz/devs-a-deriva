@@ -145,7 +145,7 @@ Gestão operacional dos inscritos de newsletter.
 **Checklist:**
 - [ ] Tela no dashboard para listar inscritos com status, origem e data de consentimento
 - [ ] Ações de supressão e descadastro manual
-- [ ] Testes unitários do validador de e-mail
+- [x] Testes unitários do validador de e-mail — \`newsletter-email.test.ts\` com 20 casos incluindo injeções
 - [ ] Testes de integração do endpoint de inscrição`,
   },
   {
@@ -159,7 +159,7 @@ Qualidade técnica da experiência pública.
 - [ ] \`width\`/\`height\` ou \`aspect-ratio\` nas imagens principais (evitar layout shift)
 - [ ] Lazy loading em imagens não críticas
 - [ ] \`prefers-reduced-motion\` aplicado nas animações
-- [ ] Navegação por teclado em navbar, comentários e formulários
+- [x] Navegação por teclado em navbar, comentários e formulários — ArrowUp/Down/Home/End nos dropdowns, focus-visible em cards e botões, Ctrl+Enter nos comentários
 - [ ] Contraste validado em todos os temas incluindo Limbo e páginas com canvas
 - [x] Lighthouse CI automatizado em PR/push para monitorar Core Web Vitals em categoria, devs e manifesto`,
   },
