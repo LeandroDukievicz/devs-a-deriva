@@ -1,7 +1,18 @@
 ---
+interface Props {
+  backgroundColor?: string;
+  tone?: 'default' | 'home';
+}
+
+const { backgroundColor = 'var(--color-bg)', tone = 'default' } = Astro.props;
 ---
 
-<div class="stars-container" aria-hidden="true">
+<div
+  class={`stars-container stars-container--${tone}`}
+  aria-hidden="true"
+  style={`background: ${backgroundColor};`}
+  data-background-color={backgroundColor}
+>
   <div class="stars stars-slow"></div>
   <div class="stars stars-medium"></div>
   <div class="stars stars-fast"></div>
@@ -63,7 +74,8 @@
     if (!container) return;
 
     const css = getComputedStyle(document.documentElement);
-    const bg = css.getPropertyValue('--color-bg').trim();
+    const configuredBg = container.dataset.backgroundColor?.trim();
+    const bg = configuredBg || css.getPropertyValue('--color-bg').trim();
     if (bg) container.style.background = bg;
 
     container.querySelectorAll<HTMLElement>('.stars').forEach((layer) => {
@@ -88,6 +100,17 @@
     overflow: hidden;
     pointer-events: none;
     background: var(--color-bg);
+  }
+
+  .stars-container--home::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 78% 12%, rgb(0 212 232 / 0.08), transparent 34%),
+      radial-gradient(circle at 58% 30%, rgb(0 212 232 / 0.04), transparent 36%),
+      linear-gradient(180deg, rgb(2 11 24 / 0.98), rgb(2 11 24));
   }
 
   .stars {

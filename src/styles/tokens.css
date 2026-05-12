@@ -20,6 +20,7 @@
   --color-star-05:  rgb(0 212 232 / 0.05);
   --color-star-08:  rgb(0 212 232 / 0.08);
   --color-star-10:  rgb(0 212 232 / 0.10);
+  --color-star-12:  rgb(0 212 232 / 0.12);
   --color-star-16:  rgb(0 212 232 / 0.16);
   --color-star-18:  rgb(0 212 232 / 0.18);
   --color-star-22:  rgb(0 212 232 / 0.22);
@@ -36,6 +37,7 @@
   --color-accent-16: rgb(232 0 212 / 0.16);
   --color-accent-18: rgb(232 0 212 / 0.18);
   --color-accent-20: rgb(232 0 212 / 0.20);
+  --color-accent-30: rgb(232 0 212 / 0.30);
   --color-accent-40: rgb(232 0 212 / 0.40);
   --color-accent-60: rgb(232 0 212 / 0.60);
 

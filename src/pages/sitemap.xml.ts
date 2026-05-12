@@ -13,6 +13,9 @@ const STATIC_PAGES = [
   { url: '/categorias/noticias', priority: '0.8', changefreq: 'weekly' },
   { url: '/manifesto', priority: '0.6', changefreq: 'monthly' },
   { url: '/devs', priority: '0.6', changefreq: 'monthly' },
+  { url: '/termos', priority: '0.3', changefreq: 'yearly' },
+  { url: '/privacidade', priority: '0.3', changefreq: 'yearly' },
+  { url: '/exclusao-de-dados', priority: '0.3', changefreq: 'yearly' },
 ];
 
 export const GET: APIRoute = async () => {

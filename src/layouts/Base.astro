@@ -13,6 +13,8 @@ interface Props {
   ogType?: 'website' | 'article';
   /** Esconde a Navbar (ex: páginas de erro) */
   hideNavbar?: boolean;
+  /** Esconde o rodapé em páginas full-screen ou experiências imersivas */
+  hideFooter?: boolean;
   noindex?: boolean;
 }
 
@@ -24,6 +26,7 @@ const {
   ogImage = `${SITE}/logo-high-color.webp`,
   ogType = 'website',
   hideNavbar = false,
+  hideFooter = false,
   noindex = false,
 } = Astro.props;
 
@@ -50,6 +53,10 @@ const adminSvgInline = adminRaw
   .replace(/<!DOCTYPE[^>]*>\s*/g, '')
   .replace(/width="[^"]*"/, 'width="48"')
   .replace(/height="[^"]*"/, 'height="48"');
+
+function getCurrentYear() {
+  return new Date().getFullYear();
+}
 ---
 
 <html lang="pt-BR" data-theme="orbita-baixa" style="background-color: #020b18;">
@@ -107,6 +114,17 @@ const adminSvgInline = adminRaw
     {!hideNavbar && <Navbar />}
     <slot />
 
+    {!hideNavbar && !hideFooter && (
+      <footer class="site-footer" aria-label="Links institucionais">
+        <nav class="site-footer-nav" aria-label="Links legais">
+          <a href="/termos#main-content">Termos de Uso</a>
+          <a href="/privacidade#main-content">Política de Privacidade</a>
+          <a href="mailto:leandrodukievicz1718@gmail.com">Contato</a>
+        </nav>
+        <p class="site-footer-copy">© {getCurrentYear()} Devs à Deriva</p>
+      </footer>
+    )}
+
     <div id="admin-wrap">
       <div id="admin-cta" aria-label="Acessar painel administrativo">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -133,6 +151,23 @@ const adminSvgInline = adminRaw
         <polyline points="18 15 12 9 6 15"/>
       </svg>
     </button>
+
+    {!hideNavbar && (
+      <aside
+        id="cookie-consent"
+        class="cookie-consent"
+        aria-label="Aviso de cookies"
+        aria-live="polite"
+        hidden
+      >
+        <p>
+          Usamos cookies e tecnologias semelhantes para manter o site funcionando, entender visitas
+          e melhorar a experiência.
+          <a href="/privacidade#main-content">Ver Política de Privacidade</a>.
+        </p>
+        <button id="cookie-consent-accept" type="button">Entendi</button>
+      </aside>
+    )}
   </body>
 </html>
 
@@ -158,6 +193,133 @@ const adminSvgInline = adminRaw
     top: 0;
     outline: 2px solid var(--color-star);
     outline-offset: 2px;
+  }
+
+  .site-footer {
+    position: relative;
+    z-index: 10;
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 36px 0 44px;
+    border-top: 1px solid var(--color-star-12);
+    color: var(--color-text);
+  }
+
+  .site-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 22px;
+  }
+
+  .site-footer-nav a {
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    text-decoration: none;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+
+  .site-footer-nav a:hover,
+  .site-footer-nav a:focus-visible {
+    color: var(--color-accent);
+    text-shadow: 0 0 12px var(--color-accent-40);
+    outline: none;
+  }
+
+  .site-footer-nav a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .site-footer-copy {
+    margin: 14px 0 0;
+    font-family: monospace;
+    font-size: 0.68rem;
+    line-height: 1.5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    opacity: 0.5;
+  }
+
+  .cookie-consent {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    left: 24px;
+    z-index: 180;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    width: min(920px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 16px 18px;
+    border: 1px solid var(--color-star-22);
+    border-radius: 8px;
+    background: var(--color-bg-95);
+    box-shadow: 0 18px 45px rgb(0 0 0 / 0.42), 0 0 24px var(--color-star-08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--color-text);
+  }
+
+  .cookie-consent[hidden] {
+    display: none;
+  }
+
+  .cookie-consent p {
+    margin: 0;
+    max-width: 72ch;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--color-text);
+    opacity: 0.82;
+  }
+
+  .cookie-consent a {
+    color: var(--color-star);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-star-40);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cookie-consent a:hover,
+  .cookie-consent a:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+    outline: none;
+  }
+
+  .cookie-consent button {
+    flex: 0 0 auto;
+    padding: 9px 15px;
+    border: 1px solid var(--color-star);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-star);
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cookie-consent button:hover,
+  .cookie-consent button:focus-visible {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 14px var(--color-accent-30);
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   @keyframes admin-blink {
@@ -338,10 +500,60 @@ const adminSvgInline = adminRaw
     :global(body *) {
       color: #ffffff !important;
     }
+
+    .site-footer {
+      padding-bottom: 82px;
+    }
+
+    .cookie-consent {
+      right: 16px;
+      bottom: 16px;
+      left: 16px;
+      width: calc(100% - 32px);
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+    }
+
+    .cookie-consent button {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .site-footer {
+      width: min(100% - 32px, 1120px);
+      padding-top: 28px;
+    }
+
+    .site-footer-nav {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
   }
 </style>
 
 <script>
+  const COOKIE_CONSENT_KEY = 'dda-cookie-consent-v1';
+  const cookieConsent = document.getElementById('cookie-consent');
+  const cookieAccept = document.getElementById('cookie-consent-accept');
+
+  try {
+    if (cookieConsent && localStorage.getItem(COOKIE_CONSENT_KEY) !== 'accepted') {
+      cookieConsent.hidden = false;
+    }
+  } catch (_) {
+    if (cookieConsent) cookieConsent.hidden = false;
+  }
+
+  cookieAccept?.addEventListener('click', () => {
+    try {
+      localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
+    } catch (_) {}
+    if (cookieConsent) cookieConsent.hidden = true;
+  });
+
   const btn = document.getElementById('back-to-top');
 
   window.addEventListener('scroll', () => {
