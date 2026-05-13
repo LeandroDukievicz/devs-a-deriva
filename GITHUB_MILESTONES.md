@@ -112,6 +112,6 @@ Checklist:
 - [x] [P1] Extrair o bloco de Newsletter de `[slug].astro` para um componente `src/components/Newsletter.astro`.
 - [x] [P1] Criar componente `src/components/PostCard.astro` para unificar a exibição de posts na home.
 - [x] [P1] Criar `src/layouts/LegalLayout.astro` para centralizar o CSS das páginas de termos, privacidade e exclusão de dados.
-- [ ] [P2] Converter páginas individuais de categoria para uma rota dinâmica `src/pages/categorias/[categoria].astro`.
-- [ ] [P2] Centralizar ícones sociais em um componente `src/components/SocialIcon.astro`.
+- [x] [P2] Converter páginas individuais de categoria para uma rota dinâmica `src/pages/categorias/[categoria].astro`.
+- [x] [P2] Centralizar ícones sociais em um componente `src/components/SocialIcon.astro`.
 

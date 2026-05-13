@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import CategoriaPage from '../../components/CategoriaPage.astro';
+import StarBackground from '../../components/StarBackground.astro';
+import { CATEGORIES } from '../../lib/categories';
+
+export function getStaticPaths() {
+  return CATEGORIES.map((cat) => ({
+    params: { categoria: cat.slug },
+    props: { cat },
+  }));
+}
+
+const { cat } = Astro.props;
+const ogImage = `https://devsaderiva.com.br${cat.illustration}`;
+---
+
+<Base title={`${cat.label} · Devs à Deriva`} ogImage={ogImage}>
+  <StarBackground />
+  <CategoriaPage
+    category={cat.label}
+    categorySlug={cat.slug}
+    description={cat.description}
+    cornerIllustration={cat.illustration}
+    animateIllustration
+  />
+</Base>
