@@ -62,7 +62,7 @@ Checklist:
 - [x] [P0] Rate limit no endpoint `POST /api/comments/draft` do dashboard por IP: endpoint `comment-draft`, janela de 1 min, limite de 5 tentativas, usando `ApiRateLimitAttempt`.
 - [x] [P1] Comentários criados após OAuth entram com `status: PENDING` e nunca `APPROVED` direto. O fluxo confirmado é `AWAITING_AUTH -> PENDING -> APPROVED | REJECTED`.
 - [x] [P1] Configurar Dependabot no repositório: `.github/dependabot.yml` com atualizações semanais de npm e GitHub Actions.
-- [ ] [P1] Rate limiting no Nginx: adicionar `limit_req_zone` (30r/s por IP, burst 60) e `limit_conn_zone` (20 conexões simultâneas por IP) no `nginx.conf` para mitigar DDoS e slowloris. Adicionar timeouts agressivos: `client_body_timeout 10s`, `client_header_timeout 10s`, `send_timeout 10s`.
+- [x] [P1] Rate limiting no Nginx: adicionar `limit_req_zone` (30r/s por IP, burst 60) e `limit_conn_zone` (20 conexões simultâneas por IP) no `nginx.conf` para mitigar DDoS e slowloris. Adicionar timeouts agressivos: `client_body_timeout 10s`, `client_header_timeout 10s`, `send_timeout 10s`.
 - [ ] [P1] Colocar Cloudflare (plano gratuito) na frente do VPS: esconde o IP real do servidor, absorve ataques volumétricos antes de chegarem ao Nginx, e ativa proteção DDoS L3/L4 sem custo.
 - [ ] [P2] Configurar firewall no VPS (ufw/iptables): permitir apenas 80, 443 e SSH — bloquear todo o resto.
 
