@@ -10,6 +10,8 @@ O blog público neste repositório é Astro estático. A persistência dinâmica
 
 Esse backend usa Next.js API Routes, Prisma, PostgreSQL e migrations versionadas em `dashboard-ldstudio/prisma/migrations`.
 
+Rotinas de backup, retenção e restauração ficam documentadas em [docs/operations.md](./operations.md). Este arquivo continua focado em schema, migrations e saúde do banco.
+
 ## Comandos Operacionais
 
 No diretório `dashboard-ldstudio`:

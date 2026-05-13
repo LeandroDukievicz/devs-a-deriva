@@ -56,6 +56,7 @@ A plataforma já possui:
 - SEO/AEO base com canonical, Open Graph, JSON-LD, sitemap, robots.txt e llms.txt;
 - headers de segurança no Nginx;
 - paginação client-side na home e categorias;
+- documentação operacional de cron, backup e restauração em [docs/operations.md](./operations.md);
 - testes mínimos com Vitest e Playwright.
 
 ## Direção de Longo Prazo

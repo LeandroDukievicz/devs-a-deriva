@@ -196,6 +196,17 @@ Se o deploy falhar durante build ou subida local no VPS (antes do smoke), `scrip
 
 Se o smoke falhar após um deploy concluído, o CI aciona `scripts/rollback.sh` automaticamente.
 
+## Cron E Backup
+
+As rotinas agendadas não vivem neste repositório público. O contrato operacional para backup de banco, retenção, restore e manutenção periódica está em [docs/operations.md](./operations.md).
+
+Em resumo:
+
+- o blog estático não precisa de cron para renderizar conteúdo;
+- o backend do dashboard é quem deve executar backups e tarefas periódicas;
+- o PostgreSQL precisa de dump recorrente e restauração testada;
+- APIs públicas são reconstituídas a partir do banco e do código versionado, não por backup do endpoint em si.
+
 ## Evolução Recomendada
 
 Próximos passos quando o projeto crescer:
