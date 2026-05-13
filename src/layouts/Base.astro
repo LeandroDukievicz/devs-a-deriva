@@ -3,6 +3,7 @@ import '../styles/tailwind.css';
 import '../styles/tokens.css';
 import ThemeProvider from '../components/ThemeProvider.astro';
 import Navbar from '../components/Navbar.astro';
+import Analytics from '@vercel/analytics/astro';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -99,6 +100,7 @@ function getCurrentYear() {
     <!-- Slot para schemas e meta extras por página -->
     <slot name="head" />
 
+    <Analytics />
     <ThemeProvider />
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z8ENDKWVWC" is:inline></script>

@@ -11,7 +11,6 @@ on:
 
 env:
   NODE_VERSION: 22
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   quality:
@@ -45,7 +44,7 @@ jobs:
     needs: quality
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -75,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -105,9 +104,9 @@ jobs:
     if: github.event_name != 'repository_dispatch'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -125,7 +124,7 @@ jobs:
         run: npm run lighthouse
 
       - name: Upload Lighthouse report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lighthouse-report
