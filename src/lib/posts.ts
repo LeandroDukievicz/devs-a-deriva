@@ -292,8 +292,8 @@ export async function getFeaturedByCategory(categorySlug: string): Promise<Post[
   return getPostsByCategory(categorySlug);
 }
 
-export function paginatePosts(posts: Post[], page: number, pageSize = 10): {
-  items: Post[];
+export function paginatePosts<T>(posts: T[], page: number, pageSize = 10): {
+  items: T[];
   hasMore: boolean;
   total: number;
 } {

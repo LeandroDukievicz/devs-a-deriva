@@ -5,12 +5,12 @@ import { getPostsByCategory, paginatePosts } from '../../../../lib/posts';
 import { CATEGORIES, getCategoryBySlug } from '../../../../lib/categories';
 
 export async function getStaticPaths() {
-  const PAGE_SIZE = 10;
   const paths = [];
+  const pageSize = 10;
 
   for (const cat of CATEGORIES) {
     const posts = await getPostsByCategory(cat.slug);
-    const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+    const totalPages = Math.ceil(posts.length / pageSize);
 
     for (let page = 2; page <= totalPages; page++) {
       paths.push({
@@ -26,6 +26,7 @@ export async function getStaticPaths() {
 const { categoria, n } = Astro.params;
 const page = parseInt(n, 10);
 const cat = getCategoryBySlug(categoria)!;
+const PAGE_SIZE = 10;
 
 const allPosts = await getPostsByCategory(categoria);
 const { items: posts, hasMore, total } = paginatePosts(allPosts, page, PAGE_SIZE);

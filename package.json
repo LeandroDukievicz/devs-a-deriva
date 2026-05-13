@@ -4,13 +4,21 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "astro dev",
+    "lint": "node scripts/lint.mjs",
+    "typecheck": "astro check",
+    "validate:content": "node scripts/validate-content.mjs",
+    "check:seo": "node scripts/check-seo.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "check:security": "npm audit --audit-level=high && node scripts/check-security.mjs",
+    "smoke:test": "node scripts/smoke-test.mjs",
+    "ci:check": "npm run lint && npm run typecheck && npm run validate:content && npm test",
     "build": "astro build",
     "preview": "astro preview",
     "lighthouse": "lhci autorun",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
-    "test:ci": "vitest run && npm audit --audit-level=high"
+    "test:ci": "npm run ci:check && npm run check:security"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
@@ -20,9 +28,11 @@
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.9",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.59.1",
     "@vitest/ui": "^4.1.5",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   }
 }

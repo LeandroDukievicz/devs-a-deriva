@@ -1370,7 +1370,7 @@ const articleSchema = {
   const overlay = document.getElementById('newsletter-overlay') as HTMLElement | null;
   const newsletterEndpoint = dashboardUrl ? `${dashboardUrl}/api/newsletter/subscribe` : '';
   const newsletterMountedAt = Date.now();
-  let overlayTimeout: ReturnType<typeof window.setTimeout> | undefined;
+  let overlayTimeout: number | undefined;
 
   const showNewsletterOverlay = () => {
     if (!overlay || !newsletterBlock) return;

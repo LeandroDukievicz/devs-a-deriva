@@ -774,7 +774,7 @@ const logoForCanvas = Buffer.from(
   // ── Globe (Home hover) ────────────────────────────────────────────
   const homeNavLink = document.querySelector<HTMLAnchorElement>('.nav-link--home');
   const globeCanvas = document.querySelector<HTMLCanvasElement>('.globe-canvas');
-  const globeCtx    = globeCanvas?.getContext('2d') ?? null;
+  const globeCtx    = globeCanvas?.getContext('2d')!;
 
   if (homeNavLink && globeCanvas && globeCtx) {
     const DPR  = Math.min(window.devicePixelRatio || 1, 2);
@@ -871,7 +871,7 @@ const logoForCanvas = Buffer.from(
   (function() {
     const link   = document.querySelector<HTMLElement>('.nav-link--categorias');
     const canvas = document.querySelector<HTMLCanvasElement>('.categorias-canvas');
-    const ctx    = canvas?.getContext('2d') ?? null;
+    const ctx    = canvas?.getContext('2d')!;
     if (!link || !canvas || !ctx) return;
 
     const DPR  = Math.min(window.devicePixelRatio || 1, 2);
@@ -953,7 +953,7 @@ const logoForCanvas = Buffer.from(
   (function() {
     const link   = document.querySelector<HTMLElement>('.nav-link--devs');
     const canvas = document.querySelector<HTMLCanvasElement>('.devs-canvas');
-    const ctx    = canvas?.getContext('2d') ?? null;
+    const ctx    = canvas?.getContext('2d')!;
     if (!link || !canvas || !ctx) return;
 
     const DPR  = Math.min(window.devicePixelRatio || 1, 2);
@@ -1013,7 +1013,7 @@ const logoForCanvas = Buffer.from(
   (function() {
     const link   = document.querySelector<HTMLElement>('.nav-link--manifesto');
     const canvas = document.querySelector<HTMLCanvasElement>('.manifesto-canvas');
-    const ctx    = canvas?.getContext('2d') ?? null;
+    const ctx    = canvas?.getContext('2d')!;
     if (!link || !canvas || !ctx) return;
 
     const DPR  = Math.min(window.devicePixelRatio || 1, 2);

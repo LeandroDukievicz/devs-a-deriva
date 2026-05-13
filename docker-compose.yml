@@ -4,6 +4,7 @@ services:
       context: .
       args:
         PUBLIC_DASHBOARD_URL: ${PUBLIC_DASHBOARD_URL:-https://dashboard.devsaderiva.com.br}
+        PUBLIC_COMMIT_SHA: ${PUBLIC_COMMIT_SHA:-local}
     restart: unless-stopped
     ports:
       - "127.0.0.1:4321:80"
