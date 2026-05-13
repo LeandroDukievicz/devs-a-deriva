@@ -24,7 +24,7 @@
     "@tailwindcss/vite": "^4.3.0",
     "@vercel/analytics": "^2.0.1",
     "aeo.js": "^0.0.13",
-    "astro": "^6.2.1",
+    "astro": "^6.3.1",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
