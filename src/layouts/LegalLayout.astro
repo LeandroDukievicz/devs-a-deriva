@@ -1,49 +1,18 @@
 ---
-import Base from '../layouts/Base.astro';
+import Base from './Base.astro';
 import StarBackground from '../components/StarBackground.astro';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
 ---
 
-<Base title="Data Deletion · Devs à Deriva">
-  <StarBackground />
-
+<Base title={title}>
+  <StarBackground backgroundColor="#020b18" tone="home" />
   <main id="main-content" class="legal-page">
     <article class="legal-content">
-      <p class="legal-kicker">&gt;_ user data</p>
-      <h1>Data Deletion</h1>
-      <p class="legal-updated">Last updated on April 26, 2026.</p>
-
-      <section>
-        <h2>How to request deletion</h2>
-        <p>
-          To request deletion of your data related to Devs à Deriva, send an email to
-          <a href="mailto:leandrodukievicz1718@gmail.com">leandrodukievicz1718@gmail.com</a>
-          with the subject "Data deletion".
-        </p>
-      </section>
-
-      <section>
-        <h2>What to include</h2>
-        <p>
-          Include the email or social account used to comment, the displayed name, and, when
-          possible, the link to the post where the comment was submitted.
-        </p>
-      </section>
-
-      <section>
-        <h2>Processing time</h2>
-        <p>
-          After confirmation, the related data will be deleted or anonymized within 30 days, unless
-          retention is required for legal, security, or abuse-prevention reasons.
-        </p>
-      </section>
-
-      <section>
-        <h2>Covered data</h2>
-        <p>
-          The request may include comments, name, email, profile image, and identifiers associated
-          with the social login used to comment.
-        </p>
-      </section>
+      <slot />
     </article>
   </main>
 </Base>

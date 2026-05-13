@@ -1,39 +1,9 @@
-export interface Author {
-  name: string;
-  role: string;
-  photo: string;
-  socialLinks: {
-    linkedin: string | null;
-    github: string | null;
-    instagram: string | null;
-    twitter: string | null;
-  };
-}
+export type { Author, Post } from '../types/blog';
+import type { Author, Post } from '../types/blog';
+import { escapeHtml, slugText } from './utils/string';
+import { CATEGORIES } from './categories';
 
-export interface Post {
-  slug: string;
-  title: string;
-  category: string;
-  categorySlug: string;
-  excerpt: string;
-  content: string;
-  contentHtml: string;
-  readTime: string;
-  hashtag: string;
-  author: Author;
-  thumbUrl?: string | null;
-  featured?: boolean;
-  publishedAt?: string | null;
-}
-
-const CATEGORY_MAP: Record<string, { label: string; hashtag: string }> = {
-  aleatoriedades: { label: 'Aleatoriedades', hashtag: '#devaneios' },
-  carreira:       { label: 'Carreira Profissional', hashtag: '#carreira' },
-  livros:         { label: 'Livros & Leituras', hashtag: '#livros' },
-  musica:         { label: 'Música', hashtag: '#musica' },
-  noticias:       { label: 'Notícias', hashtag: '#noticias' },
-  tech:           { label: 'Tech', hashtag: '#tech' },
-};
+export { escapeHtml, slugText };
 
 export function estimateReadTime(content: string): string {
   const words = content.trim().split(/\s+/).length;
@@ -50,21 +20,9 @@ export function formatDate(dateStr: string): string {
   return `${day} ${month} ${year}`;
 }
 
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-export function slugText(value: string): string {
-  return value
-    .replace(/[#>*_`[\]()]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
+function getCatInfo(slug: string): { label: string; hashtag: string } {
+  const cat = CATEGORIES.find((c) => c.slug === slug);
+  return cat ? { label: cat.label, hashtag: cat.hashtag } : { label: slug, hashtag: `#${slug}` };
 }
 
 function stripTitleHeading(content: string, title: string): string {
@@ -210,7 +168,7 @@ function hasValidSlug(raw: unknown): raw is { slug: string } {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPost(raw: any): Post {
   const categorySlug = raw.category?.slug ?? raw.category ?? '';
-  const cat = CATEGORY_MAP[categorySlug] ?? { label: categorySlug, hashtag: `#${categorySlug}` };
+  const cat = getCatInfo(categorySlug);
   const title = raw.title ?? 'Post sem titulo';
   const content = stripTitleHeading(raw.content ?? '', title);
   const excerpt = markdownToText(raw.excerpt ?? content).slice(0, 240);
@@ -230,12 +188,7 @@ function mapPost(raw: any): Post {
         name: 'Devs à Deriva',
         role: 'Editorial',
         photo: '/logo-high-color.webp',
-        socialLinks: {
-          linkedin: null,
-          github: null,
-          instagram: null,
-          twitter: null,
-        },
+        socialLinks: { linkedin: null, github: null, instagram: null, twitter: null },
       };
 
   return {

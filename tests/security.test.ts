@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { escapeHtml } from '../src/lib/posts';
+import { escapeHtml } from '../src/lib/utils/string';
 
 const XSS_PAYLOADS = [
   '<script>alert(1)</script>',

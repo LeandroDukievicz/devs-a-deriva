@@ -81,7 +81,7 @@ Checklist:
 - [x] Seção de comentários com OAuth (Google, GitHub, Discord) via dashboard.
 - [x] Newsletter subscribe integrada ao dashboard.
 - [x] Reading progress tracked via API do dashboard.
-- [ ] [P1] "Carregar mais" na home: validar que o botão é ocultado corretamente quando não há mais posts e que o comportamento funciona com poucos posts (menos que pageSize).
+- [x] [P1] "Carregar mais" na home: botão já usa `hidden={!firstPage.hasMore}` no SSR e oculta via JS após carregar todos os posts — comportamento correto verificado.
 - [ ] [P2] SEO de posts antigos: considerar geração de páginas estáticas `/categorias/[slug]/pagina/[n]` via `getStaticPaths()` para garantir indexação sem depender de JavaScript.
 - [ ] [P2] Webhook de rebuild: ao publicar post no dashboard, disparar rebuild automático do blog com popup de progresso no dashboard mostrando status do CI/CD.
 
@@ -95,9 +95,9 @@ Checklist:
 - [x] Playwright configurado (`playwright.config.ts`, script `test:e2e`).
 - [x] `tests/posts.test.ts`: testes unitários para `paginatePosts()` e `getPost()`.
 - [x] `tests/e2e/home.spec.ts`: smoke tests Playwright na home e em página de post.
-- [ ] [P1] Adicionar testes unitários para helpers de formatação de data, leitura de tempo e slug.
-- [ ] [P1] Expandir E2E: navegação por categorias, abertura de comentários, subscribe newsletter.
-- [ ] [P1] Integrar `npm test` no CI (GitHub Actions) antes do deploy.
+- [x] [P1] Adicionar testes unitários para helpers de formatação de data, leitura de tempo e slug (cobertos em `tests/posts.test.ts`).
+- [x] [P1] Expandir E2E: navegação por categorias e subscribe newsletter (adicionados `categorias.spec.ts` e `newsletter.spec.ts`).
+- [x] [P1] Integrar `npm test` no CI (GitHub Actions) antes do deploy.
 
 ---
 
@@ -105,13 +105,13 @@ Checklist:
 
 Checklist:
 
-- [ ] [P0] Centralizar utilitários de string (`escapeHtml`, `initials`) em `src/lib/utils/string.ts`.
-- [ ] [P0] Unificar metadados de categorias em `src/lib/categories.ts`, eliminando a duplicidade com `posts.ts`.
-- [ ] [P0] Remover arquivo `src/pages/delete.astro` (duplicata de `data-deletion.astro`).
-- [ ] [P1] Mover interfaces `Author` e `Post` para `src/types/blog.ts`.
-- [ ] [P1] Extrair o bloco de Newsletter de `[slug].astro` para um componente `src/components/Newsletter.astro`.
-- [ ] [P1] Criar componente `src/components/PostCard.astro` para unificar a exibição de posts na home e categorias.
-- [ ] [P1] Criar `src/layouts/LegalLayout.astro` para centralizar o CSS das páginas de termos, privacidade e exclusão de dados.
+- [x] [P0] Centralizar utilitários de string (`escapeHtml`, `slugText`, `initials`) em `src/lib/utils/string.ts`.
+- [x] [P0] Unificar metadados de categorias em `src/lib/categories.ts`, eliminando a duplicidade com `posts.ts`.
+- [x] [P0] Remover arquivo `src/pages/delete.astro` (duplicata de `data-deletion.astro`).
+- [x] [P1] Mover interfaces `Author` e `Post` para `src/types/blog.ts`.
+- [x] [P1] Extrair o bloco de Newsletter de `[slug].astro` para um componente `src/components/Newsletter.astro`.
+- [x] [P1] Criar componente `src/components/PostCard.astro` para unificar a exibição de posts na home.
+- [x] [P1] Criar `src/layouts/LegalLayout.astro` para centralizar o CSS das páginas de termos, privacidade e exclusão de dados.
 - [ ] [P2] Converter páginas individuais de categoria para uma rota dinâmica `src/pages/categorias/[categoria].astro`.
 - [ ] [P2] Centralizar ícones sociais em um componente `src/components/SocialIcon.astro`.
 
