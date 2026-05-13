@@ -1,6 +1,6 @@
 # Devs à Deriva
 
-**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. Não é um blog genérico: a proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e conteúdo já sincronizado com o dashboard.
+**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. Não é um blog genérico: a proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e conteúdo sincronizado com o dashboard.
 
 ## Propósito
 
@@ -10,60 +10,65 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 
 ## Tech Stack
 
-- [Astro.js](https://astro.build/) como base da aplicação.
-- [Tailwind CSS](https://tailwindcss.com/) para utilitários de estilo.
-- CSS escopado em componentes/páginas Astro para interações visuais específicas.
-- Canvas e JavaScript nativo para experiências interativas.
-- Dashboard/admin separado em `dashboard-ldstudio` para posts, categorias, autores, comentários, newsletter, analytics e leitura.
-- Backend e banco de dados fornecem posts publicados, dados do autor, comentários moderados, newsletter e progresso de leitura.
-- [Vercel Analytics](https://vercel.com/analytics) integrado ao projeto.
-- Nginx em produção com headers de segurança e CSP.
-- Vitest e Playwright para testes automatizados mínimos.
+- [Astro.js](https://astro.build/) v6 como base — SSG com saída estática
+- [Tailwind CSS](https://tailwindcss.com/) v4 via plugin Vite (`@tailwindcss/vite`)
+- CSS escopado em componentes/páginas Astro para interações visuais específicas
+- Canvas e JavaScript nativo para experiências interativas
+- Dashboard separado em `dashboard-ldstudio` para posts, categorias, autores, comentários, newsletter, analytics e leitura
+- [Vercel Analytics](https://vercel.com/analytics) integrado
+- Docker + Nginx em produção com headers de segurança, CSP e cache de assets
+- [Vitest](https://vitest.dev/) para testes unitários e [Playwright](https://playwright.dev/) para e2e
+- GitHub Actions com pipeline CI/CD completo (quality → build → audit → lighthouse → deploy → smoke)
 
 ## Funcionalidades
 
-### Atual
+### Implementado
 
-- Home com experiência visual imersiva e cards abastecidos pelo dashboard.
-- Home e categorias com paginação client-side baseada no array de posts carregado no build.
-- Cards de posts com interação, progresso de leitura em tempo real e estado de conclusão.
-- Categorias editoriais.
-- Páginas individuais de posts com hero, metadados, imagem de capa, navegação contextual e leitura sincronizada.
-- Comentários integrados ao dashboard: envio de draft, login social, moderação e exibição apenas de comentários aprovados.
-- CTA de newsletter conectado ao dashboard, com validação de UX, consentimento, resposta genérica e double opt-in no backend.
-- Página de manifesto com crawl scroll-driven em perspectiva.
-- Sistema de temas visuais.
-- Páginas de erro customizadas.
-- Página inicial de login/admin.
-- Links sociais do autor refletidos a partir da configuração do dashboard.
-- Headers de segurança configurados no `nginx.conf`: CSP, HSTS, `nosniff`, `DENY`, `Referrer-Policy` e `Permissions-Policy`.
-- Suite mínima de testes unitários para helpers de posts e smoke tests Playwright para home/post.
+- Home com experiência visual imersiva (BlackHole canvas) e cards abastecidos pelo dashboard
+- Paginação estática por URL em `/categorias/{slug}/pagina/{n}` para SEO
+- Cards de posts com progresso de leitura em tempo real e estado de conclusão
+- Seis categorias editoriais (tech, carreira, livros, música, aleatoriedades, notícias)
+- Páginas individuais de post com hero, metadados, imagem de capa e navegação contextual
+- Comentários integrados: envio de draft, login social, moderação e exibição de aprovados
+- Página de newsletter com formulário, honeypot e consentimento LGPD
+- CTA de newsletter dentro de posts com validação, double opt-in e resposta de UX
+- Página de manifesto com crawl scroll-driven em perspectiva
+- SEO completo: canonical, Open Graph, JSON-LD, sitemap.xml dinâmico, robots.txt
+- AEO/GEO: `llms.txt`, `llms-full.txt`, `/ai-index.json` e `/docs.json`
+- Healthcheck estático em `/health.json` com versão do commit
+- Headers de segurança: CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
+- Rollback automático no VPS se o smoke test pós-deploy falhar
 
 ### Planejado
 
-- Busca pública.
-- Paginação estática por URL para SEO de longo prazo.
-- RSS/Atom.
-- Mais cobertura de testes para comentários, categoria e payloads XSS.
-- Integrações futuras com automação e IA editorial assistiva.
+- Busca pública
+- RSS/Atom
+- Releases versionadas com symlink para rollback zero-downtime
+- Integrações futuras com automação e IA editorial assistiva
 
 ## Estrutura do Projeto
 
 ```txt
 devs-a-deriva/
-├── public/              # Assets estáticos
+├── .github/workflows/   # Pipeline CI/CD (ci.yml)
+├── public/              # Assets estáticos, llms.txt, robots.txt
 ├── src/
 │   ├── components/      # Componentes Astro reutilizáveis
-│   ├── layouts/         # Layouts base da aplicação
-│   ├── lib/             # Utilitários e configurações compartilhadas
-│   ├── pages/           # Rotas e páginas Astro
+│   ├── layouts/         # Layout base da aplicação
+│   ├── lib/             # Utilitários, dados e validações
+│   ├── pages/           # Rotas Astro (+ health.json, sitemap.xml, newsletter)
 │   └── styles/          # Tokens e estilos globais
-├── tests/               # Testes unitários e smoke tests Playwright
-├── nginx.conf           # Servidor estático e headers HTTP de segurança
-├── playwright.config.ts # Configuração dos smoke tests e2e
-├── vitest.config.ts     # Configuração dos testes unitários
+├── scripts/             # Scripts de qualidade, deploy e rollback
+├── tests/               # Testes unitários Vitest e e2e Playwright
+├── docs/                # Documentação técnica e de produto
+├── Dockerfile           # Build Node 22 Alpine + Nginx
+├── docker-compose.yml   # Orquestração Docker
+├── lighthouserc.cjs     # Configuração Lighthouse CI
+├── nginx.conf           # Servidor estático com try_files e cache
 ├── astro.config.mjs     # Configuração do Astro
-├── tailwind.config.mjs  # Configuração do Tailwind
+├── tsconfig.json        # TypeScript strict
+├── vitest.config.ts     # Configuração dos testes unitários
+├── playwright.config.ts # Configuração dos testes e2e
 └── package.json         # Scripts e dependências
 ```
 
@@ -97,35 +102,48 @@ npm run preview
 
 | Comando | Descrição |
 | --- | --- |
-| `npm run dev` | Inicia o servidor local de desenvolvimento. |
+| `npm run dev` | Servidor local de desenvolvimento. |
 | `npm run build` | Gera a versão estática de produção. |
-| `npm run preview` | Executa um preview local do build. |
-| `npm test` | Executa testes unitários com Vitest. |
-| `npm run test:watch` | Executa Vitest em modo watch. |
-| `npm run test:e2e` | Executa smoke tests Playwright contra `https://devsaderiva.com.br`. |
+| `npm run preview` | Preview local do build. |
+| `npm run lint` | Verifica conflitos Git, CRLF e newlines. |
+| `npm run typecheck` | Typecheck via `astro check`. |
+| `npm run validate:content` | Valida frontmatter de markdown local. |
+| `npm run check:seo` | Valida SEO técnico no `dist/` após o build. |
+| `npm run check:links` | Verifica links internos quebrados no `dist/`. |
+| `npm run check:security` | Auditoria de dependências e scan de segredos. |
+| `npm run ci:check` | Suite completa pré-build (lint + typecheck + validate + test). |
+| `npm test` | Testes unitários com Vitest. |
+| `npm run test:watch` | Vitest em modo watch. |
+| `npm run test:e2e` | Testes e2e Playwright (roda localmente). |
+| `npm run lighthouse` | Lighthouse CI contra o `dist/` estático. |
+| `BASE_URL=https://... npm run smoke:test` | Smoke test contra ambiente publicado. |
 
-## Milestones Implementados
+## Pipeline CI/CD
 
-Revisado em 2026-05-07.
+O pipeline roda no GitHub Actions e segue a sequência:
 
-- SEO/AEO base: canonical, Open Graph, JSON-LD, sitemap, `robots.txt` e `llms.txt`.
-- Comentários seguros no frontend: `Comments.astro` monta DOM com `createElement` e dados externos entram por `textContent`; o único `innerHTML` restante é SVG estático de provider/reply.
-- Comentários moderados: o blog só consome `GET /api/comments?slug=...` com comentários `APPROVED`, e a UI informa que comentários passam por moderação.
-- Headers de segurança no host: `nginx.conf` define CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` e `Permissions-Policy`. O CSP ainda usa `'unsafe-inline'` porque o Astro estático usa scripts inline via `is:inline`; nonce por request fica como débito técnico se houver SSR/middleware.
-- Paginação na home e categorias: render inicial de 10 posts e botão de carregar mais usando o array completo já carregado no SSG.
-- Testes automatizados mínimos: Vitest cobre `paginatePosts()` e `getPost()`, Playwright cobre smoke de home e abertura de post, e o CI roda `npm test` após o build.
-- Integração com dashboard: posts, newsletter, comentários e progresso de leitura usam `PUBLIC_DASHBOARD_URL`.
+```
+quality → build → audit + lighthouse → deploy → smoke
+```
+
+- **quality:** lint, typecheck, validação de conteúdo, testes unitários, Gitleaks
+- **build:** `astro build` e upload do artefato `dist/`
+- **audit:** SEO, links internos, segurança (paralelo com lighthouse)
+- **lighthouse:** Lighthouse CI bloqueante — performance ≥ 0.80, a11y ≥ 0.90, SEO ≥ 0.90
+- **deploy:** apenas em push na `main`, via SSH no VPS com Docker Compose
+- **smoke:** valida rotas públicas e `/health.json` após deploy; rollback automático se falhar
+
+Pull requests rodam quality + build + audit + lighthouse, mas **nunca fazem deploy**.
+
+Secrets necessários no GitHub: `VPS_HOST`, `VPS_USER`, `SSH_PRIVATE_KEY`, `PUBLIC_SITE_URL` (opcional).
+
+Documentação completa do pipeline em [`docs/ci-cd.md`](./docs/ci-cd.md).
 
 ## Status
 
-Em desenvolvimento.
+Em desenvolvimento ativo.
 
 ## Links
 
 - Produção: [https://www.devsaderiva.com.br/](https://www.devsaderiva.com.br/)
-
-## Documentação
-
-A documentação técnica e decisões de produto devem ficar centralizadas na pasta [`/docs`](./docs).
-
-O fluxo atual de conteúdo sai do dashboard, passa pela API e alimenta a home, as categorias, as páginas de post, comentários e cards de progresso de leitura. A newsletter dos posts também usa o dashboard como backend público por meio de `PUBLIC_DASHBOARD_URL`.
+- Documentação técnica: [`/docs`](./docs)
