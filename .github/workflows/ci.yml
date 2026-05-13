@@ -11,6 +11,7 @@ on:
 
 env:
   NODE_VERSION: 22
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   quality:
@@ -96,10 +97,6 @@ jobs:
 
       - name: Broken internal link check
         run: npm run check:links
-
-      - name: Dependency Review
-        if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v4
 
   lighthouse:
     name: Lighthouse CI

@@ -8,7 +8,7 @@ Fluxo atual:
 
 1. `quality`: instala dependências, roda lint leve, typecheck, validação de conteúdo, testes unitários e Gitleaks (scan de segredos no histórico git).
 2. `build`: gera `dist/` com Astro e publica o artefato para outros jobs.
-3. `audit`: roda scan básico de segurança, SEO técnico, links internos quebrados e Dependency Review (somente em PRs).
+3. `audit`: roda scan básico de segurança, SEO técnico e links internos quebrados.
 4. `lighthouse`: executa Lighthouse CI contra o `dist/` estático com thresholds de bloqueio (`error`).
 5. `deploy`: em push na `main`, `repository_dispatch` ou execução manual, chama o deploy no VPS via SSH.
 6. `smoke`: espera o serviço ficar pronto (até 75s), valida rotas públicas e `/health.json`. Se falhar, aciona rollback automático no VPS.
@@ -135,7 +135,7 @@ No GitHub Actions:
 - `SSH_PRIVATE_KEY`: chave privada SSH com acesso ao VPS.
 - `PUBLIC_SITE_URL`: opcional; URL pública usada no smoke test. Padrão: `https://devsaderiva.com.br`.
 
-`GITHUB_TOKEN` é injetado automaticamente pelo Actions (usado pelo Gitleaks e Dependency Review).
+`GITHUB_TOKEN` é injetado automaticamente pelo Actions e usado pelo Gitleaks.
 
 Não imprima secrets em comandos ou logs. O workflow não usa `set -x`.
 
@@ -201,9 +201,7 @@ Se o smoke falhar após um deploy concluído, o CI aciona `scripts/rollback.sh` 
 Próximos passos quando o projeto crescer:
 
 - releases versionadas em `/var/www/devsaderiva/releases/{sha}` com symlink `current`;
-- rollback automático após falha no smoke remoto;
 - E2E local contra preview estático em vez de produção;
-- secret scanning com Gitleaks;
-- Dependency Review em pull requests;
+- Dependency Review em pull requests, quando o Dependency Graph estiver habilitado no GitHub;
 - auditoria Lighthouse com budgets por página;
 - RSS quando o fluxo de posts estiver estável.
