@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Documentação Técnica - Devs à Deriva</title>
+<style>
+@page { size: A4; margin: 16mm 14mm; }
+* { box-sizing: border-box; }
+body { font-family: Arial, Helvetica, sans-serif; background: #080d18; color: #b8ccdf; line-height: 1.6; font-size: 12px; }
+h1 { font-size: 28px; color: #e2ecf5; margin-bottom: 8px; }
+h2 { font-size: 19px; color: #00c8e0; border-bottom: 2px solid #1a3a50; padding-bottom: 6px; margin-top: 36px; page-break-after: avoid; }
+h3 { font-size: 14px; color: #a67ce8; margin-top: 22px; page-break-after: avoid; }
+p { margin: 8px 0; }
+a { color: #00c8e0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 20px; page-break-inside: auto; }
+tr { page-break-inside: avoid; }
+th, td { border: 1px solid #1a3050; padding: 6px 8px; vertical-align: top; }
+th { background: #0f1f35; color: #c8dff0; text-align: left; }
+tr:nth-child(even) td { background: #09111f; }
+code { font-family: "DejaVu Sans Mono", Consolas, monospace; background: #0d1520; color: #7ecce8; padding: 1px 4px; border-radius: 3px; }
+pre { background: #050a12; color: #a8d4e8; padding: 14px; overflow: auto; border-radius: 6px; font-size: 10.5px; page-break-inside: avoid; border: 1px solid #0f2035; }
+pre code { background: none; color: inherit; padding: 0; }
+ul, ol { padding-left: 22px; margin: 8px 0; }
+li { margin: 3px 0; }
+nav.toc { display: grid; gap: 4px; padding: 14px; border: 1px solid #1a3050; background: #0a1422; margin: 18px 0 28px; border-radius: 6px; }
+nav.toc a { color: #00c8e0; font-size: 11.5px; }
+.cover { min-height: 82vh; display: flex; flex-direction: column; justify-content: center; border-bottom: 3px solid #00c8e0; margin-bottom: 28px; padding-bottom: 24px; }
+.cover h1 { font-size: 34px; line-height: 1.2; }
+.cover p { color: #7a9ab8; font-size: 13px; margin-top: 6px; }
+.badge { display: inline-block; background: #0d2035; color: #00c8e0; border: 1px solid #1a4060; border-radius: 4px; padding: 1px 6px; font-size: 10px; margin-right: 4px; }
+.new { color: #22d3a0; font-weight: bold; }
+.updated { color: #f0a020; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Documentação Técnica Completa<br>Devs à Deriva</h1>
+  <p><strong>Projeto:</strong> /home/leandro-dukievicz/Projetos/devs-a-deriva</p>
+  <p><strong>Atualizado em:</strong> 13/05/2026</p>
+  <p><strong>Documento original:</strong> 05/05/2026 — Esta versão reflete o estado atual após implementação do pipeline CI/CD completo e configuração de segurança (Cloudflare + VPS).</p>
+</div>
+
+<h2>Índice navegável</h2>
+<nav class="toc">
+  <a href="#conclusao-executiva">1. Conclusão executiva</a>
+  <a href="#estrutura-geral">2. Estrutura geral</a>
+  <a href="#arquitetura-do-projeto">3. Arquitetura do projeto</a>
+  <a href="#fluxo-de-funcionamento">4. Fluxo de funcionamento</a>
+  <a href="#configuracoes-build-e-deploy">5. Configurações, build e deploy</a>
+  <a href="#pipeline-cicd">6. Pipeline CI/CD</a>
+  <a href="#testes-e-qualidade">7. Testes e qualidade</a>
+  <a href="#layout-tema-e-estilos">8. Layout, tema e estilos</a>
+  <a href="#biblioteca-de-dados-e-utilitarios">9. Biblioteca de dados e utilitários</a>
+  <a href="#componentes-astro">10. Componentes Astro</a>
+  <a href="#paginas-e-rotas">11. Páginas e rotas</a>
+  <a href="#assets-publicos">12. Assets públicos</a>
+  <a href="#relacoes-entre-arquivos">13. Relações entre arquivos</a>
+  <a href="#seo-acessibilidade-e-performance">14. SEO, acessibilidade e performance</a>
+  <a href="#seguranca-e-infraestrutura">15. Segurança e infraestrutura ★ novo</a>
+  <a href="#riscos-e-oportunidades">16. Riscos e oportunidades</a>
+  <a href="#glossario-tecnico">17. Glossário técnico</a>
+  <a href="#apendice-explicacao-arquivo-por-arquivo">18. Apêndice — arquivo por arquivo</a>
+  <a href="#inventario-completo">19. Inventário completo</a>
+</nav>
+
+<h2 id="conclusao-executiva">1. Conclusão executiva</h2>
+<p>O projeto <strong>Devs à Deriva</strong> é uma aplicação Astro estática com experiência visual forte em estética sci-fi/cyberpunk, conteúdo editorial dinâmico vindo de um dashboard externo e várias interações client-side. A camada pública do blog está separada do dashboard por uma fronteira HTTP definida por <code>PUBLIC_DASHBOARD_URL</code>.</p>
+<p>Desde a análise original (05/05/2026) foram implementados: <strong>pipeline CI/CD completo</strong> com seis jobs (quality, build, audit, lighthouse, deploy, smoke), suite de testes unitários com Vitest, testes e2e com Playwright, scripts de validação de qualidade (lint, typecheck, SEO, links, segurança, conteúdo), healthcheck estático em <code>/health.json</code>, rollback automático pós-smoke, integração de Gitleaks e Dependency Review, paginação de categorias, página de newsletter, sitemap.xml dinâmico, llms.txt e AEO (Answer Engine Optimization).</p>
+<p>Em 13/05/2026 foram implementadas as configurações de <strong>segurança e proteção DDoS</strong>: proxy Cloudflare com WAF, SSL Full (strict), HSTS, Bot Fight Mode, regras de bloqueio de paths maliciosos, rate limiting, firewall UFW na VPS restrito aos IPs do Cloudflare e Fail2ban para proteção SSH.</p>
+<p>O projeto está em estágio <strong>editorial funcional com infraestrutura de produção e segurança</strong>: CI robusto, deploy com rollback, Lighthouse bloqueante, proteção DDoS em múltiplas camadas e documentação completa.</p>
+
+<h2 id="estrutura-geral">2. Estrutura geral</h2>
+<pre><code>devs-a-deriva/
+├── .github/workflows/   Pipeline CI/CD (ci.yml)
+├── src/
+│   ├── components/      Componentes Astro reutilizáveis e experiências visuais
+│   ├── layouts/         Layout HTML global
+│   ├── lib/             Dados, validação e estado local/sync
+│   ├── pages/           Rotas Astro (inclui health.json, sitemap.xml, newsletter)
+│   └── styles/          Tokens e base visual global
+├── public/              Assets servidos diretamente (+ llms.txt, docs.json)
+├── docs/                Documentação estratégica (+ ci-cd.md)
+├── scripts/             Scripts de qualidade, deploy e rollback
+├── tests/               Testes unitários Vitest e e2e Playwright
+├── Dockerfile           Build Node 22 Alpine + Nginx
+├── docker-compose*.yml  Orquestração Docker
+├── nginx.conf           Servidor estático com try_files
+├── lighthouserc.cjs     Configuração Lighthouse CI
+├── vitest.config.ts     Configuração Vitest
+├── playwright.config.ts Configuração Playwright
+├── tsconfig.json        TypeScript strict + vitest/globals
+├── astro.config.mjs     Astro + Tailwind v4 via Vite plugin
+└── package.json         14 scripts de desenvolvimento e CI
+</code></pre>
+
+<table>
+<thead><tr><th>Grupo</th><th>Qtd</th><th>Papel</th></tr></thead>
+<tbody>
+<tr><td>Arquivos em <code>src/</code></td><td>38</td><td>Código de aplicação, rotas, componentes, estilos e utilitários.</td></tr>
+<tr><td>Arquivos em <code>public/</code></td><td>22</td><td>Imagens, SVGs, favicon, llms.txt e docs.json expostos na raiz pública.</td></tr>
+<tr><td>Arquivos em <code>docs/</code></td><td>15</td><td>Documentação de produto, arquitetura, banco, roadmap, CI/CD, segurança e decisões.</td></tr>
+<tr><td>Arquivos em <code>scripts/</code></td><td>8</td><td>Deploy, rollback, lint, validação de conteúdo, SEO, links, segurança, smoke test.</td></tr>
+<tr><td>Arquivos em <code>tests/</code></td><td>7</td><td>Testes unitários Vitest, e2e Playwright e load test k6.</td></tr>
+<tr><td>Arquivos raiz e config</td><td>19</td><td>Dockerfile, compose, nginx, CI/CD, tsconfig, vitest, playwright, etc.</td></tr>
+<tr><td><strong>Total mapeado</strong></td><td><strong>~107</strong></td><td>Sem <code>node_modules</code>, <code>dist</code> e <code>.git</code>.</td></tr>
+</tbody>
+</table>
+
+<h2 id="arquitetura-do-projeto">3. Arquitetura do projeto</h2>
+<h3>Modelo</h3>
+<p>SSG com Astro: o servidor de build executa frontmatter de páginas e componentes, consulta o dashboard e gera HTML estático. No browser, scripts Astro executam animações, estado local e chamadas de APIs públicas do dashboard. O site é servido via Nginx em Docker no VPS.</p>
+
+<h3>Camadas</h3>
+<table>
+<thead><tr><th>Camada</th><th>Arquivos</th><th>Responsabilidade</th></tr></thead>
+<tbody>
+<tr><td>Infra/build</td><td><code>package.json</code>, <code>astro.config.mjs</code>, <code>Dockerfile</code>, <code>nginx.conf</code>, <code>vercel.json</code></td><td>Compilar, servir e proteger a aplicação.</td></tr>
+<tr><td>CI/CD</td><td><code>.github/workflows/ci.yml</code>, <code>lighthouserc.cjs</code>, <code>scripts/deploy.sh</code>, <code>scripts/rollback.sh</code></td><td>Validar qualidade, construir, auditar e fazer deploy com rollback.</td></tr>
+<tr><td>Testes</td><td><code>vitest.config.ts</code>, <code>playwright.config.ts</code>, <code>tests/</code></td><td>Testes unitários, e2e e smoke.</td></tr>
+<tr><td>Layout global</td><td><code>src/layouts/Base.astro</code></td><td>HTML base, metatags, tema, Navbar, Analytics e botão de topo.</td></tr>
+<tr><td>Tema</td><td><code>ThemeProvider.astro</code>, <code>src/styles/tokens.css</code></td><td>Forçar tema único, tokens de cor e estilos globais.</td></tr>
+<tr><td>Dados</td><td><code>src/lib/posts.ts</code>, <code>src/lib/categories.ts</code></td><td>Buscar posts, normalizar payload, converter Markdown, definir categorias.</td></tr>
+<tr><td>Estado/sync</td><td><code>src/lib/reading-progress-client.ts</code></td><td>ReaderId, progresso local e sincronização remota.</td></tr>
+<tr><td>Validação</td><td><code>src/lib/newsletter-email.ts</code></td><td>Validação defensiva de e-mail no cliente.</td></tr>
+<tr><td>Experiência</td><td><code>BlackHole</code>, <code>StarBackground</code>, <code>Navbar</code>, <code>CategoriaPage</code>, <code>Comments</code>, <code>ErrorPage</code></td><td>UI visual, animações e integrações.</td></tr>
+<tr><td>Rotas</td><td><code>src/pages/**</code></td><td>Composição pública das páginas (+ newsletter, sitemap, health, ai-index, paginação).</td></tr>
+</tbody>
+</table>
+
+<h3>Integrações externas</h3>
+<ul>
+  <li><code>GET /api/posts?status=PUBLISHED</code>: fonte de posts no build.</li>
+  <li><code>GET /api/devs</code>: fonte dos colaboradores no browser.</li>
+  <li><code>GET /api/comments?slug=...</code>: comentários aprovados.</li>
+  <li><code>POST /api/comments/draft</code>: cria draft antes de OAuth.</li>
+  <li><code>GET/PATCH /api/reading-progress</code>: sincroniza progresso.</li>
+  <li><code>POST /api/newsletter/subscribe</code>: inscrição da newsletter.</li>
+  <li>Google tag <code>G-Z8ENDKWVWC</code> e Vercel Analytics.</li>
+</ul>
+
+<h2 id="fluxo-de-funcionamento">4. Fluxo de funcionamento</h2>
+<h3>Build e runtime</h3>
+<ol>
+  <li>O build Astro inicia com <code>npm run build</code>.</li>
+  <li><code>src/lib/posts.ts</code> chama o dashboard via <code>PUBLIC_DASHBOARD_URL</code>.</li>
+  <li><code>fetchPosts()</code> retorna posts publicados; o payload é normalizado e convertido para HTML.</li>
+  <li><code>src/pages/posts/[slug].astro</code> gera uma rota estática por post via <code>getStaticPaths()</code>.</li>
+  <li>A home exibe os cinco posts mais recentes; categorias filtram por <code>categorySlug</code>; paginação via <code>[n].astro</code>.</li>
+  <li><code>/health.json</code>, <code>/sitemap.xml</code> e <code>/ai-index.json</code> são gerados como arquivos estáticos no build.</li>
+  <li>O browser ativa animações canvas, comentários, newsletter e progresso de leitura via APIs do dashboard.</li>
+</ol>
+
+<h3>Fluxo CI/CD (resumo)</h3>
+<ol>
+  <li>Push na <code>main</code> ou PR dispara o pipeline.</li>
+  <li>Job <strong>quality</strong>: lint, typecheck, validação de conteúdo, testes unitários, Gitleaks.</li>
+  <li>Job <strong>build</strong>: <code>astro build</code> e upload do artefato <code>dist/</code>.</li>
+  <li>Jobs <strong>audit</strong> e <strong>lighthouse</strong> (paralelos): SEO, links, segurança, Dependency Review, Lighthouse CI bloqueante.</li>
+  <li>Job <strong>deploy</strong>: apenas em push na <code>main</code>, via SSH no VPS.</li>
+  <li>Job <strong>smoke</strong>: wait até 75s, valida rotas públicas e <code>/health.json</code>. Se falhar, aciona rollback automático.</li>
+</ol>
+
+<h2 id="configuracoes-build-e-deploy">5. Configurações, build e deploy</h2>
+<table>
+<thead><tr><th>Arquivo</th><th>Linhas</th><th>Análise</th></tr></thead>
+<tbody>
+<tr><td><code>package.json</code></td><td>38</td><td>14 scripts: dev, lint, typecheck, validate:content, check:seo, check:links, check:security, smoke:test, ci:check, build, preview, lighthouse, test, test:e2e, test:watch, test:ci.</td></tr>
+<tr><td><code>astro.config.mjs</code></td><td>9</td><td>Integra Tailwind v4 via <code>@tailwindcss/vite</code> (plugin Vite, não integração Astro). Sem <code>tailwind.config.mjs</code>.</td></tr>
+<tr><td><code>tsconfig.json</code></td><td>9</td><td>Extends <code>astro/tsconfigs/strict</code>; inclui <code>vitest/globals</code> nos types; cobre <code>src/</code> e <code>tests/</code>.</td></tr>
+<tr><td><code>vercel.json</code></td><td>17</td><td>Headers globais: nosniff, DENY frame, referrer policy, permissions policy e CSP.</td></tr>
+<tr><td><code>.env.example</code></td><td>5</td><td>Documenta <code>PUBLIC_DASHBOARD_URL</code> local e produção.</td></tr>
+<tr><td><code>Dockerfile</code></td><td>25</td><td>Multi-stage: Node 22 Alpine gera <code>dist/</code> com <code>PUBLIC_COMMIT_SHA</code> como ARG; Nginx serve HTML estático.</td></tr>
+<tr><td><code>docker-compose.yml</code></td><td>10</td><td>Builda <code>blog</code>, injeta <code>PUBLIC_DASHBOARD_URL</code> e <code>PUBLIC_COMMIT_SHA</code>, publica <code>127.0.0.1:4321:80</code>.</td></tr>
+<tr><td><code>docker-compose.prod.yml</code></td><td>3</td><td>Override de restart para produção (<code>always</code>).</td></tr>
+<tr><td><code>nginx.conf</code></td><td>18</td><td>Resolve rotas Astro com <code>try_files</code>, 404 customizado e cache longo para assets.</td></tr>
+<tr><td><code>lighthouserc.cjs</code></td><td>35</td><td>Lighthouse CI com 3 runs por página (/, /categorias/tech/, /devs/, /manifesto/, /termos/). Thresholds em <code>error</code>: perf ≥ 0.80, a11y ≥ 0.90, best-practices ≥ 0.90, SEO ≥ 0.90, LCP ≤ 3000ms, CLS ≤ 0.1, TBT ≤ 300ms.</td></tr>
+<tr><td><code>vitest.config.ts</code></td><td>8</td><td>Ambiente Node, inclui <code>tests/**/*.test.ts</code>.</td></tr>
+<tr><td><code>playwright.config.ts</code></td><td>15</td><td>Configura testes e2e contra a aplicação local ou produção.</td></tr>
+<tr><td><code>scripts/deploy.sh</code></td><td>43</td><td>Salva <code>.previous-rev</code>, git fetch/checkout, build Docker sem cache, <code>compose up -d</code>. Rollback via <code>trap ERR</code> se build falhar.</td></tr>
+<tr><td><code>scripts/rollback.sh</code></td><td>31</td><td>Lê <code>.previous-rev</code>, verifica se necessário, faz checkout, rebuild e redeployment da versão anterior.</td></tr>
+</tbody>
+</table>
+
+<h3>Scripts disponíveis (<code>package.json</code>)</h3>
+<table>
+<thead><tr><th>Script</th><th>Comando</th><th>Função</th></tr></thead>
+<tbody>
+<tr><td><code>lint</code></td><td><code>node scripts/lint.mjs</code></td><td>Verifica conflitos Git, CRLF, newline final e placeholders sensíveis.</td></tr>
+<tr><td><code>typecheck</code></td><td><code>astro check</code></td><td>Typecheck de todos os arquivos <code>.astro</code> e <code>.ts</code>.</td></tr>
+<tr><td><code>validate:content</code></td><td><code>node scripts/validate-content.mjs</code></td><td>Valida frontmatter de markdown local (slug, title, categoria, data, status).</td></tr>
+<tr><td><code>check:seo</code></td><td><code>node scripts/check-seo.mjs</code></td><td>Lê <code>dist/</code> e valida title, meta description, canonical, OG, JSON-LD, sitemap, robots.</td></tr>
+<tr><td><code>check:links</code></td><td><code>node scripts/check-links.mjs</code></td><td>Verifica links internos e âncoras em <code>dist/</code>. Links externos ignorados.</td></tr>
+<tr><td><code>check:security</code></td><td><code>npm audit + node scripts/check-security.mjs</code></td><td>Auditoria de deps + scan de segredos versionados + validação de <code>.env.example</code>.</td></tr>
+<tr><td><code>smoke:test</code></td><td><code>node scripts/smoke-test.mjs</code></td><td>Valida rotas públicas e payload de <code>/health.json</code> contra <code>BASE_URL</code>.</td></tr>
+<tr><td><code>ci:check</code></td><td><code>lint &amp;&amp; typecheck &amp;&amp; validate:content &amp;&amp; test</code></td><td>Suite de qualidade pré-build, roda no job <code>quality</code>.</td></tr>
+<tr><td><code>build</code></td><td><code>astro build</code></td><td>Geração estática do site.</td></tr>
+<tr><td><code>preview</code></td><td><code>astro preview</code></td><td>Serve <code>dist/</code> localmente.</td></tr>
+<tr><td><code>lighthouse</code></td><td><code>lhci autorun</code></td><td>Lighthouse CI contra <code>dist/</code> estático.</td></tr>
+<tr><td><code>test</code></td><td><code>vitest run</code></td><td>Testes unitários uma vez.</td></tr>
+<tr><td><code>test:e2e</code></td><td><code>playwright test</code></td><td>Testes e2e (não rodam no CI automaticamente).</td></tr>
+<tr><td><code>test:watch</code></td><td><code>vitest</code></td><td>Watch mode para desenvolvimento.</td></tr>
+</tbody>
+</table>
+
+<h2 id="pipeline-cicd">6. Pipeline CI/CD</h2>
+<p>Arquivo: <code>.github/workflows/ci.yml</code> (209 linhas). Pipeline completo com seis jobs sequenciais/paralelos.</p>
+
+<h3>Triggers</h3>
+<ul>
+  <li><code>push</code> na <code>main</code>: qualidade + build + auditoria + deploy + smoke.</li>
+  <li><code>pull_request</code> para <code>main</code>: qualidade + build + auditoria + Lighthouse. Sem deploy.</li>
+  <li><code>repository_dispatch</code> (tipo <code>blog-rebuild</code>): rebuild via webhook externo.</li>
+  <li><code>workflow_dispatch</code>: trigger manual.</li>
+</ul>
+
+<h3>Jobs e dependências</h3>
+<table>
+<thead><tr><th>Job</th><th>Depende de</th><th>Roda quando</th><th>Steps principais</th></tr></thead>
+<tbody>
+<tr><td><code>quality</code></td><td>—</td><td>Sempre</td><td>npm ci, ci:check (lint/typecheck/validate/test), Gitleaks</td></tr>
+<tr><td><code>build</code></td><td>quality</td><td>Sempre</td><td>npm ci, astro build, upload artefato dist/</td></tr>
+<tr><td><code>audit</code></td><td>build</td><td>Sempre</td><td>check:security, check:seo, check:links, Dependency Review (só PRs)</td></tr>
+<tr><td><code>lighthouse</code></td><td>build</td><td>Não em repository_dispatch</td><td>lhci autorun contra dist/ estático, upload report</td></tr>
+<tr><td><code>deploy</code></td><td>quality+build+audit+lighthouse</td><td>Apenas push main / dispatch</td><td>SSH → scripts/deploy.sh no VPS</td></tr>
+<tr><td><code>smoke</code></td><td>deploy</td><td>Deploy bem-sucedido</td><td>wait 75s, smoke:test, rollback SSH se falhar</td></tr>
+</tbody>
+</table>
+
+<h3>Secrets necessários</h3>
+<table>
+<thead><tr><th>Secret</th><th>Obrigatório</th><th>Uso</th></tr></thead>
+<tbody>
+<tr><td><code>VPS_HOST</code></td><td>Sim</td><td>Host/IP do VPS para SSH.</td></tr>
+<tr><td><code>VPS_USER</code></td><td>Sim</td><td>Usuário SSH.</td></tr>
+<tr><td><code>SSH_PRIVATE_KEY</code></td><td>Sim</td><td>Chave privada SSH para deploy e rollback.</td></tr>
+<tr><td><code>PUBLIC_SITE_URL</code></td><td>Não</td><td>URL do smoke test; padrão <code>https://devsaderiva.com.br</code>.</td></tr>
+<tr><td><code>GITHUB_TOKEN</code></td><td>Auto</td><td>Injetado pelo Actions; usado por Gitleaks e Dependency Review.</td></tr>
+</tbody>
+</table>
+
+<h3>Rollback</h3>
+<p><code>scripts/deploy.sh</code> salva o SHA anterior em <code>/opt/devs-a-deriva/.previous-rev</code> antes de cada deploy. Se o smoke falhar após um deploy bem-sucedido, o CI executa <code>scripts/rollback.sh</code> via SSH automaticamente. O script lê <code>.previous-rev</code>, faz checkout da versão anterior e reconstrói o Docker. Rollback de falha durante build também é coberto por <code>trap ERR</code> no próprio <code>deploy.sh</code>.</p>
+
+<h2 id="testes-e-qualidade">7. Testes e qualidade</h2>
+
+<h3>Testes unitários — Vitest</h3>
+<table>
+<thead><tr><th>Arquivo</th><th>Linhas</th><th>Cobertura</th></tr></thead>
+<tbody>
+<tr><td><code>tests/posts.test.ts</code></td><td>182</td><td><code>paginatePosts</code> (7 casos), <code>getPost</code> (2), <code>estimateReadTime</code> (5), <code>slugText</code> (6), <code>formatDate</code> (4).</td></tr>
+<tr><td><code>tests/security.test.ts</code></td><td>51</td><td><code>escapeHtml</code> contra 10 payloads XSS + casos básicos (escapes de &lt;, &gt;, &amp;, aspas, texto seguro).</td></tr>
+<tr><td><code>tests/newsletter-email.test.ts</code></td><td>112</td><td><code>validateAndNormalizeEmail</code>: válidos (6), inválidos (9), injeção (6). Cobre zero-width, CRLF, data URI e javascript:.</td></tr>
+</tbody>
+</table>
+
+<h3>Testes e2e — Playwright</h3>
+<table>
+<thead><tr><th>Arquivo</th><th>Cobertura</th></tr></thead>
+<tbody>
+<tr><td><code>tests/e2e/home.spec.ts</code></td><td>Home carrega, exibe posts, BlackHole e navegação.</td></tr>
+<tr><td><code>tests/e2e/categorias.spec.ts</code></td><td>Páginas de categoria carregam e exibem conteúdo.</td></tr>
+<tr><td><code>tests/e2e/post-interactions.spec.ts</code></td><td>Página de post abre, exibe conteúdo e interações.</td></tr>
+</tbody>
+</table>
+<p>Os testes e2e não rodam no CI automaticamente; são executados localmente contra o ambiente de desenvolvimento ou produção.</p>
+
+<h3>Load test — k6</h3>
+<p><code>tests/smoke.k6.js</code> (34 linhas): smoke test de carga leve para validar performance sob requisições paralelas no ambiente de produção. Executado manualmente ou via k6 Cloud.</p>
+
+<h3>Scripts de qualidade</h3>
+<table>
+<thead><tr><th>Script</th><th>Linhas</th><th>O que verifica</th></tr></thead>
+<tbody>
+<tr><td><code>scripts/lint.mjs</code></td><td>71</td><td>Conflitos Git, CRLF, arquivos sem newline final, placeholders sensíveis em src/, scripts/, tests/, .github/.</td></tr>
+<tr><td><code>scripts/validate-content.mjs</code></td><td>108</td><td>Frontmatter de markdown: status válido (draft/published), slug duplicado, categoria permitida, datas válidas. Posts published precisam de slug/title/description.</td></tr>
+<tr><td><code>scripts/check-seo.mjs</code></td><td>69</td><td>Lê dist/: title, meta description, canonical, og:title/description/image, JSON-LD em 11 páginas. Verifica sitemap.xml, robots.txt, llms.txt, docs.json.</td></tr>
+<tr><td><code>scripts/check-links.mjs</code></td><td>103</td><td>Links internos e âncoras em dist/. Ignora externos e mailto. Resolve caminho relativo e verifica index.html.</td></tr>
+<tr><td><code>scripts/check-security.mjs</code></td><td>67</td><td>npm audit --audit-level=high; .env.example obrigatório; arquivos .env não devem estar no git; regex de segredos óbvios (chaves AWS, tokens gh_, passwords inline).</td></tr>
+<tr><td><code>scripts/smoke-test.mjs</code></td><td>65</td><td>Fetcha 8 rotas (/, /manifesto/, /devs/, /categorias/tech/, /categorias/carreira/, /sitemap.xml, /robots.txt, /health.json) + assets da home. Valida payload de /health.json.</td></tr>
+</tbody>
+</table>
+
+<h2 id="layout-tema-e-estilos">8. Layout, tema e estilos</h2>
+<h3><code>src/layouts/Base.astro</code></h3>
+<table>
+<thead><tr><th>Faixa</th><th>Explicação</th></tr></thead>
+<tbody>
+<tr><td>1–7</td><td>Importa tokens, ThemeProvider, Navbar, Analytics e utilitários para ler SVG.</td></tr>
+<tr><td>8–17</td><td>Define props <code>title</code>, <code>description</code> e <code>hideNavbar</code>.</td></tr>
+<tr><td>18–29</td><td>Valores padrão de SEO, inline do SVG do admin, canonical e OG tags.</td></tr>
+<tr><td>32–48</td><td>HTML <code>pt-BR</code>, metatags completas (description, canonical, og:*, JSON-LD), favicon, ThemeProvider e Google tag.</td></tr>
+<tr><td>50–53</td><td>Navbar condicional, slot da página e Vercel Analytics.</td></tr>
+<tr><td>55–72</td><td>CTA admin aponta para <code>https://dashboard.devsaderiva.com.br/</code> com <code>_blank</code> e <code>noopener noreferrer</code>.</td></tr>
+<tr><td>75–79</td><td>Botão voltar ao topo com SVG e <code>aria-label</code>.</td></tr>
+</tbody>
+</table>
+
+<h3><code>ThemeProvider.astro</code></h3>
+<p>Define o tema único <code>orbita-baixa</code> antes do primeiro paint, injeta variáveis CSS base, sincroniza <code>window.__bgColor</code> para canvas e remove temas antigos de <code>localStorage/sessionStorage</code>.</p>
+
+<h3><code>src/styles/tokens.css</code></h3>
+<p>Centraliza <code>--color-bg</code>, <code>--color-star</code>, <code>--color-accent</code>, <code>--color-text</code> e variantes de opacidade. Define <code>body</code>, fundo global e scrollbar customizada.</p>
+
+<h2 id="biblioteca-de-dados-e-utilitarios">9. Biblioteca de dados e utilitários</h2>
+<h3><code>src/lib/posts.ts</code></h3>
+<table>
+<thead><tr><th>Faixa</th><th>Explicação</th></tr></thead>
+<tbody>
+<tr><td>1–24</td><td>Contratos <code>Author</code> e <code>Post</code> usados por home, categorias e posts.</td></tr>
+<tr><td>28–35</td><td>Mapa de categorias para labels e hashtags.</td></tr>
+<tr><td>37–70</td><td><code>estimateReadTime</code>, <code>escapeHtml</code>, normalização de heading e remoção de título duplicado.</td></tr>
+<tr><td>72–103</td><td>Texto puro, inline Markdown e imagens.</td></tr>
+<tr><td>105–188</td><td>Parser Markdown próprio para parágrafos, listas, quotes, imagens, headings h2–h4 e hr.</td></tr>
+<tr><td>190–244</td><td>Validação de slug e mapeamento do payload cru do dashboard.</td></tr>
+<tr><td>246–262</td><td>URL do dashboard, cache e <code>fetchPosts()</code>.</td></tr>
+<tr><td>264–275</td><td><code>getPost</code>, <code>getPostsByCategory</code>, <code>getFeaturedByCategory</code>, <code>paginatePosts</code>, <code>formatDate</code>, <code>slugText</code>.</td></tr>
+</tbody>
+</table>
+<p>Funções exportadas e testadas: <code>paginatePosts(posts, page, pageSize)</code>, <code>estimateReadTime(content)</code>, <code>escapeHtml(str)</code>, <code>formatDate(iso)</code>, <code>slugText(text)</code>, <code>getPost(slug)</code>.</p>
+<p>Risco: o parser Markdown próprio é simples. Não cobre tabelas, listas aninhadas, blocos de código, footnotes ou sanitização baseada em AST.</p>
+
+<h3><code>src/lib/categories.ts</code></h3>
+<p>49 linhas. Define a lista canônica de categorias do blog (<code>tech</code>, <code>carreira</code>, <code>livros</code>, <code>musica</code>, <code>aleatoriedades</code>, <code>noticias</code>) com metadados de label, slug, descrição e imagem. Centraliza o que antes estava espalhado em <code>posts.ts</code> e páginas individuais.</p>
+
+<h3><code>src/lib/reading-progress-client.ts</code></h3>
+<p>Mantém um <code>readerId</code> anônimo, salva progresso monotônico por post no <code>localStorage</code>, renderiza anéis/labels e sincroniza com o dashboard por <code>GET</code> e <code>PATCH</code> com <code>keepalive</code>.</p>
+
+<h3><code>src/lib/newsletter-email.ts</code></h3>
+<p>Valida tipo, vazio, tamanho, caracteres invisíveis, padrões de injeção, quantidade de <code>@</code>, local-part, domínio, labels DNS e TLD. Retorna e-mail normalizado com domínio em minúsculas. Coberta por 23 casos de teste.</p>
+
+<h2 id="componentes-astro">10. Componentes Astro</h2>
+<h3><code>BlackHole.astro</code></h3>
+<p>Componente visual mais complexo. Lê <code>public/astronauts.svg</code>, cria versões inline/base64, renderiza canvas full-screen, simula campo orbital, linhas, partículas, texto "Devs à deriva" e astronauta com efeito de sucção. Usa <code>localStorage</code> para exibir a intro uma vez por dia e dispara <code>animationComplete</code> para revelar navbar/home.</p>
+
+<h3><code>Navbar.astro</code></h3>
+<p>Lê <code>logohelmet.svg</code>, desenha logo em canvas, renderiza links Home/Categorias/Devs/Manifesto, controla visibilidade pós-intro, dropdown acessível por click/hover/Escape e ícones canvas animados no hover. Usa <code>AbortController</code> global para evitar listeners duplicados.</p>
+
+<h3><code>CategoriaPage.astro</code></h3>
+<p>Componente parametrizado para páginas de categoria. Busca posts e destaques por <code>categorySlug</code>, renderiza header, contador, carrossel com dots/auto-play e grid de posts. Marca origem <code>category</code> em <code>sessionStorage</code> para a página de post ajustar labels e navegação.</p>
+
+<h3><code>Comments.astro</code></h3>
+<p>Recebe <code>postSlug</code>, usa <code>PUBLIC_DASHBOARD_URL</code>, mostra textarea, prompt de login social, lista de comentários aprovados e estado vazio/loading. Monta comentários via DOM, usa <code>textContent</code> para o corpo e allowlist para providers OAuth. O envio cria draft no dashboard e redireciona para <code>signInUrl</code>.</p>
+
+<h3><code>StarBackground.astro</code></h3>
+<p>Três camadas CSS de estrelas com animações lentas. A cada intervalo cria um pequeno SVG de nave, anima opacidade e remove o elemento.</p>
+
+<h3><code>ErrorPage.astro</code></h3>
+<p>Componente visual para 404/500: separa dígitos do código, renderiza textos SVG com gradiente, helmet webp e CTA para home. Usado por <code>404.astro</code> e <code>500.astro</code> com <code>hideNavbar</code>.</p>
+
+<h2 id="paginas-e-rotas">11. Páginas e rotas</h2>
+<h3><code>src/pages/index.astro</code></h3>
+<table>
+<thead><tr><th>Faixa</th><th>Explicação</th></tr></thead>
+<tbody>
+<tr><td>1–23</td><td>Busca posts, define dashboard URL, imagens por categoria e prepara até cinco cards.</td></tr>
+<tr><td>26–107</td><td>Composição visual da home com BlackHole, cards, autor, redes sociais e CTAs.</td></tr>
+<tr><td>111–657</td><td>CSS de overlay, cards, ações, responsividade e progresso.</td></tr>
+<tr><td>661–699</td><td>Revela conteúdo após intro e sincroniza progresso.</td></tr>
+<tr><td>725–1050</td><td>Efeito limbo por slices, clique no card inteiro e progresso legado.</td></tr>
+</tbody>
+</table>
+
+<h3><code>src/pages/posts/[slug].astro</code></h3>
+<table>
+<thead><tr><th>Faixa</th><th>Explicação</th></tr></thead>
+<tbody>
+<tr><td>1–12</td><td><code>getStaticPaths()</code> cria uma página estática por post publicado.</td></tr>
+<tr><td>37–207</td><td>Header, hero, conteúdo HTML, Comments, newsletter e footer.</td></tr>
+<tr><td>1174–1253</td><td>Navegação contextual por home/category.</td></tr>
+<tr><td>1255–1324</td><td>Progresso de leitura por scroll/resize/pagehide.</td></tr>
+<tr><td>1326–1408</td><td>Newsletter com validação, consentimento, honeypot e POST ao dashboard.</td></tr>
+</tbody>
+</table>
+
+<h3><code>src/pages/newsletter.astro</code></h3>
+<p>438 linhas. Página dedicada de inscrição na newsletter. Formulário completo com validação de e-mail via <code>newsletter-email.ts</code>, campo honeypot, checkbox de consentimento LGPD, feedback de sucesso/erro e POST para <code>/api/newsletter/subscribe</code> no dashboard.</p>
+
+<h3><code>src/pages/categorias/[categoria]/pagina/[n].astro</code></h3>
+<p>369 linhas. Paginação dinâmica por categoria. <code>getStaticPaths()</code> gera rotas <code>/categorias/{slug}/pagina/{n}</code> usando <code>paginatePosts()</code> de <code>posts.ts</code>. Renderiza grid de posts, botões anterior/próxima e contador de páginas.</p>
+
+<h3>Categorias (wrappers estáticos)</h3>
+<table>
+<thead><tr><th>Rota</th><th>Arquivo</th><th>Slug</th></tr></thead>
+<tbody>
+<tr><td>/categorias/aleatoriedades</td><td><code>categorias/aleatoriedades.astro</code></td><td><code>aleatoriedades</code></td></tr>
+<tr><td>/categorias/carreira</td><td><code>categorias/carreira.astro</code></td><td><code>carreira</code></td></tr>
+<tr><td>/categorias/livros</td><td><code>categorias/livros.astro</code></td><td><code>livros</code></td></tr>
+<tr><td>/categorias/musica</td><td><code>categorias/musica.astro</code></td><td><code>musica</code></td></tr>
+<tr><td>/categorias/noticias</td><td><code>categorias/noticias.astro</code></td><td><code>noticias</code></td></tr>
+<tr><td>/categorias/tech</td><td><code>categorias/tech.astro</code></td><td><code>tech</code></td></tr>
+</tbody>
+</table>
+
+<h3><code>src/pages/health.json.ts</code></h3>
+<p>17 linhas. APIRoute que gera <code>/health.json</code> estático no build com <code>{ "status": "ok", "app": "devs-a-deriva", "version": "commit-sha", "timestamp": "ISO" }</code>. Usado pelo smoke test para validar que o deploy está ativo e correto.</p>
+
+<h3><code>src/pages/sitemap.xml.ts</code></h3>
+<p>48 linhas. Gera sitemap.xml dinâmico no build com todas as rotas públicas: home, manifesto, devs, categorias, posts publicados, newsletter, páginas legais. Inclui <code>lastmod</code> e <code>priority</code> por tipo de página.</p>
+
+<h3><code>src/pages/ai-index.json.ts</code></h3>
+<p>47 linhas. Gera <code>/ai-index.json</code> (equivalente ao <code>docs.json</code>) para Answer Engine Optimization (AEO/GEO). Expõe metadados do blog, categorias e posts publicados em formato estruturado consumível por LLMs e crawlers de IA.</p>
+
+<h3><code>src/pages/devs.astro</code></h3>
+<p>Página fixa com <code>BlackHole</code> central menor. Busca devs do dashboard, cria cards circulares dinamicamente, posiciona em órbita, mostra popup no hover/click e respawna cards quando são sugados.</p>
+
+<h3><code>src/pages/manifesto.astro</code></h3>
+<p>Página editorial com crawl em perspectiva controlado por scroll. Usa <code>requestAnimationFrame</code>, CSS variables <code>--crawl-y</code> e <code>--crawl-opacity</code>, sticky viewport e texto grande.</p>
+
+<h3>Páginas legais, admin e erro</h3>
+<ul>
+  <li><code>privacidade.astro</code>, <code>termos.astro</code>, <code>exclusao-de-dados.astro</code>, <code>data-deletion.astro</code>, <code>delete.astro</code>: conteúdo legal e exclusão de dados.</li>
+  <li><code>admin/login.astro</code>: placeholder histórico; o CTA global redireciona ao dashboard externo.</li>
+  <li><code>404.astro</code> e <code>500.astro</code>: wrappers de <code>ErrorPage</code>.</li>
+</ul>
+
+<h2 id="assets-publicos">12. Assets públicos</h2>
+<table>
+<thead><tr><th>Asset</th><th>Tamanho</th><th>Uso observado</th></tr></thead>
+<tbody>
+<tr><td><code>public/aleatoriedades-astronaut-body.webp</code></td><td>26016 bytes</td><td>Categoria/ilustração</td></tr>
+<tr><td><code>public/astronaut-admin.svg</code></td><td>26090 bytes</td><td>CTA admin</td></tr>
+<tr><td><code>public/astronauts.svg</code></td><td>50429 bytes</td><td>BlackHole</td></tr>
+<tr><td><code>public/blackhole.png</code></td><td>54543 bytes</td><td>Asset de fundo</td></tr>
+<tr><td><code>public/carreira-profissional-astronaut-body.webp</code></td><td>27698 bytes</td><td>Categoria/ilustração</td></tr>
+<tr><td><code>public/docs.json</code></td><td>~4 KB</td><td>AEO — documentação estruturada para crawlers de IA</td></tr>
+<tr><td><code>public/favicon.ico</code></td><td>6525 bytes</td><td>Favicon</td></tr>
+<tr><td><code>public/helmet-error-404.webp</code></td><td>17390 bytes</td><td>Erro 404/500</td></tr>
+<tr><td><code>public/helmet.svg</code></td><td>35669 bytes</td><td>Favicon SVG</td></tr>
+<tr><td><code>public/home-*.png</code> (5 arquivos)</td><td>~2 MB cada</td><td>Hero/fallback de post por categoria</td></tr>
+<tr><td><code>public/livros-astronaut.webp</code></td><td>30576 bytes</td><td>Categoria/ilustração</td></tr>
+<tr><td><code>public/llms.txt</code></td><td>~2 KB</td><td>AEO — contexto do blog para LLMs (formato texto)</td></tr>
+<tr><td><code>public/llms-full.txt</code></td><td>~8 KB</td><td>AEO — versão extendida com detalhes completos</td></tr>
+<tr><td><code>public/logo-high-color.webp</code></td><td>81006 bytes</td><td>Logo</td></tr>
+<tr><td><code>public/logohelmet.svg</code></td><td>38000 bytes</td><td>Logo/Navbar canvas</td></tr>
+<tr><td><code>public/musica-astronaut.webp</code></td><td>35066 bytes</td><td>Categoria/ilustração</td></tr>
+<tr><td><code>public/noticias-astronaut.webp</code></td><td>47818 bytes</td><td>Categoria/ilustração</td></tr>
+<tr><td><code>public/robots.txt</code></td><td>~200 bytes</td><td>Controle de crawlers, gerado no public/</td></tr>
+<tr><td><code>public/tech-astronaut.webp</code></td><td>40622 bytes</td><td>Categoria/ilustração</td></tr>
+</tbody>
+</table>
+<p>As imagens PNG <code>home-*</code> têm ~2 MB cada. Vale converter para WebP/AVIF e servir variantes responsivas via <code>&lt;picture&gt;</code>.</p>
+
+<h2 id="relacoes-entre-arquivos">13. Relações entre arquivos</h2>
+<pre><code>Base.astro
+├── tokens.css
+├── ThemeProvider.astro
+├── Navbar.astro
+└── @vercel/analytics/astro
+
+index.astro
+├── Base.astro
+├── BlackHole.astro
+├── lib/posts.ts
+└── lib/reading-progress-client.ts
+
+posts/[slug].astro
+├── Base.astro
+├── StarBackground.astro
+├── Comments.astro
+├── lib/posts.ts
+├── lib/newsletter-email.ts
+└── lib/reading-progress-client.ts
+
+categorias/*.astro
+├── Base.astro
+├── StarBackground.astro
+└── CategoriaPage.astro ← lib/posts.ts
+
+categorias/[categoria]/pagina/[n].astro
+└── lib/posts.ts (paginatePosts)
+
+newsletter.astro
+├── Base.astro
+└── lib/newsletter-email.ts
+
+devs.astro
+├── Base.astro
+├── BlackHole.astro
+└── dashboard /api/devs
+
+health.json.ts, sitemap.xml.ts, ai-index.json.ts
+└── lib/posts.ts (posts publicados)
+
+CI/CD
+├── scripts/deploy.sh → VPS → docker compose
+├── scripts/rollback.sh → lê .previous-rev
+└── scripts/smoke-test.mjs → /health.json + rotas
+</code></pre>
+
+<h2 id="seo-acessibilidade-e-performance">14. SEO, acessibilidade e performance</h2>
+<h3>SEO — implementado</h3>
+<p>Todos os itens marcados como "melhoria futura" na análise original foram implementados:</p>
+<ul>
+  <li><strong>Canonical:</strong> tag <code>&lt;link rel="canonical"&gt;</code> gerada por rota em <code>Base.astro</code>.</li>
+  <li><strong>Sitemap:</strong> <code>/sitemap.xml</code> gerado dinamicamente com todas as rotas públicas e posts.</li>
+  <li><strong>robots.txt:</strong> presente em <code>public/robots.txt</code>.</li>
+  <li><strong>OG tags:</strong> <code>og:title</code>, <code>og:description</code>, <code>og:image</code> em todas as páginas.</li>
+  <li><strong>JSON-LD:</strong> structured data gerado em <code>Base.astro</code>.</li>
+  <li><strong>AEO/GEO:</strong> <code>llms.txt</code>, <code>llms-full.txt</code>, <code>docs.json</code>, <code>/ai-index.json</code> para Answer Engine Optimization.</li>
+  <li><strong>SEO check automatizado:</strong> <code>scripts/check-seo.mjs</code> valida tudo acima no CI após o build.</li>
+</ul>
+<p>Lighthouse CI bloqueante valida performance ≥ 0.80, accessibility ≥ 0.90, best-practices ≥ 0.90, SEO ≥ 0.90. Scores atuais: performance 1.0, accessibility 0.95–0.96, best-practices 1.0, SEO 1.0.</p>
+
+<h3>Acessibilidade</h3>
+<p>Positivos: <code>lang=pt-BR</code>, <code>aria-label</code>, <code>aria-hidden</code>, feedback <code>aria-live</code>, navegação por teclado em cards e dropdown da Navbar. Melhorias pendentes: <code>prefers-reduced-motion</code> de forma ampla nos canvas, revisar contraste em textos pequenos.</p>
+
+<h3>Performance</h3>
+<p>Positivos: Astro estático, cache Nginx longo para assets com hash, lazy loading em imagens. Riscos: canvas contínuo (BlackHole/StarBackground), scripts inline extensos, PNGs de hero com ~2 MB.</p>
+
+<h2 id="seguranca-e-infraestrutura">15. Segurança e infraestrutura <span class="new">★ novo</span></h2>
+<p>Configurações implementadas em 13/05/2026. Documentação detalhada em <a href="security.md"><code>docs/security.md</code></a>.</p>
+
+<h3>Arquitetura de proteção</h3>
+<pre><code>Visitante → Cloudflare (proxy + WAF + DDoS) → VPS (UFW + Caddy + Fail2ban)</code></pre>
+<p>O IP real da VPS fica oculto atrás do Cloudflare. Tráfego nas portas 80/443 só é aceito de IPs do Cloudflare.</p>
+
+<h3>Cloudflare</h3>
+<table>
+<thead><tr><th>Configuração</th><th>Valor</th></tr></thead>
+<tbody>
+<tr><td>Nameservers</td><td><code>magdalena.ns.cloudflare.com</code>, <code>michael.ns.cloudflare.com</code></td></tr>
+<tr><td>SSL/TLS</td><td>Full (strict) — criptografia ponta a ponta com validação de certificado de origem</td></tr>
+<tr><td>Always Use HTTPS</td><td>ON</td></tr>
+<tr><td>HSTS</td><td>ON — max-age 12 meses, include subdomains</td></tr>
+<tr><td>TLS mínimo</td><td>1.2</td></tr>
+<tr><td>Bot Fight Mode</td><td>ON</td></tr>
+<tr><td>AI Labyrinth</td><td>ON</td></tr>
+<tr><td>Hotlink Protection</td><td>ON</td></tr>
+<tr><td>DDoS L3/L4/L7</td><td>Ativo — gerenciado automaticamente pelo Cloudflare</td></tr>
+</tbody>
+</table>
+<p><strong>Custom rule — Block Bad Paths:</strong> bloqueia <code>/.env</code>, <code>/.git</code>, <code>/wp-admin</code>, <code>/xmlrpc.php</code>. Ação: Block.</p>
+<p><strong>Rate limiting rule:</strong> 100 requests / 10 segundos por IP → Block por 10 segundos (limite do plano Free).</p>
+<p><strong>Under Attack Mode:</strong> disponível em Security → Overview para ativar CAPTCHA global em caso de ataque severo.</p>
+
+<h3>VPS</h3>
+<p><strong>UFW:</strong> portas 80/443 restritas aos IPs do Cloudflare (15 ranges IPv4 + 7 IPv6). SSH (porta 22) aberto. Todo o resto bloqueado.</p>
+<p><strong>Fail2ban:</strong> proteção SSH — 3 tentativas falhas em 10 min → ban de 48h. Configurado em <code>/etc/fail2ban/jail.local</code>.</p>
+<p><strong>Caddy:</strong> reverse proxy com SSL automático via Let's Encrypt. Certificados ativos para <code>devsaderiva.com.br</code>, <code>www.devsaderiva.com.br</code> e <code>dashboard.devsaderiva.com.br</code>.</p>
+
+<h2 id="riscos-e-oportunidades">16. Riscos e oportunidades</h2>
+<table>
+<thead><tr><th>Prioridade</th><th>Item</th><th>Status</th><th>Recomendação</th></tr></thead>
+<tbody>
+<tr><td>Alta</td><td>Build depende do dashboard</td><td>Aberto</td><td>Cache de fallback no build ou falha explícita com mensagem clara.</td></tr>
+<tr><td>Alta</td><td>Parser Markdown próprio</td><td>Aberto</td><td>Usar remark/rehype/MDX com sanitização via AST.</td></tr>
+<tr><td>Média</td><td>Scripts extensos em <code>.astro</code></td><td>Aberto</td><td>Extrair módulos TypeScript testáveis.</td></tr>
+<tr><td>Média</td><td>Imagens PNG de hero ~2 MB</td><td>Aberto</td><td>Converter para WebP/AVIF com <code>&lt;picture&gt;</code> responsivo.</td></tr>
+<tr><td>Média</td><td>Animações sem reduced motion amplo</td><td>Aberto</td><td>Adicionar guardas globais de <code>prefers-reduced-motion</code>.</td></tr>
+<tr><td>Média</td><td>E2E tests excluídos do CI</td><td>Parcial</td><td>Adicionar ao CI contra preview estático quando estabilizar.</td></tr>
+<tr><td>Baixa</td><td>Gitleaks — possíveis falsos positivos</td><td>Novo</td><td>Criar <code>.gitleaks.toml</code> com allowlist se necessário.</td></tr>
+<tr><td>Baixa</td><td>Releases versionadas com symlink</td><td>Futuro</td><td>Estrutura <code>/releases/{sha}</code> + symlink <code>current</code> para rollback zero-downtime.</td></tr>
+<tr><td>Resolvido</td><td>SEO — canonical, sitemap, OG, JSON-LD</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Ausência de testes unitários</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Ausência de CI/CD estruturado</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Paginação de categorias</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Página de newsletter</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Exposição direta do IP da VPS</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Ausência de proteção DDoS e WAF</td><td>✓ Implementado</td><td>—</td></tr>
+<tr><td>Resolvido</td><td>Ausência de firewall UFW e Fail2ban na VPS</td><td>✓ Implementado</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h2 id="glossario-tecnico">16. Glossário técnico</h2>
+<table>
+<thead><tr><th>Termo</th><th>Definição</th></tr></thead>
+<tbody>
+<tr><td>Astro</td><td>Framework SSG usado para gerar páginas estáticas com componentes <code>.astro</code>.</td></tr>
+<tr><td>SSG</td><td>Static Site Generation; HTML gerado em tempo de build.</td></tr>
+<tr><td>Frontmatter</td><td>Bloco <code>---</code> de um componente Astro, executado no servidor/build.</td></tr>
+<tr><td>Dashboard</td><td>Backend externo Next.js que fornece conteúdo e ações dinâmicas.</td></tr>
+<tr><td>PUBLIC_DASHBOARD_URL</td><td>Variável pública que aponta para o dashboard.</td></tr>
+<tr><td>PUBLIC_COMMIT_SHA</td><td>SHA do commit passado como ARG no Docker, exposto no <code>/health.json</code>.</td></tr>
+<tr><td>Canvas</td><td>API de desenho 2D usada nas animações BlackHole, Navbar e StarBackground.</td></tr>
+<tr><td>localStorage</td><td>Persistência local de intro, readerId e progresso de leitura.</td></tr>
+<tr><td>sessionStorage</td><td>Estado por aba para origem de navegação (home vs. categoria).</td></tr>
+<tr><td>CSP</td><td>Content Security Policy configurada em <code>vercel.json</code>.</td></tr>
+<tr><td>Honeypot</td><td>Campo invisível no formulário de newsletter para detectar bots.</td></tr>
+<tr><td>Smoke test</td><td>Verificação básica pós-deploy de que as rotas públicas respondem HTTP 2xx.</td></tr>
+<tr><td>Healthcheck</td><td>Endpoint <code>/health.json</code> com status, app, versão e timestamp do build.</td></tr>
+<tr><td>Rollback</td><td>Reversão automática para o commit anterior quando o smoke falha.</td></tr>
+<tr><td>Gitleaks</td><td>Ferramenta que escaneia o histórico git em busca de segredos expostos.</td></tr>
+<tr><td>Dependency Review</td><td>Action do GitHub que bloqueia PRs com dependências vulneráveis conhecidas.</td></tr>
+<tr><td>Lighthouse CI</td><td>Automação de auditorias Lighthouse no CI com thresholds bloqueantes.</td></tr>
+<tr><td>Vitest</td><td>Framework de testes unitários compatível com Vite, usado nos testes de <code>lib/</code>.</td></tr>
+<tr><td>Playwright</td><td>Framework de testes e2e baseado em browser real.</td></tr>
+<tr><td>AEO/GEO</td><td>Answer Engine Optimization / Generative Engine Optimization: otimização para LLMs e motores de resposta baseados em IA.</td></tr>
+<tr><td>llms.txt</td><td>Arquivo de contexto padronizado para que LLMs entendam o propósito do site.</td></tr>
+<tr><td>k6</td><td>Ferramenta de load test usada no smoke de carga manual.</td></tr>
+<tr><td>Cloudflare</td><td>Proxy reverso e CDN que oculta o IP da VPS, aplica WAF e absorve ataques DDoS.</td></tr>
+<tr><td>WAF</td><td>Web Application Firewall: filtra requisições maliciosas antes de chegarem à origem.</td></tr>
+<tr><td>UFW</td><td>Uncomplicated Firewall: gerenciador de iptables no Ubuntu/Debian.</td></tr>
+<tr><td>Fail2ban</td><td>Monitora logs e bane IPs com comportamento suspeito (ex: brute force SSH).</td></tr>
+<tr><td>Caddy</td><td>Servidor web/reverse proxy que gerencia SSL automaticamente via Let's Encrypt.</td></tr>
+<tr><td>HSTS</td><td>HTTP Strict Transport Security: força HTTPS no browser por um período definido.</td></tr>
+<tr><td>Rate Limiting</td><td>Limita requisições por IP em um intervalo de tempo para mitigar HTTP flood.</td></tr>
+<tr><td>DDoS</td><td>Distributed Denial of Service: ataque que tenta sobrecarregar o servidor com tráfego.</td></tr>
+<tr><td>Under Attack Mode</td><td>Modo Cloudflare que coloca CAPTCHA em todo tráfego durante ataques severos.</td></tr>
+</tbody>
+</table>
+
+<h2 id="apendice-explicacao-arquivo-por-arquivo">17. Apêndice — arquivo por arquivo</h2>
+<table>
+<thead><tr><th>Arquivo</th><th>Tipo</th><th>Linhas</th><th>Função prática</th></tr></thead>
+<tbody>
+<tr><td><code>.env.example</code></td><td>Infra/config</td><td>5</td><td>Documenta variáveis de ambiente necessárias para desenvolvimento local.</td></tr>
+<tr><td><code>.github/workflows/ci.yml</code></td><td>CI/CD</td><td>209</td><td>Pipeline completo: quality, build, audit, lighthouse, deploy, smoke com rollback automático.</td></tr>
+<tr><td><code>Dockerfile</code></td><td>Infra/config</td><td>25</td><td>Multi-stage Node 22 Alpine → Nginx. Passa PUBLIC_COMMIT_SHA para o build.</td></tr>
+<tr><td><code>README.md</code></td><td>Markdown</td><td>105</td><td>Documentação de entrada do projeto.</td></tr>
+<tr><td><code>astro.config.mjs</code></td><td>JavaScript/config</td><td>9</td><td>Integra Tailwind v4 via plugin Vite. Site Astro estático.</td></tr>
+<tr><td><code>docker-compose.prod.yml</code></td><td>Infra/config</td><td>3</td><td>Override de restart para produção.</td></tr>
+<tr><td><code>docker-compose.yml</code></td><td>Infra/config</td><td>10</td><td>Serviço blog com PUBLIC_COMMIT_SHA e porta local 4321.</td></tr>
+<tr><td><code>docs/architecture.md</code></td><td>Markdown</td><td>110</td><td>Documento de arquitetura do projeto.</td></tr>
+<tr><td><code>docs/ci-cd.md</code></td><td>Markdown</td><td>186</td><td>Documentação completa do pipeline CI/CD, scripts, secrets, rollback e smoke test.</td></tr>
+<tr><td><code>docs/content-system.md</code></td><td>Markdown</td><td>90</td><td>Sistema de conteúdo e integração com dashboard.</td></tr>
+<tr><td><code>docs/conventions.md</code></td><td>Markdown</td><td>88</td><td>Convenções de código e nomenclatura.</td></tr>
+<tr><td><code>docs/dashboard.md</code></td><td>Markdown</td><td>105</td><td>Documentação do dashboard externo e suas APIs.</td></tr>
+<tr><td><code>docs/database.md</code></td><td>Markdown</td><td>91</td><td>Esquema e operações do banco de dados.</td></tr>
+<tr><td><code>docs/design-system.md</code></td><td>Markdown</td><td>99</td><td>Design system, tokens e componentes visuais.</td></tr>
+<tr><td><code>docs/frontend.md</code></td><td>Markdown</td><td>118</td><td>Guia de desenvolvimento frontend.</td></tr>
+<tr><td><code>docs/performance.md</code></td><td>Markdown</td><td>94</td><td>Estratégias e métricas de performance.</td></tr>
+<tr><td><code>docs/privacy-newsletter.md</code></td><td>Markdown</td><td>110</td><td>Política de privacidade e fluxo da newsletter.</td></tr>
+<tr><td><code>docs/project-overview.md</code></td><td>Markdown</td><td>58</td><td>Visão geral do projeto e objetivos.</td></tr>
+<tr><td><code>docs/roadmap.md</code></td><td>Markdown</td><td>53</td><td>Roadmap e próximos passos.</td></tr>
+<tr><td><code>docs/security.md</code></td><td>Markdown</td><td>145</td><td>Configurações de segurança: Cloudflare, UFW, Fail2ban, Caddy.</td></tr>
+<tr><td><code>lighthouserc.cjs</code></td><td>CI/config</td><td>35</td><td>5 URLs, 3 runs, thresholds error em perf/a11y/best-practices/SEO/LCP/CLS/TBT.</td></tr>
+<tr><td><code>nginx.conf</code></td><td>Infra/config</td><td>18</td><td>try_files para rotas Astro, 404 customizado, cache longo para assets.</td></tr>
+<tr><td><code>package.json</code></td><td>JSON</td><td>38</td><td>14 scripts de desenvolvimento, CI e qualidade. Dependências Astro 6, Tailwind 4, Vitest, Playwright.</td></tr>
+<tr><td><code>playwright.config.ts</code></td><td>Config</td><td>15</td><td>Configuração e2e Playwright.</td></tr>
+<tr><td><code>scripts/check-links.mjs</code></td><td>Script</td><td>103</td><td>Valida links internos e âncoras em dist/.</td></tr>
+<tr><td><code>scripts/check-security.mjs</code></td><td>Script</td><td>67</td><td>npm audit + scan de segredos + validação de .env.example.</td></tr>
+<tr><td><code>scripts/check-seo.mjs</code></td><td>Script</td><td>69</td><td>Valida SEO técnico em dist/ (meta tags, canonical, OG, JSON-LD, sitemap, robots).</td></tr>
+<tr><td><code>scripts/deploy.sh</code></td><td>Shell</td><td>43</td><td>Salva .previous-rev, git fetch/checkout, docker compose build + up, rollback por trap ERR.</td></tr>
+<tr><td><code>scripts/lint.mjs</code></td><td>Script</td><td>71</td><td>Conflitos Git, CRLF, newline final, placeholders sensíveis.</td></tr>
+<tr><td><code>scripts/rollback.sh</code></td><td>Shell</td><td>31</td><td>Lê .previous-rev, git checkout, rebuild e redeployment da versão anterior.</td></tr>
+<tr><td><code>scripts/smoke-test.mjs</code></td><td>Script</td><td>65</td><td>Smoke test HTTP contra 8 rotas + assets, valida payload /health.json.</td></tr>
+<tr><td><code>scripts/validate-content.mjs</code></td><td>Script</td><td>108</td><td>Valida frontmatter de markdown local (draft/published, slug, categoria, datas).</td></tr>
+<tr><td><code>src/components/BlackHole.astro</code></td><td>Astro</td><td>581</td><td>Canvas do buraco negro: orbital, partículas, texto e astronauta com sucção. Intro uma vez por dia.</td></tr>
+<tr><td><code>src/components/CategoriaPage.astro</code></td><td>Astro</td><td>709</td><td>Template de categoria com carrossel de destaques e grid de posts.</td></tr>
+<tr><td><code>src/components/Comments.astro</code></td><td>Astro</td><td>808</td><td>Comentários moderados via OAuth do dashboard.</td></tr>
+<tr><td><code>src/components/ErrorPage.astro</code></td><td>Astro</td><td>394</td><td>Página visual de erro 404/500.</td></tr>
+<tr><td><code>src/components/Navbar.astro</code></td><td>Astro</td><td>993</td><td>Navbar fixa com dropdown, logo canvas, ícones animados e controle pós-intro.</td></tr>
+<tr><td><code>src/components/StarBackground.astro</code></td><td>Astro</td><td>150</td><td>Fundo espacial CSS/DOM.</td></tr>
+<tr><td><code>src/components/ThemeProvider.astro</code></td><td>Astro</td><td>31</td><td>Script inline de tema único antes do primeiro paint.</td></tr>
+<tr><td><code>src/env.d.ts</code></td><td>TypeScript</td><td>1</td><td>Referência de tipos Astro.</td></tr>
+<tr><td><code>src/layouts/Base.astro</code></td><td>Astro</td><td>276</td><td>Layout global: SEO completo (canonical, OG, JSON-LD), navbar, analytics, CTA admin, botão de topo.</td></tr>
+<tr><td><code>src/lib/categories.ts</code></td><td>TypeScript</td><td>49</td><td>Lista canônica de categorias com metadados (label, slug, descrição, imagem).</td></tr>
+<tr><td><code>src/lib/newsletter-email.ts</code></td><td>TypeScript</td><td>86</td><td>Validação e normalização defensiva de e-mail. 23 casos de teste.</td></tr>
+<tr><td><code>src/lib/posts.ts</code></td><td>TypeScript</td><td>276</td><td>Busca posts do dashboard, normaliza, parseia Markdown. Funções: fetchPosts, getPost, getPostsByCategory, paginatePosts, escapeHtml, formatDate, slugText.</td></tr>
+<tr><td><code>src/lib/reading-progress-client.ts</code></td><td>TypeScript</td><td>144</td><td>Progresso de leitura: readerId anônimo, localStorage, sync remoto.</td></tr>
+<tr><td><code>src/pages/404.astro</code></td><td>Astro</td><td>8</td><td>Wrapper de ErrorPage para 404.</td></tr>
+<tr><td><code>src/pages/500.astro</code></td><td>Astro</td><td>8</td><td>Wrapper de ErrorPage para 500.</td></tr>
+<tr><td><code>src/pages/admin/login.astro</code></td><td>Astro</td><td>106</td><td>Placeholder histórico; dashboard externo é o destino real.</td></tr>
+<tr><td><code>src/pages/ai-index.json.ts</code></td><td>Astro/TS</td><td>47</td><td>Endpoint AEO: metadados do blog em JSON para LLMs e crawlers de IA.</td></tr>
+<tr><td><code>src/pages/categorias/*.astro</code></td><td>Astro</td><td>16 cada</td><td>Wrappers de rota de categoria; passam props para CategoriaPage.</td></tr>
+<tr><td><code>src/pages/categorias/[categoria]/pagina/[n].astro</code></td><td>Astro</td><td>369</td><td>Paginação dinâmica de categoria via getStaticPaths + paginatePosts.</td></tr>
+<tr><td><code>src/pages/data-deletion.astro</code></td><td>Astro</td><td>128</td><td>Página legal de exclusão de dados (inglês).</td></tr>
+<tr><td><code>src/pages/delete.astro</code></td><td>Astro</td><td>128</td><td>Alias de data-deletion.</td></tr>
+<tr><td><code>src/pages/devs.astro</code></td><td>Astro</td><td>530</td><td>Colaboradores em órbita ao redor do buraco negro.</td></tr>
+<tr><td><code>src/pages/exclusao-de-dados.astro</code></td><td>Astro</td><td>129</td><td>Página legal de exclusão de dados (português).</td></tr>
+<tr><td><code>src/pages/health.json.ts</code></td><td>Astro/TS</td><td>17</td><td>Healthcheck estático: status, app, version (commit SHA), timestamp do build.</td></tr>
+<tr><td><code>src/pages/index.astro</code></td><td>Astro</td><td>1051</td><td>Home: BlackHole, cards editoriais, progresso de leitura, efeitos de navegação.</td></tr>
+<tr><td><code>src/pages/manifesto.astro</code></td><td>Astro</td><td>237</td><td>Texto editorial em perspectiva controlado por scroll.</td></tr>
+<tr><td><code>src/pages/newsletter.astro</code></td><td>Astro</td><td>438</td><td>Página de inscrição na newsletter com validação, honeypot e consentimento LGPD.</td></tr>
+<tr><td><code>src/pages/posts/[slug].astro</code></td><td>Astro</td><td>1417</td><td>Rota dinâmica de post: conteúdo, comentários, newsletter, progresso, navegação contextual.</td></tr>
+<tr><td><code>src/pages/privacidade.astro</code></td><td>Astro</td><td>149</td><td>Política de privacidade.</td></tr>
+<tr><td><code>src/pages/sitemap.xml.ts</code></td><td>Astro/TS</td><td>48</td><td>Sitemap.xml dinâmico com todas as rotas públicas e posts.</td></tr>
+<tr><td><code>src/pages/termos.astro</code></td><td>Astro</td><td>137</td><td>Termos de uso.</td></tr>
+<tr><td><code>src/styles/tailwind.css</code></td><td>CSS</td><td>~5</td><td>Entry point Tailwind v4.</td></tr>
+<tr><td><code>src/styles/tokens.css</code></td><td>CSS</td><td>94</td><td>Tokens de cor e base global.</td></tr>
+<tr><td><code>tests/e2e/categorias.spec.ts</code></td><td>Test/e2e</td><td>~30</td><td>Testa páginas de categoria no browser.</td></tr>
+<tr><td><code>tests/e2e/home.spec.ts</code></td><td>Test/e2e</td><td>~30</td><td>Testa home: posts, BlackHole, navegação.</td></tr>
+<tr><td><code>tests/e2e/post-interactions.spec.ts</code></td><td>Test/e2e</td><td>~30</td><td>Testa abertura e interações em página de post.</td></tr>
+<tr><td><code>tests/newsletter-email.test.ts</code></td><td>Test/unit</td><td>112</td><td>23 casos: válidos, inválidos, injeção.</td></tr>
+<tr><td><code>tests/posts.test.ts</code></td><td>Test/unit</td><td>182</td><td>24 casos: paginatePosts, getPost, estimateReadTime, slugText, formatDate.</td></tr>
+<tr><td><code>tests/security.test.ts</code></td><td>Test/unit</td><td>51</td><td>17 casos: escapeHtml contra payloads XSS.</td></tr>
+<tr><td><code>tests/smoke.k6.js</code></td><td>Test/load</td><td>34</td><td>Load test k6 para validação de performance sob carga.</td></tr>
+<tr><td><code>tsconfig.json</code></td><td>Config</td><td>9</td><td>TypeScript strict + vitest/globals, cobre src/ e tests/.</td></tr>
+<tr><td><code>vercel.json</code></td><td>JSON</td><td>17</td><td>Headers de segurança: nosniff, frame deny, referrer, permissions, CSP.</td></tr>
+<tr><td><code>vitest.config.ts</code></td><td>Config</td><td>8</td><td>Ambiente Node, inclui tests/**/*.test.ts.</td></tr>
+</tbody>
+</table>
+
+<h2 id="inventario-completo">18. Inventário completo</h2>
+<table>
+<thead><tr><th>Arquivo</th><th>Tipo</th><th>Linhas</th><th>Tamanho</th></tr></thead>
+<tbody>
+<tr><td><code>.env.example</code></td><td>Infra/config</td><td>5</td><td>261 bytes</td></tr>
+<tr><td><code>.github/workflows/ci.yml</code></td><td>CI/CD</td><td>209</td><td>5205 bytes</td></tr>
+<tr><td><code>Dockerfile</code></td><td>Infra/config</td><td>25</td><td>~950 bytes</td></tr>
+<tr><td><code>README.md</code></td><td>Markdown</td><td>105</td><td>4005 bytes</td></tr>
+<tr><td><code>astro.config.mjs</code></td><td>JavaScript/config</td><td>9</td><td>~230 bytes</td></tr>
+<tr><td><code>docker-compose.prod.yml</code></td><td>Infra/config</td><td>3</td><td>38 bytes</td></tr>
+<tr><td><code>docker-compose.yml</code></td><td>Infra/config</td><td>10</td><td>~260 bytes</td></tr>
+<tr><td><code>docs/architecture.md</code></td><td>Markdown</td><td>110</td><td>3333 bytes</td></tr>
+<tr><td><code>docs/ci-cd.md</code></td><td>Markdown</td><td>186</td><td>~5500 bytes</td></tr>
+<tr><td><code>docs/content-system.md</code></td><td>Markdown</td><td>90</td><td>2196 bytes</td></tr>
+<tr><td><code>docs/conventions.md</code></td><td>Markdown</td><td>88</td><td>2297 bytes</td></tr>
+<tr><td><code>docs/dashboard.md</code></td><td>Markdown</td><td>105</td><td>2512 bytes</td></tr>
+<tr><td><code>docs/database.md</code></td><td>Markdown</td><td>91</td><td>2518 bytes</td></tr>
+<tr><td><code>docs/design-system.md</code></td><td>Markdown</td><td>99</td><td>2759 bytes</td></tr>
+<tr><td><code>docs/frontend.md</code></td><td>Markdown</td><td>118</td><td>3912 bytes</td></tr>
+<tr><td><code>docs/performance.md</code></td><td>Markdown</td><td>94</td><td>2233 bytes</td></tr>
+<tr><td><code>docs/privacy-newsletter.md</code></td><td>Markdown</td><td>110</td><td>3701 bytes</td></tr>
+<tr><td><code>docs/project-overview.md</code></td><td>Markdown</td><td>58</td><td>2845 bytes</td></tr>
+<tr><td><code>docs/roadmap.md</code></td><td>Markdown</td><td>53</td><td>1497 bytes</td></tr>
+<tr><td><code>docs/security.md</code></td><td>Markdown</td><td>145</td><td>~4 KB</td></tr>
+<tr><td><code>lighthouserc.cjs</code></td><td>CI/config</td><td>35</td><td>1080 bytes</td></tr>
+<tr><td><code>nginx.conf</code></td><td>Infra/config</td><td>18</td><td>460 bytes</td></tr>
+<tr><td><code>package.json</code></td><td>JSON</td><td>38</td><td>~950 bytes</td></tr>
+<tr><td><code>playwright.config.ts</code></td><td>Config</td><td>15</td><td>304 bytes</td></tr>
+<tr><td><code>scripts/check-links.mjs</code></td><td>Script</td><td>103</td><td>3188 bytes</td></tr>
+<tr><td><code>scripts/check-security.mjs</code></td><td>Script</td><td>67</td><td>1989 bytes</td></tr>
+<tr><td><code>scripts/check-seo.mjs</code></td><td>Script</td><td>69</td><td>2361 bytes</td></tr>
+<tr><td><code>scripts/deploy.sh</code></td><td>Shell</td><td>43</td><td>1288 bytes</td></tr>
+<tr><td><code>scripts/lint.mjs</code></td><td>Script</td><td>71</td><td>2048 bytes</td></tr>
+<tr><td><code>scripts/rollback.sh</code></td><td>Shell</td><td>31</td><td>885 bytes</td></tr>
+<tr><td><code>scripts/smoke-test.mjs</code></td><td>Script</td><td>65</td><td>2012 bytes</td></tr>
+<tr><td><code>scripts/validate-content.mjs</code></td><td>Script</td><td>108</td><td>3767 bytes</td></tr>
+<tr><td><code>src/components/BlackHole.astro</code></td><td>Astro</td><td>581</td><td>16882 bytes</td></tr>
+<tr><td><code>src/components/CategoriaPage.astro</code></td><td>Astro</td><td>709</td><td>19848 bytes</td></tr>
+<tr><td><code>src/components/Comments.astro</code></td><td>Astro</td><td>808</td><td>28095 bytes</td></tr>
+<tr><td><code>src/components/ErrorPage.astro</code></td><td>Astro</td><td>394</td><td>8936 bytes</td></tr>
+<tr><td><code>src/components/Navbar.astro</code></td><td>Astro</td><td>993</td><td>28845 bytes</td></tr>
+<tr><td><code>src/components/StarBackground.astro</code></td><td>Astro</td><td>150</td><td>5324 bytes</td></tr>
+<tr><td><code>src/components/ThemeProvider.astro</code></td><td>Astro</td><td>31</td><td>922 bytes</td></tr>
+<tr><td><code>src/env.d.ts</code></td><td>TypeScript</td><td>1</td><td>45 bytes</td></tr>
+<tr><td><code>src/layouts/Base.astro</code></td><td>Astro</td><td>276</td><td>7187 bytes</td></tr>
+<tr><td><code>src/lib/categories.ts</code></td><td>TypeScript</td><td>49</td><td>1814 bytes</td></tr>
+<tr><td><code>src/lib/newsletter-email.ts</code></td><td>TypeScript</td><td>86</td><td>2876 bytes</td></tr>
+<tr><td><code>src/lib/posts.ts</code></td><td>TypeScript</td><td>276</td><td>7851 bytes</td></tr>
+<tr><td><code>src/lib/reading-progress-client.ts</code></td><td>TypeScript</td><td>144</td><td>4474 bytes</td></tr>
+<tr><td><code>src/pages/404.astro</code></td><td>Astro</td><td>8</td><td>193 bytes</td></tr>
+<tr><td><code>src/pages/500.astro</code></td><td>Astro</td><td>8</td><td>193 bytes</td></tr>
+<tr><td><code>src/pages/admin/login.astro</code></td><td>Astro</td><td>106</td><td>2602 bytes</td></tr>
+<tr><td><code>src/pages/ai-index.json.ts</code></td><td>Astro/TS</td><td>47</td><td>1487 bytes</td></tr>
+<tr><td><code>src/pages/categorias/[categoria]/pagina/[n].astro</code></td><td>Astro</td><td>369</td><td>~11 KB</td></tr>
+<tr><td><code>src/pages/categorias/aleatoriedades.astro</code></td><td>Astro</td><td>16</td><td>516 bytes</td></tr>
+<tr><td><code>src/pages/categorias/carreira.astro</code></td><td>Astro</td><td>16</td><td>675 bytes</td></tr>
+<tr><td><code>src/pages/categorias/livros.astro</code></td><td>Astro</td><td>16</td><td>581 bytes</td></tr>
+<tr><td><code>src/pages/categorias/musica.astro</code></td><td>Astro</td><td>16</td><td>509 bytes</td></tr>
+<tr><td><code>src/pages/categorias/noticias.astro</code></td><td>Astro</td><td>16</td><td>520 bytes</td></tr>
+<tr><td><code>src/pages/categorias/tech.astro</code></td><td>Astro</td><td>16</td><td>556 bytes</td></tr>
+<tr><td><code>src/pages/data-deletion.astro</code></td><td>Astro</td><td>128</td><td>2861 bytes</td></tr>
+<tr><td><code>src/pages/delete.astro</code></td><td>Astro</td><td>128</td><td>2861 bytes</td></tr>
+<tr><td><code>src/pages/devs.astro</code></td><td>Astro</td><td>530</td><td>15851 bytes</td></tr>
+<tr><td><code>src/pages/exclusao-de-dados.astro</code></td><td>Astro</td><td>129</td><td>2990 bytes</td></tr>
+<tr><td><code>src/pages/health.json.ts</code></td><td>Astro/TS</td><td>17</td><td>413 bytes</td></tr>
+<tr><td><code>src/pages/index.astro</code></td><td>Astro</td><td>1051</td><td>33990 bytes</td></tr>
+<tr><td><code>src/pages/manifesto.astro</code></td><td>Astro</td><td>237</td><td>7656 bytes</td></tr>
+<tr><td><code>src/pages/newsletter.astro</code></td><td>Astro</td><td>438</td><td>12212 bytes</td></tr>
+<tr><td><code>src/pages/posts/[slug].astro</code></td><td>Astro</td><td>1417</td><td>38707 bytes</td></tr>
+<tr><td><code>src/pages/privacidade.astro</code></td><td>Astro</td><td>149</td><td>3767 bytes</td></tr>
+<tr><td><code>src/pages/sitemap.xml.ts</code></td><td>Astro/TS</td><td>48</td><td>1678 bytes</td></tr>
+<tr><td><code>src/pages/termos.astro</code></td><td>Astro</td><td>137</td><td>3151 bytes</td></tr>
+<tr><td><code>src/styles/tailwind.css</code></td><td>CSS</td><td>~5</td><td>~80 bytes</td></tr>
+<tr><td><code>src/styles/tokens.css</code></td><td>CSS</td><td>94</td><td>2828 bytes</td></tr>
+<tr><td><code>tests/e2e/categorias.spec.ts</code></td><td>Test/e2e</td><td>~30</td><td>~900 bytes</td></tr>
+<tr><td><code>tests/e2e/home.spec.ts</code></td><td>Test/e2e</td><td>~30</td><td>~900 bytes</td></tr>
+<tr><td><code>tests/e2e/post-interactions.spec.ts</code></td><td>Test/e2e</td><td>~30</td><td>~900 bytes</td></tr>
+<tr><td><code>tests/newsletter-email.test.ts</code></td><td>Test/unit</td><td>112</td><td>3959 bytes</td></tr>
+<tr><td><code>tests/posts.test.ts</code></td><td>Test/unit</td><td>182</td><td>5233 bytes</td></tr>
+<tr><td><code>tests/security.test.ts</code></td><td>Test/unit</td><td>51</td><td>1564 bytes</td></tr>
+<tr><td><code>tests/smoke.k6.js</code></td><td>Test/load</td><td>34</td><td>~900 bytes</td></tr>
+<tr><td><code>tsconfig.json</code></td><td>Config</td><td>9</td><td>239 bytes</td></tr>
+<tr><td><code>vercel.json</code></td><td>JSON</td><td>17</td><td>684 bytes</td></tr>
+<tr><td><code>vitest.config.ts</code></td><td>Config</td><td>8</td><td>158 bytes</td></tr>
+<tr><td><em>Assets public/ (19 arquivos)</em></td><td>Asset</td><td>—</td><td>ver seção 12</td></tr>
+</tbody>
+</table>
+
+</body>
+</html>
