@@ -1,0 +1,145 @@
+# Segurança — Devs à Deriva
+
+Documentação das configurações de segurança aplicadas em 13/05/2026.
+
+## Arquitetura de proteção
+
+```
+Visitante → Cloudflare (proxy + WAF + DDoS) → VPS (UFW + Caddy + Fail2ban)
+```
+
+O IP real da VPS fica oculto atrás do Cloudflare. A VPS só aceita tráfego nas portas 80/443 vindo dos IPs do Cloudflare.
+
+---
+
+## Cloudflare
+
+### DNS
+- Nameservers: `magdalena.ns.cloudflare.com` e `michael.ns.cloudflare.com`
+- Registros A com proxy laranja (ON) para `devsaderiva.com.br`, `www` e `dashboard`
+- Registros wildcard `*` apontam para IPs da Vercel (AWS AS16509) — legítimo
+
+### SSL/TLS
+- Modo: **Full (strict)** — criptografia ponta a ponta com validação do certificado de origem
+- Always Use HTTPS: ON
+- HSTS: ON — max-age 12 meses, include subdomains ON, preload OFF
+- TLS mínimo: 1.2
+
+### Proteção contra bots e DDoS
+- **Bot Fight Mode**: ON — detecta e desafia tráfego de bots automaticamente
+- **AI Labyrinth**: ON — adiciona armadilhas para bots que ignoram robots.txt
+- **Hotlink Protection**: ON — impede outros sites de incorporar imagens do blog
+- **DDoS L3/L4** (SSL/TLS e Network-layer): sempre ativo, gerenciado pelo Cloudflare
+- **DDoS L7** (HTTP): sempre ativo, gerenciado pelo Cloudflare
+
+### Regras de segurança
+
+#### Custom rule — Block Bad Paths
+Bloqueia requisições a paths sensíveis:
+```
+URI Path contains /.env
+URI Path contains /.git
+URI Path contains /wp-admin
+URI Path contains /xmlrpc.php
+Ação: Block
+```
+
+#### Rate limiting rule — Rate Limit Geral
+Limita requisições por IP:
+```
+URI Path contains /
+Limite: 100 requests / 10 segundos por IP
+Ação: Block por 10 segundos
+```
+> Limite do plano Free — protege contra bursts rápidos.
+
+### Under Attack Mode
+Em caso de ataque DDoS severo, ativar manualmente em:
+**Security → Overview → Under Attack Mode**
+
+Coloca CAPTCHA em todo tráfego imediatamente.
+
+---
+
+## VPS
+
+### Firewall (UFW)
+Portas 80 e 443 só aceitam tráfego dos IPs do Cloudflare. SSH (porta 22) aberto para qualquer IP.
+
+**IPs IPv4 do Cloudflare permitidos:**
+```
+173.245.48.0/20
+103.21.244.0/22
+103.22.200.0/22
+103.31.4.0/22
+141.101.64.0/18
+108.162.192.0/18
+190.93.240.0/20
+188.114.96.0/20
+197.234.240.0/22
+198.41.128.0/17
+162.158.0.0/15
+104.16.0.0/13
+104.24.0.0/14
+172.64.0.0/13
+131.0.72.0/22
+```
+
+**IPs IPv6 do Cloudflare permitidos:**
+```
+2400:cb00::/32
+2606:4700::/32
+2803:f800::/32
+2405:b500::/32
+2405:8100::/32
+2a06:98c0::/29
+2c0f:f248::/32
+```
+
+Para verificar regras ativas: `ufw status verbose`
+
+> Os IPs do Cloudflare podem mudar. Consulte a lista oficial em: https://www.cloudflare.com/ips/
+
+### Fail2ban
+Protege o SSH contra ataques de força bruta.
+
+Configuração em `/etc/fail2ban/jail.local`:
+```ini
+[DEFAULT]
+bantime  = 24h
+findtime = 10m
+maxretry = 5
+backend  = systemd
+
+[sshd]
+enabled  = true
+port     = ssh
+logpath  = %(sshd_log)s
+maxretry = 3
+bantime  = 48h
+```
+
+- Após 3 tentativas falhas de SSH em 10 minutos → IP banido por 48h
+- Verificar status: `fail2ban-client status sshd`
+- Ver IPs banidos: `fail2ban-client status sshd`
+
+### Caddy (reverse proxy)
+Gerencia SSL automaticamente via Let's Encrypt. Certificados ativos para:
+- `devsaderiva.com.br`
+- `www.devsaderiva.com.br`
+- `dashboard.devsaderiva.com.br`
+
+Localização: `/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/`
+
+---
+
+## Checklist de manutenção
+
+| Tarefa | Frequência |
+|--------|-----------|
+| Verificar IPs do Cloudflare atualizados | A cada 6 meses |
+| Checar certificados Caddy | Automático (renovação automática) |
+| Revisar logs do Fail2ban | Mensal |
+| Revisar eventos WAF no Cloudflare | Mensal |
+| Checar status UFW | `ufw status verbose` |
+| Checar status Fail2ban | `fail2ban-client status sshd` |
