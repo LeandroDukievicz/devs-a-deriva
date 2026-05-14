@@ -115,3 +115,29 @@ Checklist:
 - [x] [P2] Converter páginas individuais de categoria para uma rota dinâmica `src/pages/categorias/[categoria].astro`.
 - [x] [P2] Centralizar ícones sociais em um componente `src/components/SocialIcon.astro`.
 
+---
+
+## Milestone 8 — Conformidade LGPD
+
+Auditoria realizada em 14/05/2026. Itens organizados por criticidade.
+
+### P0 — Crítico (bloqueadores de conformidade)
+
+- [ ] [P0] **Analytics sem consentimento prévio** — Google Analytics (gtag.js) e Vercel Analytics são carregados incondicionalmente em `src/layouts/Base.astro` (linhas ~105-112), antes de qualquer consentimento do utilizador. Implementar Consent Mode v2: iniciar com `analytics_storage: denied` e só ativar após o utilizador aceitar no banner.
+- [ ] [P0] **Banner de cookies sem opção de recusa** — O banner atual (`src/layouts/Base.astro` linhas ~159-172) apenas informa, sem botão de "Recusar". A LGPD exige que o utilizador possa recusar cookies não-essenciais. Adicionar botão "Recusar" que bloqueia o carregamento do GA e Vercel Analytics.
+- [ ] [P0] **Retenção de dados não documentada** — A política de privacidade (`src/pages/privacidade.astro`) não indica por quanto tempo os dados são retidos (e-mails de newsletter, comentários, progresso de leitura, logs). Adicionar secção de prazos de retenção para cada categoria de dado.
+
+### P1 — Alto (lacunas relevantes)
+
+- [ ] [P1] **Progresso de leitura sem aviso ao utilizador** — `src/lib/reading-progress-client.ts` armazena e envia ao backend o progresso de leitura (slug, percentagem, conclusão) sem consentimento explícito nem menção na política de privacidade. Adicionar referência na política e incluir no escopo do banner de cookies.
+- [ ] [P1] **Anonimização de IP do Google Analytics não documentada** — A política menciona GA mas não informa se o IP é anonimizado. Verificar se `anonymize_ip` está ativo e documentar na política.
+- [ ] [P1] **Direitos de portabilidade e retificação ausentes** — A página `src/pages/exclusao-de-dados.astro` cobre exclusão e acesso mas não menciona explicitamente o direito de portabilidade (Art. 18, V LGPD) nem retificação (Art. 18, III LGPD). Adicionar estes direitos ao texto.
+- [ ] [P1] **Comentários sem aviso explícito de coleta** — O formulário de comentários (`src/components/Comments.astro`) não informa ao utilizador quais dados são coletados via OAuth (nome, foto, email) e como serão usados. Adicionar texto informativo junto ao botão de login.
+
+### P2 — Médio (boas práticas)
+
+- [ ] [P2] **Dados de menores sem proteção** — Nenhuma página menciona restrição para menores de 13 anos, para quem a LGPD exige consentimento do responsável. Adicionar aviso na política de privacidade e nos formulários de newsletter e comentários.
+- [ ] [P2] **Cloudflare não mencionado na política** — Se o domínio usa Cloudflare (DNS/proxy/cache), este processa IPs e requests dos utilizadores mas não está listado como terceiro na política de privacidade. Confirmar e adicionar se aplicável.
+- [ ] [P2] **Terceiros sem detalhe de processamento** — A política menciona Google, Vercel e plataformas sociais mas sem especificar que dados cada um recebe, a base legal para o compartilhamento e links para as políticas deles. Detalhar cada integração.
+- [ ] [P2] **Double opt-in da newsletter não documentado** — Confirmar se o backend do dashboard implementa confirmação por e-mail antes de ativar o subscriber (status `PENDING` → `ACTIVE`). Se sim, documentar no fluxo da newsletter. Se não, implementar.
+
