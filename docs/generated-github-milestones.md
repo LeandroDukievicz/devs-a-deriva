@@ -199,7 +199,7 @@ Objetivo: deixar o projeto viável para pentest autorizado e reduzir riscos reai
 Status antigo de lançamento. Após a auditoria defensiva de 2026-05-19, este bloco fica subordinado à milestone **PRE-PENTEST — Segurança defensiva e anti-invasão** acima.
 
 - [x] **Corrigir XSS nos comentários** — refatorar `src/components/Comments.astro` para não usar `innerHTML` com dados externos; montar DOM com `textContent` e `createElement`
-- [ ] **Atualizar dependências vulneráveis** — reaberto em 2026-05-19: `npm audit` ainda falha com 12 vulnerabilidades, incluindo 1 alta em `devalue`; `npm ls --depth=0` também falha com dependências inválidas/extraneous
+- [x] **Atualizar dependências vulneráveis** — `npm audit` zerado: `npm audit fix` eliminou HIGH (devalue); overrides `yaml>=2.9.0` e `tmp>=0.2.4` eliminaram restantes; `npm ls --depth=0` limpo
 - [x] **Criar `.env.example`** — listar todas as variáveis necessárias sem valores reais para que o projeto possa ser configurado
 - [x] **Deploy em produção** — blog servido por Docker + Nginx atrás do Caddy na VPS, com `PUBLIC_DASHBOARD_URL` apontando para o dashboard de produção; `npm run build` passa sem erro
 - [x] **Verificar conteúdo real** — `fetchPosts()` consome `/api/posts?status=PUBLISHED`, filtra slugs válidos, retorna `[]` em falha de API e alimenta home/categorias/posts no build
