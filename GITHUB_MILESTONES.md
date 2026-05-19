@@ -116,8 +116,10 @@ Checklist:
 - [x] Newsletter subscribe integrada ao dashboard.
 - [x] Reading progress tracked via API do dashboard.
 - [x] [P1] "Carregar mais" na home: botão já usa `hidden={!firstPage.hasMore}` no SSR e oculta via JS após carregar todos os posts — comportamento correto verificado.
+- [x] **Busca pública** — página `/busca` com busca client-side sobre todos os posts publicados; índice embutido no build com apenas campos públicos; suporte a `?q=` na URL; `searchPosts()` exportado e coberto por testes em `tests/search.test.ts`; URL limpa ao resetar busca; null safety no DOM.
 - [ ] [P2] SEO de posts antigos: considerar geração de páginas estáticas `/categorias/[slug]/pagina/[n]` via `getStaticPaths()` para garantir indexação sem depender de JavaScript.
 - [ ] [P2] Webhook de rebuild: ao publicar post no dashboard, disparar rebuild automático do blog com popup de progresso no dashboard mostrando status do CI/CD.
+- [x] **Histórico de revisões de post com restauração controlada** (dashboard) — modelo `PostRevision` no Prisma com migration `20260519120000`; `createRevision()` chamado automaticamente em cada `updatePost()`; API `GET /api/posts/[id]/revisions` e `POST /api/posts/[id]/revisions/[revisionId]/restore`; restauração exige owner, valida pertencimento, cria snapshot de segurança antes de sobrescrever e registra `AuditLog`; `contentHtml` regenerado do Markdown na restauração; link "Revisões" no editor (modo edição); página `/dashboard/posts/[id]/revisoes`; 9 testes cobrindo os cenários obrigatórios; `createRevision` isolado com try/catch para não bloquear updates.
 
 ---
 

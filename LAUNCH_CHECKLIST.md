@@ -230,8 +230,8 @@ Organizado por área. Pode ser feito com o blog no ar, sem urgência imediata, m
 - [ ] **Busca na navbar** — `/busca` existe e funciona mas não está linkada. Adicionar ícone de lupa ou item "Busca" no `Navbar.astro`. Esforço: 30 min.
 - [ ] **Webhook de rebuild** — ao publicar post no dashboard, disparar rebuild automático via GitHub Actions. Elimina o rebuild manual. Esforço: 2–3h.
 - [ ] **Paginação estática por categoria** — `/categorias/[slug]/pagina/[n]` via `getStaticPaths()`. Já existe a estrutura de pasta. Garante indexação pelo Google sem depender de JS. Esforço: 2–3h.
-- [ ] **Link "Revisões" no editor do dashboard** — `app/dashboard/posts/[id]/revisoes/page.tsx` existe mas não há navegação até ela. Adicionar botão no `NavRail.tsx`. Esforço: 30 min.
-- [ ] **Regenerar `contentHtml` na restauração de revisão** — `restoreRevision()` restaura o HTML salvo na revisão, que pode estar desatualizado. Chamar `markdownToHtml()` no conteúdo restaurado. Arquivo: `app/services/postRevision.service.ts`. Esforço: 30 min.
+- [x] ~~Link "Revisões" no editor do dashboard~~ — implementado: botão "Revisões" no modo de edição em `PostActions.tsx` abre `/dashboard/posts/[id]/revisoes` em nova aba.
+- [x] ~~Regenerar `contentHtml` na restauração de revisão~~ — implementado: `restoreRevision()` agora chama `markdownToHtml()` no conteúdo restaurado antes de persistir.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { fetchPosts, formatDate, isApiOffline } from '../lib/posts';
+import { fetchPosts, isApiOffline } from '../lib/posts';
 
 const allPosts = await fetchPosts();
 
@@ -109,10 +109,10 @@ const searchIndex = allPosts.map((post) => ({
   }
 
   function setUI({ idle = false, noPosts = false, noResults = false, results = false } = {}) {
-    stateIdle.hidden        = !idle;
-    stateNoPosts.hidden     = !noPosts;
-    stateNoResults.hidden   = !noResults;
-    listEl.hidden           = !results;
+    if (stateIdle)     stateIdle.hidden     = !idle;
+    if (stateNoPosts)  stateNoPosts.hidden  = !noPosts;
+    if (stateNoResults) stateNoResults.hidden = !noResults;
+    if (listEl)        listEl.hidden        = !results;
   }
 
   function render(items) {
@@ -211,6 +211,8 @@ const searchIndex = allPosts.map((post) => ({
 
   clearBtn?.addEventListener('click', () => {
     if (inputEl) { inputEl.value = ''; inputEl.focus(); }
+    const clean = window.location.pathname;
+    window.history.replaceState({}, '', clean);
     search('');
   });
 
