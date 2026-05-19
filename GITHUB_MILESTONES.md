@@ -174,3 +174,217 @@ Auditoria realizada em 14/05/2026. Itens organizados por criticidade.
 - [ ] [P2] **Cloudflare não mencionado na política** — Se o domínio usa Cloudflare (DNS/proxy/cache), este processa IPs e requests dos utilizadores mas não está listado como terceiro na política de privacidade. Confirmar e adicionar se aplicável.
 - [ ] [P2] **Terceiros sem detalhe de processamento** — A política menciona Google, Vercel e plataformas sociais mas sem especificar que dados cada um recebe, a base legal para o compartilhamento e links para as políticas deles. Detalhar cada integração.
 - [ ] [P2] **Double opt-in da newsletter não documentado** — Confirmar se o backend do dashboard implementa confirmação por e-mail antes de ativar o subscriber (status `PENDING` → `ACTIVE`). Se sim, documentar no fluxo da newsletter. Se não, implementar.
+
+---
+
+## Milestone 9 — Auditoria Final, Escala e Maturidade de Produto
+
+Auditoria técnica e de produto realizada em 19/05/2026.
+
+Objetivo: consolidar pendências críticas abertas nos milestones anteriores, estabelecer fundações para crescimento sustentável do projeto, e garantir que o Devs à Deriva se comporte como produto real — não como protótipo funcional — quando o tráfego, o volume de conteúdo e o número de colaboradores crescerem.
+
+Cada item está anotado com a área afetada e o arquivo ou contexto relevante.
+
+---
+
+### P0 — Bloqueadores reais em aberto (consolidados de milestones anteriores)
+
+Itens que já apareceram em M0 ou M8 e ainda não foram fechados. Não vão a escala com pendências críticas.
+
+- [ ] **[P0 · Segurança · M0]** Corrigir dependências vulneráveis e estado inválido do lockfile — `npm audit` com vulnerabilidades de alta severidade (`devalue`, `tmp`, `ws`, `yaml`, `brace-expansion`); `package-lock.json` com pacotes fora das versões declaradas. Rodar `npm install` + `npm audit fix` sem `--force`, revisar diff, re-executar `lint`, `typecheck`, `test`, `build`, `check:security`.
+- [ ] **[P0 · LGPD · M0/M8]** Bloquear analytics (GA + Vercel Analytics) até consentimento explícito — `src/layouts/Base.astro` carrega ambos antes de qualquer ação do usuário. Implementar Consent Mode v2 do Google com `analytics_storage: denied` por padrão; só ativar após aceite no banner. Vercel Analytics deve seguir a mesma lógica.
+- [ ] **[P0 · LGPD · M8]** Adicionar botão "Recusar" no banner de cookies — o banner atual só tem "Entendi". A LGPD exige que a recusa seja tão fácil quanto o aceite. Adicionar "Recusar não-essenciais" e persistir a escolha.
+- [ ] **[P0 · LGPD · M8]** Documentar retenção de dados na política de privacidade — newsletter, comentários, progresso de leitura, logs de acesso, analytics devem ter prazo explícito. A política (`src/pages/privacidade.astro`) não cobre isso.
+- [ ] **[P0 · Segurança · M0]** Fechar contrato de URL segura para `PUBLIC_DASHBOARD_URL` — o fallback `http://localhost:3000` não deve aparecer em build de produção. Adicionar validação de ambiente que falhe o build se a URL não for HTTPS.
+
+---
+
+### P1 — Alta prioridade: hardening, compliance e produto funcional
+
+- [ ] **[P1 · Segurança · M0]** Reduzir CSP permissiva — `nginx.conf` usa `unsafe-inline` para scripts e estilos; `vercel.json` usa `connect-src https:` aberto. Definir CSP por ambiente: restringir `connect-src` às origens reais (dashboard, GA, Vercel Analytics), eliminar `unsafe-inline` progressivamente usando nonces ou migração de scripts inline para `.js` externo.
+- [ ] **[P1 · LGPD · M0/M8]** Incluir progresso de leitura no escopo do banner de consentimento — `src/lib/reading-progress-client.ts` cria `readerId` em localStorage e sincroniza com o dashboard sem menção ao usuário. Adicionar na política e no banner.
+- [ ] **[P1 · LGPD · M8]** Adicionar aviso de coleta antes do fluxo OAuth de comentários — `src/components/Comments.astro` mostra os botões de login sem informar que nome, foto, e-mail e provider serão coletados pelo dashboard e associados ao comentário. Inserir texto antes da exibição dos botões.
+- [ ] **[P1 · LGPD · M8]** Adicionar direitos de portabilidade e retificação à página de exclusão de dados — `src/pages/exclusao-de-dados.astro` cobre exclusão e acesso mas omite Art. 18 III (retificação) e Art. 18 V (portabilidade) da LGPD.
+- [ ] **[P1 · Infraestrutura · M4]** Colocar Cloudflare na frente do VPS — esconde IP real, absorve ataques volumétricos e ativa proteção DDoS L3/L4 sem custo. Documentar IPs do Cloudflare em `nginx.conf` para `real_ip_header`.
+- [ ] **[P1 · Infraestrutura · M4]** Configurar firewall no VPS — permitir apenas 80, 443 e porta SSH customizada; bloquear todo o resto via `ufw` ou `iptables`. Documentar em `docs/security.md`.
+- [ ] **[P1 · SEO · M5]** Gerar páginas estáticas de paginação por categoria via `getStaticPaths()` — `/categorias/[slug]/pagina/[n]` garante indexação do conteúdo mais antigo sem depender de JavaScript no crawler. Já existe estrutura de pasta `src/pages/categorias/[categoria]/pagina/[n].astro`.
+- [ ] **[P1 · CI/CD · M0]** Fixar permissões mínimas do `GITHUB_TOKEN` no workflow, adicionar `permissions:` explícito, pin por SHA para `appleboy/ssh-action` e `gitleaks`, e `npm audit --audit-level=moderate` como etapa obrigatória bloqueante.
+- [ ] **[P1 · Segurança · M0]** Confirmar e documentar que `POST /api/comments/draft`, `GET /api/comments`, `POST /api/newsletter/subscribe` e `PATCH /api/reading-progress` no dashboard têm: validação server-side, CORS restrito às origens reais, rate limit, limite de payload e proteção contra replay. Criar testes de contrato no `dashboard-ldstudio` que falhem se esses controles forem removidos.
+
+---
+
+### P2 — Média prioridade: produto mais robusto, observabilidade e editorial
+
+#### Observabilidade e operações
+
+- [ ] **[P2 · Ops]** Implementar health check do dashboard no processo de build do blog — se `PUBLIC_DASHBOARD_URL/health` não responder com 200 durante o build, gerar alerta (não bloquear build, mas emitir warning visível no CI e no dashboard editorial).
+- [ ] **[P2 · Ops]** Configurar uptime monitoring externo — serviço como BetterUptime, UptimeRobot ou similar monitorando `https://devsaderiva.com.br`, `https://dashboard.devsaderiva.com.br/health` e a rota `GET /api/posts?status=PUBLISHED` com alertas por e-mail.
+- [ ] **[P2 · Ops]** Documentar runbook de recuperação de desastre — o que fazer se o VPS cair, se o banco corromper, se o CI/CD falhar em produção, se as credenciais OAuth expirarem. Adicionar em `docs/incident-runbook.md` (equivalente ao que já existe no dashboard, mas para o blog).
+- [ ] **[P2 · Ops]** Backup automático e verificado do banco PostgreSQL — backup diário com retenção de 30 dias, restore testado periodicamente. Documentar processo em `docs/operations.md`.
+- [ ] **[P2 · Obs]** Implementar alertas para eventos críticos de segurança — 5xx em série, picos de rate limit acionado, falhas de OAuth, indisponibilidade do dashboard durante build. Pode ser via webhook para canal Discord/Slack ou e-mail.
+
+#### Busca e descoberta de conteúdo
+
+- [ ] **[P2 · Produto]** Expor `/busca` na navegação — a página `src/pages/busca.astro` foi implementada mas não está linkada no `Navbar.astro`. Adicionar item "Busca" ou ícone de lupa na navbar, especialmente para mobile.
+- [ ] **[P2 · SEO]** Adicionar `sitemap.xml` com prioridade diferenciada para posts recentes — posts publicados nos últimos 30 dias com `priority: 0.9`, demais com `priority: 0.7`. Já existe `src/pages/sitemap.xml.ts`.
+- [ ] **[P2 · AEO]** Implementar JSON-LD de `SearchAction` na home — permite que motores de busca e agentes de IA entendam que o site tem busca interna. Usar `potentialAction` do tipo `SearchAction` apontando para `/busca?q={search_term_string}`.
+- [ ] **[P2 · Produto]** Suporte a busca por URL em `/busca?q=termo` — já implementado via `URLSearchParams`, mas o campo precisa limpar o parâmetro da URL ao limpar a busca (atualizar `window.history.replaceState` ao clicar em "Limpar").
+
+#### Sistema editorial e revisões
+
+- [ ] **[P2 · Dashboard]** Adicionar link "Histórico de revisões" no editor de posts do dashboard — a página `app/dashboard/posts/[id]/revisoes/page.tsx` foi criada, mas não há caminho de navegação até ela a partir do editor. Adicionar botão no `NavRail.tsx` ou `PostActions.tsx`.
+- [ ] **[P2 · Dashboard]** Implementar diff visual simples entre revisão e versão atual — a página de revisões mostra o conteúdo completo; adicionar destaque de diferenças (linhas adicionadas/removidas) usando comparação de texto simples sem biblioteca pesada.
+- [ ] **[P2 · Dashboard]** Adicionar política de retenção de revisões — revisões não têm limite hoje. Implementar job de compactação que mantém as últimas 50 revisões por post e arquiva as demais (sem deletar, apenas movendo para tabela de arquivo ou marcando como `archived`).
+- [ ] **[P2 · Dashboard]** Regenerar `contentHtml` na restauração de revisão — `restoreRevision()` em `app/services/postRevision.service.ts` restaura o `contentHtml` salvo na revisão, que pode estar desatualizado se o parser Markdown evoluiu. Chamar `markdownToHtml()` no conteúdo restaurado antes de persistir.
+- [ ] **[P2 · Blog]** Implementar webhook de rebuild automático — ao publicar ou despublicar post no dashboard, disparar rebuild do blog via `curl -X POST` ao endpoint do GitHub Actions com token restrito. Mostrar progresso no dashboard editorial.
+
+#### Newsletter e curadoria
+
+- [ ] **[P2 · Newsletter]** Confirmar e documentar double opt-in — verificar se o subscriber passa por `PENDING → ACTIVE` após confirmação de e-mail antes de receber comunicações. Se não houver, implementar token de confirmação com expiração de 48h e reenvio opcional.
+- [ ] **[P2 · Newsletter]** Adicionar métricas de entrega à interface editorial — taxa de abertura (se rastreada), cliques, bounces, descadastros por edição. Pode ser via dashboard do Resend ou implementação interna simples.
+- [ ] **[P2 · Newsletter]** Implementar preview de e-mail antes do disparo — no fluxo editorial do dashboard, renderizar uma preview HTML da newsletter antes de confirmar o envio, com modo mobile e desktop.
+- [ ] **[P2 · Newsletter]** Adicionar link de descadastro com único clique — o link de unsubscribe no e-mail deve funcionar sem login e expirar após uso. Confirmar que `unsubscribeToken` está sendo gerado, enviado no e-mail e que o endpoint de descadastro não exige autenticação.
+
+#### LGPD pendente de M8
+
+- [ ] **[P2 · LGPD · M8]** Adicionar proteção para dados de menores — aviso na política de privacidade e nos formulários de newsletter e comentários informando que o serviço não é destinado a menores de 13 anos e que esse público requer consentimento do responsável.
+- [ ] **[P2 · LGPD · M8]** Adicionar Cloudflare à lista de terceiros na política — se o domínio usa Cloudflare como proxy, ele processa IPs e requests. Confirmar e listar com base legal (legítimo interesse) e link para política da Cloudflare.
+- [ ] **[P2 · LGPD · M8]** Detalhar terceiros na política — para cada integração (Google Analytics, Vercel Analytics, Resend, Cloudflare, provedores OAuth), especificar dados enviados, finalidade, base legal e link para política deles.
+- [ ] **[P2 · LGPD · M0]** Criar testes de contrato para endpoints públicos de índice — `/ai-index.json`, `/rss.xml`, `/docs.json` e o futuro endpoint de busca devem ter testes que falhem se draft, e-mail, ID interno, token ou metadado privado aparecer na resposta.
+
+---
+
+### P3 — Fundações para escala futura
+
+Itens que não bloqueiam o produto hoje, mas que se tornam críticos quando o volume de conteúdo, colaboradores ou tráfego crescer.
+
+#### Performance a escala
+
+- [ ] **[P3 · Performance]** Definir estratégia de cache para a API do dashboard — o blog já usa `cache: 'force-cache'` em dev e rebusca em prod, mas não há `stale-while-revalidate` ou `Cache-Control` explícito no endpoint `GET /api/posts`. Com volume, uma resposta de 2–3s na API durante o build vira gargalo. Avaliar cache de borda (Cloudflare Workers KV ou R2) para posts publicados.
+- [ ] **[P3 · Performance]** Implementar build incremental para posts — hoje o `fetchPosts()` busca todos os posts a cada build. Com 500+ posts, o tempo de build cresce linearmente. Avaliar `getStaticPaths()` com delta (só re-gerar páginas de posts atualizados desde o último build) via timestamp ou `updatedAt`.
+- [ ] **[P3 · Performance]** Pipeline de otimização de imagens de upload — imagens de posts sobem para R2 como-estão. Com volume, isso impacta LCP. Implementar redimensionamento automático para 1200px, geração de WebP e thumbs de 400px no momento do upload no dashboard (via Sharp ou Cloudflare Images).
+- [ ] **[P3 · Performance]** Avaliar migração para Cloudflare Pages — o blog é Astro estático; Cloudflare Pages entrega de ~600 PoPs vs o VPS single-region atual. Avaliar custo/benefício e impacto no CI/CD.
+- [ ] **[P3 · Performance]** Lazy load de componentes pesados — `BlackHole.astro` e `StarBackground.astro` renderizam canvas/WebGL. Garantir que `prefers-reduced-motion` e conexão lenta (via `navigator.connection.saveData`) desativem animações custosas antes de renderizar.
+
+#### SEO e descoberta a escala
+
+- [ ] **[P3 · SEO]** Gerar páginas de arquivo por mês/ano — `/posts/2026/05` como listagem estática melhora rastreabilidade e navegação histórica. Pode ser gerado em build time via `getStaticPaths()` agrupando posts por `publishedAt`.
+- [ ] **[P3 · SEO]** Implementar sistema de tags — posts podem ter múltiplas tags além da categoria. Tags geram páginas `/tags/[tag]` com listagem, melhoram `keywords` no JSON-LD e habilitam busca facetada.
+- [ ] **[P3 · SEO]** Adicionar dados estruturados de `BreadcrumbList` — posts individuais se beneficiam de breadcrumb schema (Home → Categoria → Título) para rich results no Google.
+- [ ] **[P3 · AEO]** Expandir `llms.txt` e `ai-index.json` com metadados de autor, tags e data — modelos de IA e crawlers especializados valorizam estrutura explícita para descoberta e atribuição.
+- [ ] **[P3 · SEO]** Implementar posts relacionados — no final de cada post, listar 3 posts da mesma categoria com menor distância de embedding ou simplesmente os mais recentes da mesma categoria. Já disponível via `getPostsByCategory()`.
+
+#### Multi-autor e fluxo editorial colaborativo
+
+- [ ] **[P3 · Editorial]** Implementar convites de colaborador com escopo de seção — o dashboard já tem modelo `Invite` e `permissions` no `User`. Expor fluxo de convite por seção no painel: convidar alguém para escrever em "Tech" sem acesso a "Newsletter" ou moderação de comentários.
+- [ ] **[P3 · Editorial]** Implementar fluxo de revisão de rascunho — post em `REVIEW` deve poder ser comentado internamente por outro colaborador antes de publicar. Tabela de anotações simples (`PostAnnotation`) vinculada ao post e à revisão.
+- [ ] **[P3 · Editorial]** Dashboard de métricas editoriais por autor — quantos posts publicados, views acumuladas, média de tempo de leitura e taxa de completude por autor. Combinar dados de `ReadingProgress` e `Post.views`.
+- [ ] **[P3 · Editorial]** Adicionar campo `featuredUntil` em posts — posts em destaque hoje são todos os da categoria. Permitir marcar um post como destaque com validade, expirando automaticamente via cron já existente em `app/api/cron/`.
+
+#### API pública e consumo externo
+
+- [ ] **[P3 · API]** Definir versão pública da API de conteúdo — o blog consome `/api/posts?status=PUBLISHED` sem versioning. Com escala, uma breaking change no contrato quebra o build. Adicionar prefixo de versão `/api/v1/posts` ou header `API-Version` e documentar em `docs/api.md`.
+- [ ] **[P3 · API]** Implementar endpoint `GET /api/posts/[slug]/related` — retorna posts relacionados por categoria, sem expor dados privados. Permite que a página de post carregue related posts dinamicamente sem rebuild.
+- [ ] **[P3 · API]** Avaliar RSS com conteúdo completo opcional — o RSS atual (`src/pages/rss.xml.ts`) pode ser complementado com um feed Atom ou JSON Feed para consumo por ferramentas de curadoria externas e leitores de feed modernos.
+- [ ] **[P3 · API]** Criar endpoint `GET /api/posts/stats` público — número de posts publicados por categoria, último post de cada categoria e data de atualização. Permite que ferramentas externas e bots de IA saibam o estado do conteúdo sem parsear HTML.
+
+#### Segurança contínua
+
+- [ ] **[P3 · Segurança]** Implementar rotação automática de `AUTH_SECRET` e `NEXTAUTH_SECRET` — documentar processo de rotação sem downtime: gerar novo secret, atualizar em produção, invalidar sessões ativas (logout forçado) e confirmar funcionamento.
+- [ ] **[P3 · Segurança]** Adicionar Dependabot alerts ao dashboard (`dashboard-ldstudio`) — o blog já tem `.github/dependabot.yml`; confirmar que o repositório do dashboard também está configurado.
+- [ ] **[P3 · Segurança]** Implementar checklist OWASP automatizado em PRs que toquem auth, comentários ou HTML dinâmico — já existe `.github/pull_request_template.md` no blog com o checklist; criar equivalente no dashboard.
+- [ ] **[P3 · Segurança]** Implementar testes de regressão de segurança para XSS em comentários — `tests/e2e/comments-xss.spec.ts` cobre o blog; criar equivalente no dashboard para os endpoints de aprovação/rejeição de comentários.
+- [ ] **[P3 · Segurança]** Avaliar WAF rules no Cloudflare — quando o Cloudflare estiver ativo (P1), configurar regras básicas: bloquear user-agents de scanners, limitar payloads grandes em rotas de API, challenge em IPs com muitos 4xx em sequência.
+
+#### LGPD e governança a escala
+
+- [ ] **[P3 · LGPD]** Automatizar atendimento a direitos do titular — hoje o processo é manual (e-mail para `leandrodukievicz1718@gmail.com`). Com volume, implementar formulário no dashboard para registrar, rastrear e responder solicitações de acesso, retificação, exclusão e portabilidade dentro dos prazos legais (15 dias corridos para acesso; prazo razoável para demais).
+- [ ] **[P3 · LGPD]** Implementar política de retenção automatizada — job periódico que: anonymiza comentários rejeitados com mais de 90 dias, remove assinantes de newsletter inativos há mais de 24 meses, purga dados de progresso de leitura de `readerId`s sem atividade há 12 meses.
+- [ ] **[P3 · LGPD]** Elaborar RIPD — o projeto usa analytics comportamental, progresso de leitura, OAuth e newsletter. A combinação desses fatores pode exigir Relatório de Impacto à Proteção de Dados. Avaliar com base nos critérios da ANPD e documentar em `docs/ripd.md`.
+- [ ] **[P3 · LGPD]** Implementar registro de versão da política aceita no consentimento de newsletter — a tabela `NewsletterSubscriber` já tem campos de consentimento; adicionar `privacyPolicyVersion` registrado no momento da inscrição para rastreabilidade em auditorias.
+- [ ] **[P3 · LGPD]** Documentar encarregado de dados (DPO) — a política menciona contato por e-mail, mas não identifica formalmente o encarregado (Art. 41 LGPD). Definir e documentar quem é o responsável e como é contatado.
+
+#### Testes e qualidade a escala
+
+- [ ] **[P3 · Testes]** Implementar testes de carga no endpoint `GET /api/posts` — usar `k6` (já presente em `tests/smoke.k6.js`) para validar comportamento sob 100/500/1000 req/s. Definir SLOs de latência (P95 < 500ms) e documentar em `docs/performance.md`.
+- [ ] **[P3 · Testes]** Adicionar testes de acessibilidade automatizados no E2E — integrar `axe-core` ao Playwright para capturar regressões de acessibilidade em home, categoria e página de post a cada PR.
+- [ ] **[P3 · Testes]** Cobertura de testes para `searchPosts()` em queries com caracteres especiais, Unicode e strings longas — `tests/search.test.ts` cobre cenários básicos; expandir para cobrir edge cases de busca em português (acentos, cedilha, case) e inputs maliciosos.
+- [ ] **[P3 · Testes]** Adicionar teste de build que falha se `localStorage`, `sessionStorage` ou `document.cookie` aparecerem fora dos arquivos autorizados — prevenir regressões de privacidade quando novos componentes client-side forem adicionados.
+- [ ] **[P3 · Testes]** Implementar contract testing entre blog e dashboard — validar, em cada PR do dashboard que toque em `GET /api/posts`, `GET /api/comments`, `POST /api/newsletter/subscribe` ou `PATCH /api/reading-progress`, que o shape da resposta ainda é compatível com o que `src/lib/posts.ts` e os componentes do blog esperam.
+
+#### DX e documentação
+
+- [ ] **[P3 · DX]** Adicionar seed de posts no dashboard para desenvolvimento local — `scripts/seed.ts` existe; expandir com 10–20 posts ficcionais distribuídos por categoria, com autores, imagens e datas variadas, para testar busca, paginação e filtros de categoria sem depender de produção.
+- [ ] **[P3 · DX]** Documentar variáveis de ambiente obrigatórias com exemplos — `.env.example` (ou `.env.template`) no blog e no dashboard listando todas as vars necessárias com tipo, descrição e exemplo seguro. Hoje o README não cobre isso completamente.
+- [ ] **[P3 · DX]** Criar guia de criação de post do zero — passo a passo: login no dashboard, criar rascunho, fazer upload de capa, escrever em Markdown, definir categoria, publicar, verificar no blog. Documentar em `docs/content-system.md` ou `docs/guia-editorial.md`.
+- [ ] **[P3 · DX]** Adicionar ADRs para decisões arquiteturais pendentes — formalizar em `docs/adr-*.md`: (1) escolha de Astro SSG vs SSR; (2) estratégia de cache de posts; (3) modelo de revisões vs versionamento Git para conteúdo; (4) estratégia de busca estática vs Algolia/Typesense a longo prazo.
+- [ ] **[P3 · DX]** Documentar modelo de dados completo do dashboard — tabelas, relações, campos sensíveis, campos criptografados e campos indexados em `docs/database.md`. Hoje a documentação está dispersa entre schema.prisma e comentários no código.
+
+---
+
+### Critérios de aceite do Milestone 9
+
+**Fundação (P0/P1 fechados):**
+- `npm audit` sem vulnerabilidades de alta ou crítica.
+- Build falha explicitamente se `PUBLIC_DASHBOARD_URL` não for HTTPS.
+- Banner de cookies oferece aceitar e recusar; analytics só carrega após aceite.
+- Política de privacidade tem seção de retenção, lista de terceiros com detalhes e direitos completos (acesso, retificação, exclusão, portabilidade).
+- CSP sem `unsafe-inline` para scripts; exceções documentadas com justificativa.
+- Cloudflare ativo como proxy reverso com IP do VPS protegido.
+- Firewall do VPS bloqueando todas as portas exceto 80, 443 e SSH.
+
+**Produto (P2 fechados):**
+- `/busca` linkada na Navbar.
+- Histórico de revisões acessível a partir do editor de posts no dashboard.
+- Webhook de rebuild disparado ao publicar post.
+- Monitoramento de uptime ativo para blog e dashboard.
+- Backup automático do banco documentado e testado.
+
+**Escala (P3 como linha de base para crescimento):**
+- Ao menos os P3 de performance, segurança e LGPD documentados como decisões de produto explícitas em ADRs, mesmo que não implementados imediatamente.
+- RIPD avaliado e, se necessário, elaborado.
+- Contract tests entre blog e dashboard em CI.
+
+---
+
+### Riscos
+
+- **Debt acumulado de LGPD** — M8 foi auditado mas os P0 ainda estão abertos. Qualquer coleta de e-mail ou analytics sem consentimento explícito antes do fechamento desses itens é risco legal real.
+- **Lockfile inconsistente** — dependências fora das versões declaradas podem introduzir comportamentos não testados silenciosamente; priorizar antes de qualquer deploy relevante.
+- **Revisões sem limite de retenção** — o volume de revisões cresce com cada edição. Com 1.000 posts e 10 edições médias cada, são 10.000 linhas em `post_revisions`. Definir política antes de atingir esse volume.
+- **Build time linear com posts** — cada novo post aumenta o tempo de build. Com 200+ posts, avalie build incremental ou geração sob demanda (ISR se migrar para Vercel/Cloudflare Pages).
+- **Dependência de VPS único** — blog e dashboard estão na mesma VPS. Se o servidor cair, ambos ficam offline. Avaliar separação ou pelo menos replicação estática do blog em CDN como fallback.
+
+---
+
+### Arquivos afetados
+
+```
+Blog:
+src/components/Navbar.astro          — link /busca
+src/pages/busca.astro                — suporte a query param na URL (limpar ao resetar)
+src/layouts/Base.astro               — Consent Mode v2, banner com recusar, headers
+src/pages/privacidade.astro          — retenção, terceiros, portabilidade, retificação, menores
+src/pages/exclusao-de-dados.astro    — portabilidade e retificação explícitas
+src/lib/reading-progress-client.ts   — informar usuário sobre coleta
+src/components/Comments.astro        — aviso de coleta antes do OAuth
+nginx.conf                           — CSP sem unsafe-inline, IPs Cloudflare, real_ip
+.github/workflows/ci.yml             — permissões mínimas, pin por SHA, npm audit bloqueante
+.github/pull_request_template.md     — checklist OWASP já criado
+docs/frontend.md                     — seção /busca já adicionada
+docs/security.md                     — Cloudflare, UFW, runbook
+GITHUB_MILESTONES.md                 — este arquivo
+
+Dashboard:
+app/dashboard/posts/NavRail.tsx      — link para revisões
+app/dashboard/posts/PostActions.tsx  — botão de revisões (alternativo)
+app/dashboard/posts/[id]/revisoes/   — página de revisões (criada)
+app/services/postRevision.service.ts — regenerar contentHtml na restore
+app/services/posts.service.ts        — limite de retenção de revisões
+app/api/posts/[id]/revisions/        — rotas de API (criadas)
+prisma/schema.prisma                 — PostRevision (criado)
+prisma/migrations/20260519120000_*   — migration (criada)
+tests/api-post-revisions.test.ts     — testes (criados)
+docs/dashboard.md                    — revisões (criado)
+scripts/seed.ts                      — expandir com posts ficcionais
+```
