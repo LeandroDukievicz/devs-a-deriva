@@ -22,3 +22,13 @@ export function initials(name: string): string {
     .map((word) => word[0]?.toUpperCase() ?? '')
     .join('');
 }
+
+export function sanitizeImageUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
+}

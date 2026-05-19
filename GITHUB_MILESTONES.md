@@ -5,6 +5,40 @@ Posts vêm de `GET /api/posts` no dashboard. Comentários passam por OAuth no da
 
 ---
 
+## Milestone 0 — Auditoria e Correções de Segurança
+
+Auditoria realizada em 19/05/2026 com foco no blog público Astro e nos contratos com o dashboard. Relatório completo: [`docs/security-audit-2026-05-19.md`](./docs/security-audit-2026-05-19.md).
+
+### P0 — Bloqueadores antes de produção
+
+- [ ] [P0] **Corrigir dependências vulneráveis e estado inválido do lockfile** — `npm run check:security` falha por `npm audit` com 12 vulnerabilidades, incluindo `devalue` alta e transitivas em `tmp`, `ws`, `yaml` e `brace-expansion`; `npm ls --depth=0` também acusa dependências instaladas fora das versões declaradas (`astro`, `tailwindcss`, `@tailwindcss/vite`, `vitest`, `@vitest/ui`, `aeo.js`) e pacote extraneous `@emnapi/runtime`. Rodar atualização controlada (`npm install`/`npm audit fix` sem `--force` primeiro), revisar o diff do `package-lock.json` e repetir `lint`, `typecheck`, `test`, `build`, `check:security`.
+- [ ] [P0] **Bloquear analytics até consentimento explícito** — `src/layouts/Base.astro` carrega Vercel Analytics e Google Analytics antes de consentimento, e o banner só tem "Entendi". Implementar Consent Mode v2 com default denied, botão "Aceitar" e "Recusar", persistência da escolha e carregamento condicional de GA/Vercel Analytics.
+- [ ] [P0] **Validar no dashboard os endpoints públicos consumidos pelo blog** — confirmar, com testes no projeto `dashboard-ldstudio`, que `POST /api/comments/draft`, `GET /api/comments`, `POST /api/newsletter/subscribe` e `GET/PATCH /api/reading-progress` têm validação server-side, CORS restrito, rate limit, limite de payload e proteção contra abuso. No blog só há validação de UX; a segurança real depende do backend.
+- [ ] [P0] **Fechar contrato de URL segura para `PUBLIC_DASHBOARD_URL`** — a env pública controla chamadas de comentários/newsletter/progresso. Adicionar validação de ambiente/documentação para produção exigir `https://dashboard.devsaderiva.com.br`, sem fallback silencioso para `http://localhost:3000` em build/deploy produtivo.
+
+### P1 — Alta prioridade
+
+- [ ] [P1] **Reduzir CSP permissiva** — `nginx.conf` usa `script-src 'unsafe-inline'` e `style-src 'unsafe-inline'`; `vercel.json` usa `connect-src https:` amplo. Definir CSP por ambiente, restringir `connect-src` ao dashboard/analytics necessários, documentar exceções e planejar nonces/hashes se houver SSR/middleware.
+- [ ] [P1] **Adicionar privacidade/consentimento ao progresso de leitura** — `src/lib/reading-progress-client.ts` cria `readerId` no `localStorage` e sincroniza `postSlug`, progresso e conclusão com o dashboard. Incluir isso na política, no banner de consentimento e nos controles de exclusão/limpeza local.
+- [ ] [P1] **Adicionar aviso explícito de coleta no fluxo de comentários OAuth** — antes dos botões Google/GitHub/Discord, informar que o comentário será associado a nome/avatar/provider/e-mail conforme retorno do dashboard e que será moderado antes de publicar.
+- [ ] [P1] **Hardening do redirect de OAuth no dashboard** — o blog envia `redirectTo: window.location.href`; garantir allowlist exata de origem/path no backend, rejeitando hosts externos, query maliciosa e esquemas não HTTPS em produção.
+- [ ] [P1] **Revisar CI/CD para supply chain** — fixar permissões mínimas do `GITHUB_TOKEN`, adicionar `permissions:` explícito no workflow, avaliar pin por SHA para actions críticas (`appleboy/ssh-action`, `gitleaks`) e adicionar `npm audit --audit-level=moderate` como etapa visível.
+
+### P2 — Média prioridade
+
+- [ ] [P2] **Consolidar política de LGPD** — documentar retenção para newsletter, comentários, progresso de leitura, analytics e logs; detalhar terceiros (Google, Vercel, Cloudflare, provedores OAuth), base legal, opt-out e direitos de portabilidade/retificação.
+- [ ] [P2] **Fortalecer anti-spam de formulários públicos** — newsletter e comentários enviam honeypot/tempo de preenchimento no payload, mas ainda é preciso confirmar que o dashboard valida esses sinais, aplica rate limit por IP/e-mail/provider e ativa captcha adaptativo para comportamento suspeito.
+- [ ] [P2] **Criar testes E2E/integração de segurança do contrato público** — cobrir newsletter com consentimento/honeypot, comentários com payload grande/provider inválido/redirectTo inválido, leitura com readerId inválido e respostas genéricas contra enumeração.
+- [ ] [P2] **Revisar exposição de dados em endpoints públicos de índice** — `/ai-index.json`, `/rss.xml` e `/docs.json` devem continuar expondo apenas dados publicados e aprovados; adicionar teste que falha se draft, e-mail, IDs internos ou metadados privados aparecerem.
+
+### P3 — Hardening contínuo
+
+- [ ] [P3] **Registrar verificação operacional externa** — documentar evidência de Cloudflare, UFW, Fail2ban, Caddy, TLS e regras WAF em produção. A lista de IPs do Cloudflare em `docs/security.md` confere com a fonte oficial consultada em 19/05/2026, mas regras reais do VPS não são verificáveis pelo repositório.
+- [ ] [P3] **Melhorar observabilidade de segurança** — definir alertas para 5xx, falhas de OAuth, picos de comentários/newsletter, bloqueios de rate limit e indisponibilidade do dashboard durante build.
+- [ ] [P3] **Limpar dívida menor de DX/segurança** — remover código morto (`timeAgo` em comentários), silenciar hints Astro com `is:inline` explícito onde intencional e revisar usos de `set:html`/`innerHTML` estáticos em checklist periódico.
+
+---
+
 ## Milestone 1 — Infraestrutura & Deploy
 
 Checklist:
@@ -140,4 +174,3 @@ Auditoria realizada em 14/05/2026. Itens organizados por criticidade.
 - [ ] [P2] **Cloudflare não mencionado na política** — Se o domínio usa Cloudflare (DNS/proxy/cache), este processa IPs e requests dos utilizadores mas não está listado como terceiro na política de privacidade. Confirmar e adicionar se aplicável.
 - [ ] [P2] **Terceiros sem detalhe de processamento** — A política menciona Google, Vercel e plataformas sociais mas sem especificar que dados cada um recebe, a base legal para o compartilhamento e links para as políticas deles. Detalhar cada integração.
 - [ ] [P2] **Double opt-in da newsletter não documentado** — Confirmar se o backend do dashboard implementa confirmação por e-mail antes de ativar o subscriber (status `PENDING` → `ACTIVE`). Se sim, documentar no fluxo da newsletter. Se não, implementar.
-

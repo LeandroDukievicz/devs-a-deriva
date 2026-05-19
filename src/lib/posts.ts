@@ -260,3 +260,15 @@ export function paginatePosts<T>(posts: T[], page: number, pageSize = 10): {
     total: posts.length,
   };
 }
+
+export function searchPosts(posts: readonly Post[], query: string): readonly Post[] {
+  const q = query.trim().toLowerCase();
+  if (q.length === 0) return [];
+  return posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(q) ||
+      post.excerpt.toLowerCase().includes(q) ||
+      post.category.toLowerCase().includes(q) ||
+      post.author.name.toLowerCase().includes(q),
+  );
+}

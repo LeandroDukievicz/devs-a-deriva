@@ -49,6 +49,22 @@ Categorias atuais ou previstas:
 
 Página editorial especial, com texto em perspectiva e movimento controlado por scroll. Não é uma página utilitária: ela reforça a identidade do projeto.
 
+### Busca
+
+A página `/busca` oferece busca client-side sobre todos os posts publicados.
+
+O índice de busca é construído no build a partir de `fetchPosts()` e serializado como JSON embutido na página. A busca ocorre inteiramente no browser — sem dependência de banco de dados ou API em runtime.
+
+Campos pesquisados: título, resumo, categoria e nome do autor.
+
+O índice expõe apenas campos públicos: `slug`, `title`, `excerpt`, `category`, `categorySlug`, `authorName`, `publishedAt`. Nenhum email, ID interno ou metadado privado é incluído.
+
+A página suporta o parâmetro de URL `?q=` para pré-preencher o campo de busca (útil para links externos).
+
+Se o dashboard estiver indisponível no momento do build, a página exibe um aviso e funciona normalmente para qualquer conteúdo que tenha sido indexado antes.
+
+A função `searchPosts(posts, query)` em `src/lib/posts.ts` implementa a lógica de filtro e pode ser usada de forma independente em testes.
+
 ### Admin/Login
 
 Página inicial de acesso ao dashboard externo. A operação administrativa real vive em `dashboard-ldstudio`.
