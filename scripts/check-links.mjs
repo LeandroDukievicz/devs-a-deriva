@@ -3,9 +3,12 @@ import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, normalize, relative } from 'node:path';
 
-const DIST = join(process.cwd(), 'dist');
+const DIST = join(process.cwd(), 'dist/client');
 const errors = [];
 const checked = new Set();
+
+// SSR endpoints: served at runtime but never generate static files in dist/
+const SSR_PATHS = new Set(['/ai-index.json', '/sitemap.xml', '/rss.xml', '/busca']);
 
 async function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -28,7 +31,8 @@ function isIgnored(value) {
     /^(mailto|tel|data|javascript):/i.test(value) ||
     value.includes('${') ||
     value.startsWith('{') ||
-    value === '#';
+    value === '#' ||
+    SSR_PATHS.has(stripQuery(value));
 }
 
 function targetForLink(fromFile, raw) {

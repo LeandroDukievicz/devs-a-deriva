@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-const DIST = join(process.cwd(), 'dist');
+const DIST = join(process.cwd(), 'dist/client');
 const REQUIRED_PAGES = [
   '/',
   '/manifesto/',
@@ -47,17 +47,8 @@ for (const route of REQUIRED_PAGES) {
   if (!/<script\s+[^>]*type=["']application\/ld\+json["'][^>]*>/i.test(html)) errors.push(`${label}: JSON-LD ausente`);
 }
 
-for (const file of ['sitemap.xml', 'robots.txt', 'llms.txt', 'docs.json']) {
+for (const file of ['robots.txt', 'llms.txt', 'docs.json']) {
   if (!existsSync(join(DIST, file))) errors.push(`/${file}: arquivo ausente no build`);
-}
-
-if (existsSync(join(DIST, 'sitemap.xml'))) {
-  const sitemap = await readFile(join(DIST, 'sitemap.xml'), 'utf8');
-  for (const route of ['/', '/manifesto', '/devs', '/termos', '/privacidade']) {
-    if (!sitemap.includes(`https://devsaderiva.com.br${route}`)) {
-      errors.push(`sitemap.xml: rota ${route} ausente`);
-    }
-  }
 }
 
 if (errors.length) {

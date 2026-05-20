@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      staticDistDir: './dist',
+      staticDistDir: './dist/client',
       staticPort: 4321,
       numberOfRuns: 3,
       url: [
