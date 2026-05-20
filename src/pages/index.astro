@@ -144,147 +144,6 @@ const clientHomePosts = homePosts.map((post) => ({
       transform: translateY(-2px);
     }
 
-    .content-section {
-      position: relative;
-      display: flex;
-      flex-direction: row;
-      min-height: 75px;
-      box-sizing: border-box;
-      border: 1px outset var(--color-star);
-      border-radius: 8px;
-      overflow: hidden;
-      background: transparent;
-      transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
-    }
-
-    .section-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 4px;
-      display: block;
-      transition: transform 0.4s ease;
-    }
-
-    .section-image:hover {
-      cursor: pointer;
-    }
-
-    .section-image:hover .section-img {
-      transform: scale(1.04);
-    }
-
-    .section-image {
-      flex: 0 0 31.68%;
-      min-height: 126px;
-      margin: 15px;
-      padding: 5px;
-      border-radius: 6px;
-      background: transparent;
-      box-shadow: 0 6px 20px 4px rgba(0, 0, 0, 0.45);
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    .section-body {
-      flex: 1;
-      display: flex;
-      flex-direction: row;
-      min-width: 0;
-    }
-
-    .section-info {
-      flex: 1;
-      padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .section-text {
-      flex: 0 0 50%;
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .limbo-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      align-self: flex-end;
-      margin: -8px -4px 10px 0;
-      padding: 0;
-      color: var(--color-star);
-      opacity: 0;
-      visibility: hidden;
-      text-decoration: none;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.601rem;
-      font-family: monospace;
-      transform: translateY(-4px);
-      transition: color 0.3s ease, transform 0.35s ease, opacity 0.35s ease;
-    }
-
-    .limbo-cta:hover {
-      color: var(--color-accent);
-      transform: translateY(-1px);
-    }
-
-    .cta-read {
-      margin-top: auto;
-      align-self: flex-end;
-      font-size: 0.72rem;
-      font-family: monospace;
-      color: var(--color-star);
-      text-decoration: none;
-      padding: 5px 0;
-      transition: color 0.2s;
-    }
-
-    .cta-read:hover {
-      color: var(--color-accent);
-    }
-
-    .dot {
-      display: inline-block;
-      animation: wave-dot 1.2s ease-in-out infinite;
-    }
-
-    @keyframes wave-dot {
-      0%, 100% { transform: translateY(0);    opacity: 1;   }
-      50%       { transform: translateY(-4px); opacity: 0.4; }
-    }
-
-    .content-section:hover {
-      border-color: var(--color-accent);
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
-      transform: translateY(-2px);
-    }
-
-    .content-section[role="link"] {
-      cursor: pointer;
-    }
-
-    .content-section[role="link"]:focus-visible {
-      outline: 2px solid var(--color-accent);
-      outline-offset: 4px;
-      border-color: var(--color-accent);
-      box-shadow: 0 0 0 4px var(--color-accent-16), 0 14px 30px rgba(0, 0, 0, 0.24);
-    }
-
-    .content-section:hover .limbo-cta {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .content-section.is-vanishing {
-      pointer-events: none;
-    }
-
     .limbo-overlay {
       position: fixed;
       inset: 0;
@@ -310,129 +169,14 @@ const clientHomePosts = homePosts.map((post) => ({
       transform-origin: center center;
     }
 
-    .content-section h2 {
-      margin: 0 0 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      font-family: monospace;
+    .dot {
+      display: inline-block;
+      animation: wave-dot 1.2s ease-in-out infinite;
     }
 
-    .title-link {
-      color: var(--color-star);
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    .title-link:hover {
-      color: var(--color-accent);
-    }
-
-    .content-section p {
-      margin: 0 0 10px;
-      font-size: 0.82rem;
-      color: #a0c4cc;
-      font-family: monospace;
-      line-height: 1.6;
-    }
-
-    .post-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-      min-width: 0;
-    }
-
-    .post-author-photo {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid var(--color-star-25);
-      box-shadow: 0 0 16px var(--color-star-10);
-      flex-shrink: 0;
-    }
-
-    .post-author-copy {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 0;
-    }
-
-    .post-author-name {
-      font-size: 0.72rem;
-      color: var(--color-star);
-      font-family: monospace;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-    }
-
-    .post-author-bio {
-      font-size: 0.63rem;
-      color: #5a8a94;
-      font-family: monospace;
-      line-height: 1.45;
-    }
-
-    .post-topic-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .post-topic {
-      display: block;
-      font-size: 0.72rem;
-      color: #7bc7d2;
-      font-family: monospace;
-    }
-
-    .post-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-top: auto;
-      padding-bottom: 4px;
-    }
-
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      color: var(--color-star);
-      background: transparent;
-      border: 1px outset var(--color-star);
-      border-radius: 50%;
-      cursor: pointer;
-      text-decoration: none;
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
-    }
-
-    .cta-btn:hover {
-      color: var(--color-accent);
-      border-color: var(--color-accent);
-      background: var(--color-accent-08);
-    }
-
-    .copy-confirm {
-      font-family: monospace;
-      font-size: 0.455rem;
-      letter-spacing: 0.08em;
-      color: var(--color-accent);
-      white-space: nowrap;
-      pointer-events: none;
-      animation: copy-fade 2s ease forwards;
-    }
-
-    @keyframes copy-fade {
-      0%   { opacity: 0; transform: translateX(-4px); }
-      15%  { opacity: 1; transform: translateX(0); }
-      70%  { opacity: 1; }
-      100% { opacity: 0; }
+    @keyframes wave-dot {
+      0%, 100% { transform: translateY(0);    opacity: 1;   }
+      50%       { transform: translateY(-4px); opacity: 0.4; }
     }
 
     @media (max-width: 1024px) {
@@ -447,18 +191,6 @@ const clientHomePosts = homePosts.map((post) => ({
 
       .load-more-wrap {
         margin-top: 80px;
-      }
-
-      .content-section {
-        min-height: 0;
-      }
-
-      .section-body {
-        flex-direction: column;
-      }
-
-      .section-image {
-        display: none;
       }
     }
 
@@ -483,59 +215,6 @@ const clientHomePosts = homePosts.map((post) => ({
         padding: 11px 18px;
         font-size: 0.68rem;
       }
-
-      .content-section {
-        border-radius: 10px;
-      }
-
-      .section-image {
-        min-height: 160px;
-        margin: 12px 12px 0;
-      }
-
-      .section-info,
-      .section-text {
-        padding: 16px;
-      }
-
-      .limbo-cta {
-        margin: -4px -2px 10px 0;
-      }
-
-      .content-section h2 {
-        font-size: 0.95rem;
-      }
-
-      .content-section p {
-        font-size: 0.78rem;
-      }
-
-      .post-author-photo {
-        width: 40px;
-        height: 40px;
-      }
-
-      .post-author-bio {
-        font-size: 0.6rem;
-      }
-
-      .post-topic {
-        font-size: 0.68rem;
-      }
-
-      .post-actions {
-        gap: 10px;
-      }
-
-      .cta-btn {
-        width: 30px;
-        height: 30px;
-      }
-
-      .cta-read {
-        align-self: flex-start;
-        margin-top: 16px;
-      }
     }
 
     @media (max-width: 480px) {
@@ -556,64 +235,18 @@ const clientHomePosts = homePosts.map((post) => ({
         min-width: 0;
         font-size: 0.64rem;
       }
+    }
 
-      .section-image {
-        min-height: 128px;
+    @media (prefers-reduced-motion: reduce) {
+      #sections-container,
+      .dot {
+        animation: none !important;
+        transition: none !important;
       }
 
-      .section-info,
-      .section-text {
-        padding: 14px;
+      #sections-container {
+        transform: none !important;
       }
-
-      .limbo-cta {
-        margin-top: 0;
-        margin-right: 0;
-        align-self: flex-end;
-      }
-
-      .post-topic-row {
-        flex-wrap: wrap;
-      }
-
-      .post-actions {
-        gap: 8px;
-      }
-    }
-
-    .reading-progress {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .progress-ring {
-      transform: rotate(-90deg);
-      flex-shrink: 0;
-    }
-
-    .progress-ring-bg {
-      stroke: var(--color-accent-18);
-    }
-
-    .progress-ring-fill {
-      stroke: var(--color-accent);
-      transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
-    }
-
-    .progress-ring-fill.completed {
-      stroke: var(--color-star);
-    }
-
-    .progress-text {
-      font-size: 0.65rem;
-      font-family: monospace;
-      color: var(--color-accent);
-      transition: color 0.5s ease;
-    }
-
-    .progress-text.completed {
-      color: var(--color-star);
     }
   </style>
 
@@ -686,6 +319,7 @@ const clientHomePosts = homePosts.map((post) => ({
 
     const INTRO_KEY = 'intro_last_shown';
     const TODAY     = new Date().toISOString().slice(0, 10);
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function revealContent() {
       const container = document.getElementById('sections-container');
@@ -695,7 +329,7 @@ const clientHomePosts = homePosts.map((post) => ({
       }
     }
 
-    if (localStorage.getItem(INTRO_KEY) === TODAY) {
+    if (localStorage.getItem(INTRO_KEY) === TODAY || reduceMotion) {
       revealContent();
     } else {
       window.addEventListener('animationComplete', revealContent, { once: true });
@@ -859,6 +493,7 @@ const clientHomePosts = homePosts.map((post) => ({
 
     document.querySelectorAll('.cta-read').forEach((cta) => {
       cta.addEventListener('click', (event) => {
+        if (reduceMotion) return;
         event.preventDefault();
         const section = (cta as HTMLElement).closest('.content-section') as HTMLElement | null;
         if (!section) return;
@@ -998,6 +633,10 @@ const clientHomePosts = homePosts.map((post) => ({
 
     async function vanishSectionSequential(section: HTMLElement) {
       if (section.classList.contains('is-vanishing')) return;
+      if (reduceMotion) {
+        section.remove();
+        return;
+      }
       section.classList.add('is-vanishing');
       section.style.pointerEvents = 'none';
 
