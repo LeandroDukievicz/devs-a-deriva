@@ -174,7 +174,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             for i in $(seq 1 20); do
-              if curl -sf --max-time 5 "http://localhost:4321/health.json" > /dev/null 2>&1; then
+              if curl -sf --max-time 5 "http://127.0.0.1:4321/health.json" > /dev/null 2>&1; then
                 echo "Serviço disponível (tentativa $i)"
                 exit 0
               fi
@@ -193,7 +193,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
-            BASE="http://localhost:4321"
+            BASE="http://127.0.0.1:4321"
             ERRORS=0
             for path in "/" "/manifesto/" "/devs/" "/categorias/tech/" "/categorias/carreira/" "/sitemap.xml" "/robots.txt" "/health.json"; do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 "$BASE$path")
