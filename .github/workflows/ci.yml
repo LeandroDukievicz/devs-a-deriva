@@ -179,17 +179,22 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Wait for service to be ready
-        run: |
-          for i in $(seq 1 15); do
-            if curl -sf --max-time 5 "$BASE_URL/health.json" > /dev/null 2>&1; then
-              echo "Serviço disponível (tentativa $i)"
-              exit 0
-            fi
-            echo "Tentativa $i/15 — aguardando 5s..."
-            sleep 5
-          done
-          echo "Serviço não ficou disponível em 75s"
-          exit 1
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            for i in $(seq 1 20); do
+              if curl -sf --max-time 5 "http://localhost:4321/health.json" > /dev/null 2>&1; then
+                echo "Serviço disponível (tentativa $i)"
+                exit 0
+              fi
+              echo "Tentativa $i/20 — aguardando 5s..."
+              sleep 5
+            done
+            echo "Serviço não ficou disponível em 100s"
+            exit 1
 
       - name: Smoke test public site
         id: smoke
