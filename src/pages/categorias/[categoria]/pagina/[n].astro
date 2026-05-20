@@ -1,31 +1,19 @@
 ---
+export const prerender = false;
+
 import Base from '../../../../layouts/Base.astro';
 import StarBackground from '../../../../components/StarBackground.astro';
 import { getPostsByCategory, paginatePosts } from '../../../../lib/posts';
-import { CATEGORIES, getCategoryBySlug } from '../../../../lib/categories';
-
-export async function getStaticPaths() {
-  const paths = [];
-  const pageSize = 10;
-
-  for (const cat of CATEGORIES) {
-    const posts = await getPostsByCategory(cat.slug);
-    const totalPages = Math.ceil(posts.length / pageSize);
-
-    for (let page = 2; page <= totalPages; page++) {
-      paths.push({
-        params: { categoria: cat.slug, n: String(page) },
-        props: { cat },
-      });
-    }
-  }
-
-  return paths;
-}
+import { getCategoryBySlug } from '../../../../lib/categories';
 
 const { categoria, n } = Astro.params;
+if (!categoria || !n) return Astro.redirect('/404');
+
 const page = parseInt(n, 10);
-const cat = getCategoryBySlug(categoria)!;
+if (isNaN(page) || page < 2) return Astro.redirect(`/categorias/${categoria}/`);
+
+const cat = getCategoryBySlug(categoria);
+if (!cat) return Astro.redirect('/404');
 const PAGE_SIZE = 10;
 
 const allPosts = await getPostsByCategory(categoria);

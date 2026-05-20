@@ -21,6 +21,7 @@
     "test:ci": "npm run ci:check && npm run test:e2e && npm run check:security"
   },
   "dependencies": {
+    "@astrojs/vercel": "^10.0.7",
     "@tailwindcss/vite": "^4.3.0",
     "@vercel/analytics": "^2.0.1",
     "aeo.js": "^0.0.13",

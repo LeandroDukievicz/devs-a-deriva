@@ -1,3 +1,5 @@
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 import { fetchPosts } from '../lib/posts';
 import { CATEGORIES } from '../lib/categories';

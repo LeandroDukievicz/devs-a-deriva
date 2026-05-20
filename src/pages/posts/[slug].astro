@@ -1,19 +1,21 @@
 ---
+export const prerender = false;
+
 import Base from '../../layouts/Base.astro';
 import StarBackground from '../../components/StarBackground.astro';
 import Comments from '../../components/Comments.astro';
 import Newsletter from '../../components/Newsletter.astro';
-import { fetchPosts, type Post } from '../../lib/posts';
+import { fetchPosts } from '../../lib/posts';
 
-export async function getStaticPaths() {
-  const posts = await fetchPosts();
-  return posts.map((post, index) => ({
-    params: { slug: post.slug },
-    props: { post, nextPost: posts[index + 1] ?? posts[0] },
-  }));
-}
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/404');
 
-const { post, nextPost } = Astro.props as { post: Post; nextPost: Post };
+const allPosts = await fetchPosts();
+const postIndex = allPosts.findIndex((p) => p.slug === slug);
+if (postIndex === -1) return Astro.redirect('/404');
+
+const post = allPosts[postIndex];
+const nextPost = allPosts[postIndex + 1] ?? allPosts[0];
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 const SITE = 'https://devsaderiva.com.br';
 const postImages: Record<string, string> = {
