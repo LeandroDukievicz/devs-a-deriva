@@ -17,12 +17,15 @@ ENV PUBLIC_COMMIT_SHA=$PUBLIC_COMMIT_SHA
 RUN npm run build
 
 # ── Serve ────────────────────────────────────────────────────────────────────
-# @astrojs/node standalone bundles server + client assets into dist/.
-# dist/server/entry.mjs starts an HTTP server that handles both static files
-# (from dist/client/) and SSR pages.
+# @astrojs/node standalone outputs dist/server/entry.mjs + dist/client/.
+# The entry point imports external packages (piccolore, clsx, unstorage, etc.)
+# that Vite marks as external — they must be resolved from node_modules at runtime.
 FROM node:22-alpine
 
 WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
 
