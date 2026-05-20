@@ -7,8 +7,9 @@ const DIST = join(process.cwd(), 'dist/client');
 const errors = [];
 const checked = new Set();
 
-// SSR endpoints: served at runtime but never generate static files in dist/
-const SSR_PATHS = new Set(['/ai-index.json', '/sitemap.xml', '/rss.xml', '/busca']);
+// SSR paths: served at runtime but never generate static files in dist/client/
+const SSR_EXACT = new Set(['/ai-index.json', '/sitemap.xml', '/rss.xml', '/busca']);
+const SSR_PREFIXES = ['/posts/'];
 
 async function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -32,7 +33,8 @@ function isIgnored(value) {
     value.includes('${') ||
     value.startsWith('{') ||
     value === '#' ||
-    SSR_PATHS.has(stripQuery(value));
+    SSR_EXACT.has(stripQuery(value)) ||
+    SSR_PREFIXES.some((p) => stripQuery(value).startsWith(p));
 }
 
 function targetForLink(fromFile, raw) {

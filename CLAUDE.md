@@ -4,7 +4,7 @@ Site do blog Devs à Deriva em Astro 6, deployado na Vercel.
 
 ## Stack
 
-- **Astro 6** com adaptador `@astrojs/vercel`
+- **Astro 6** com adaptador `@astrojs/node` (standalone)
 - **Tailwind CSS 4** via plugin Vite
 - **TypeScript** strict
 - Conteúdo (posts, categorias) servido pelo **dashboard-ldstudio** via API REST
