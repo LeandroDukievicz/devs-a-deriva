@@ -365,6 +365,12 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     box-shadow: 0 0 14px var(--color-star-10);
   }
 
+  .social-btn:focus-visible,
+  .auth-prompt-cancel:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
   .social-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -555,6 +561,25 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .comments-section,
+    .comments-success,
+    .comments-success-dot,
+    .comments-textarea-wrap,
+    .comments-submit-btn,
+    .social-btn,
+    .auth-prompt-cancel,
+    :global(.comment-reply-btn) {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .comments-submit-btn:hover,
+    :global(.comment-reply-btn:hover) {
+      transform: none;
+    }
+  }
+
   @media (max-width: 600px) {
     .compose-actions {
       flex-direction: column;
@@ -616,6 +641,24 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 
   // ── Keyboard Events ───────────────────────────────────────────
 
+  const getAuthControls = () => Array.from(
+    composeAuth?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []
+  );
+
+  const focusAuthControl = (current: HTMLButtonElement, direction: 'next' | 'prev' | 'first' | 'last') => {
+    const controls = getAuthControls();
+    if (!controls.length) return;
+
+    const index = Math.max(0, controls.indexOf(current));
+    const targetIndex =
+      direction === 'first' ? 0 :
+      direction === 'last' ? controls.length - 1 :
+      direction === 'next' ? (index + 1) % controls.length :
+      (index - 1 + controls.length) % controls.length;
+
+    controls[targetIndex]?.focus();
+  };
+
   textarea?.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -627,6 +670,24 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     if (e.key === 'Escape') {
       e.preventDefault();
       btnCancel?.click();
+      return;
+    }
+
+    const target = e.target as HTMLButtonElement | null;
+    if (!target?.matches('button')) return;
+
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusAuthControl(target, 'next');
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      focusAuthControl(target, 'prev');
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      focusAuthControl(target, 'first');
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      focusAuthControl(target, 'last');
     }
   });
 
@@ -662,7 +723,8 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 
     textarea.focus();
     textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    textarea.scrollIntoView({ behavior, block: 'center' });
   };
 
   // ── Carregar comentários aprovados ─────────────────────────────

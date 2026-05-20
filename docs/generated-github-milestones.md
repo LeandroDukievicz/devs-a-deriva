@@ -281,8 +281,8 @@ Tudo abaixo é importante mas não trava o lançamento. Fazer em segundo plano c
 
 - [ ] `width`/`height` ou `aspect-ratio` nas imagens principais (evitar layout shift) — hero images e section-img sem dimensões explícitas
 - [x] Lazy loading em imagens não críticas — `loading="lazy"` em fotos de autor (index.astro) e imagens de comentários
-- [ ] `prefers-reduced-motion` aplicado em todas as animações — presente em CategoriaPage e slug, falta em index.astro (orbita/sections) e devs.astro (cards + blackhole)
-- [ ] Navegação por teclado em navbar, comentários e formulários — Navbar tem Escape; falta navegação por Tab/Enter em comentários e formulários
+- [x] `prefers-reduced-motion` aplicado em todas as animações — index.astro, devs.astro, BlackHole, comentários e newsletter ajustados; validado com lint/typecheck/test/build
+- [x] Navegação por teclado em navbar, comentários e formulários — comentários com foco visível, Escape, Ctrl/Cmd+Enter, setas/Home/End no prompt OAuth; formulários mantêm Tab/Enter nativos e foco visível
 
 - [x] Lighthouse CI automatizado em PR/push para monitorar Core Web Vitals
 

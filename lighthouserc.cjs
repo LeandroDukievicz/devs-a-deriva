@@ -5,7 +5,6 @@ module.exports = {
       staticPort: 4321,
       numberOfRuns: 3,
       url: [
-        'http://localhost:4321/',
         'http://localhost:4321/categorias/tech/',
         'http://localhost:4321/devs/',
         'http://localhost:4321/manifesto/',

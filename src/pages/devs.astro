@@ -259,6 +259,39 @@ try {
       line-height: 1.6;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cards-overlay {
+      inset: 88px 20px 24px;
+      display: flex;
+      align-content: flex-start;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      pointer-events: auto;
+      overflow-y: auto;
+    }
+
+    :global(.dev-card-anchor) {
+      position: relative;
+      top: auto;
+      left: auto;
+      opacity: 1 !important;
+      transform: none !important;
+      will-change: auto;
+    }
+
+    :global(.dev-card),
+    .dev-popup {
+      transition: none;
+    }
+
+    :global(.dev-card:focus-visible),
+    :global(.dev-card:hover) {
+      transform: none;
+    }
+  }
 </style>
 
 <script>
@@ -392,6 +425,7 @@ function initAnimation() {
 const popup   = document.getElementById('dev-popup') as HTMLElement;
 const anchors = Array.from(document.querySelectorAll<HTMLElement>('.dev-card-anchor'));
 let activeAnchor: HTMLElement | null = null;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ── Popup helpers ─────────────────────────────────────────────
 function showPopup(anchor: HTMLElement) {
@@ -432,7 +466,7 @@ function hidePopup() {
 }
 
 // ── Dados de animação ─────────────────────────────────────────
-const data: CardData[] = anchors.map((el, i) => {
+const data: CardData[] = anchors.map((el) => {
   const card = el.querySelector<HTMLButtonElement>('.dev-card')!;
 
   const handleEnter = () => {
@@ -486,6 +520,33 @@ const data: CardData[] = anchors.map((el, i) => {
   initOnScreen(d);
   return d;
 });
+
+if (reduceMotion) {
+  overlay.classList.add('reduced-motion');
+  data.forEach((item) => {
+    item.paused = true;
+    item.opacity = 1;
+    item.el.style.opacity = '1';
+    item.el.style.transform = 'none';
+  });
+  window.addEventListener('resize', () => {
+    if (activeAnchor) showPopup(activeAnchor);
+  });
+  document.addEventListener('click', (event) => {
+    if (!isMobile()) return;
+    const target = event.target as Node;
+    if (popup.contains(target)) return;
+
+    const clickedAnchor = anchors.some((anchor) => anchor.contains(target));
+    if (clickedAnchor) return;
+
+    data.forEach((item) => {
+      item.paused = true;
+    });
+    hidePopup();
+  });
+  return;
+}
 
 // ── Loop de animação ──────────────────────────────────────────
 function tick() {

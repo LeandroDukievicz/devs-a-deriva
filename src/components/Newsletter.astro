@@ -297,7 +297,26 @@ const { dashboardUrl, postSlug } = Astro.props;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .newsletter-consent input:not(:checked) + .newsletter-check { animation: none; }
+    .newsletter-block,
+    .newsletter-block::after,
+    .newsletter-content,
+    .newsletter-form,
+    .newsletter-input-wrap,
+    .newsletter-btn,
+    .newsletter-check,
+    .newsletter-check svg,
+    .newsletter-status,
+    .newsletter-overlay,
+    .newsletter-overlay.is-visible .newsletter-overlay-badge,
+    .newsletter-overlay.is-visible .newsletter-overlay-copy,
+    .newsletter-consent input:not(:checked) + .newsletter-check {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .newsletter-consent input:checked + .newsletter-check {
+      transform: none;
+    }
   }
 
   .newsletter-status {
