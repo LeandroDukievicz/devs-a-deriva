@@ -37,6 +37,7 @@ O blog usa **modo híbrido** (estático + SSR seletivo). A distinção é feita 
 | `rss.xml.ts` | SSR | Feed RSS atualizado sem rebuild |
 | `sitemap.xml.ts` | SSR | Sitemap reflete novos posts |
 | `ai-index.json.ts` | SSR | Index para bots atualizado |
+| `health.json.ts` | SSR | Versão do commit em runtime |
 | `categorias/[categoria].astro` | Estático | Baseado na constante `CATEGORIES` |
 | Demais páginas | Estático | Conteúdo fixo (manifesto, privacidade…) |
 

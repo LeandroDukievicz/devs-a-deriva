@@ -24,7 +24,10 @@
 - [x] Adicionar sistema de autores.
 - [x] Adicionar comentários moderados com OAuth.
 - [x] Adicionar newsletter com double opt-in.
-- Adicionar busca.
+- [x] Adicionar busca client-side com índice embutido.
+- [x] Adicionar RSS feed dinâmico.
+- [x] Deploy dual Vercel + VPS com detecção automática de adapter.
+- [x] Migrar para modo híbrido SSR (posts e listagens sem rebuild).
 - Melhorar métricas de leitura.
 
 ## Longo Prazo

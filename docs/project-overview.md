@@ -8,7 +8,7 @@
 
 A proposta é criar um espaço independente para textos que não precisam seguir a estética neutra, corporativa ou excessivamente otimizada da maioria dos blogs técnicos. O conteúdo pode ser técnico, opinativo, experimental ou pessoal, desde que preserve uma voz humana e uma direção editorial clara.
 
-O projeto já opera como uma plataforma própria de publicação: o blog público é estático em Astro e o dashboard separado (`dashboard-ldstudio`) concentra publicação, categorias, autores, comentários, newsletter, métricas e regras de segurança.
+O projeto já opera como uma plataforma própria de publicação: o blog público roda em Astro com modo híbrido (SSR seletivo + estático) e o dashboard separado (`dashboard-ldstudio`) concentra publicação, categorias, autores, comentários, newsletter, métricas e regras de segurança.
 
 ## Identidade Editorial
 
@@ -47,15 +47,18 @@ O projeto se diferencia por:
 
 A plataforma já possui:
 
-- posts reais gerenciados pelo dashboard e publicados via API;
+- posts reais gerenciados pelo dashboard e publicados via API em runtime (SSR com cache TTL 30s);
 - banco PostgreSQL como fonte de conteúdo dinâmico;
 - autores e links sociais refletidos no blog;
 - comentários com fluxo `draft -> OAuth -> PENDING`, moderação no dashboard e exibição pública apenas quando `APPROVED`;
 - newsletter com double opt-in no backend;
 - progresso de leitura sincronizado;
-- SEO/AEO base com canonical, Open Graph, JSON-LD, sitemap, robots.txt e llms.txt;
-- headers de segurança no Nginx;
-- paginação client-side na home e categorias;
+- busca client-side com índice embutido em `/busca`;
+- RSS feed dinâmico em `/rss.xml`;
+- SEO/AEO base com canonical, Open Graph, JSON-LD, sitemap dinâmico, robots.txt e llms.txt;
+- headers de segurança via nginx do sistema (VPS) e via `vercel.json` (Vercel);
+- deploy dual Vercel + VPS com detecção automática de adapter;
+- paginação por URL em `/categorias/{slug}/pagina/{n}` para SEO de longo prazo;
 - documentação operacional de cron, backup e restauração em [docs/operations.md](./operations.md);
 - testes mínimos com Vitest e Playwright.
 
@@ -63,12 +66,10 @@ A plataforma já possui:
 
 A plataforma deve caminhar para:
 
-- busca pública;
-- paginação estática por URL para SEO de longo prazo;
-- RSS/Atom;
 - analytics editorial mais completo;
+- recomendações de posts relacionados;
 - cobertura de testes maior para comentários, categorias e payloads hostis;
 - integrações futuras com automação e IA;
 - documentação contínua para sustentar evolução do produto.
 
-No estado atual, a aplicação já possui páginas individuais de post renderizadas estaticamente, com navegação contextual, CTA de newsletter, comentários moderados e paginação em listagens. O próximo passo não é criar essas páginas do zero, mas ampliar indexabilidade, busca e cobertura de testes sem perder a identidade visual atual.
+A aplicação já possui páginas individuais de post em SSR, busca, RSS, paginação por URL, CTA de newsletter, comentários moderados e deploy dual. O próximo passo é ampliar cobertura de testes, analytics e recomendações sem perder a identidade visual atual.

@@ -1,6 +1,6 @@
 # Devs à Deriva
 
-**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. Não é um blog genérico: a proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e conteúdo sincronizado com o dashboard.
+**Devs à Deriva** é uma plataforma editorial tech-driven para publicar ideias sobre engenharia de software, carreira, cultura digital e experiências pessoais no meio da tecnologia. A proposta combina conteúdo autoral, identidade visual futurista e uma experiência de leitura imersiva, com estética cyberpunk, interações customizadas e conteúdo sincronizado com o dashboard.
 
 ## Propósito
 
@@ -10,13 +10,14 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 
 ## Tech Stack
 
-- [Astro.js](https://astro.build/) v6 como base — SSG com saída estática
-- [Tailwind CSS](https://tailwindcss.com/) v4 via plugin Vite (`@tailwindcss/vite`)
+- **Astro 6** em modo híbrido (estático + SSR seletivo) — páginas de listagem e posts rodam em SSR; páginas institucionais são estáticas
+- **Dual adapter**: `@astrojs/vercel` na Vercel, `@astrojs/node` (standalone) no VPS — detectado automaticamente via `VERCEL=1`
+- **Tailwind CSS 4** via plugin Vite (`@tailwindcss/vite`)
 - CSS escopado em componentes/páginas Astro para interações visuais específicas
 - Canvas e JavaScript nativo para experiências interativas
-- Dashboard separado em `dashboard-ldstudio` para posts, categorias, autores, comentários, newsletter, analytics e leitura
+- Dashboard separado em `dashboard-ldstudio` para posts, categorias, autores, comentários, newsletter, analytics e progresso de leitura
 - [Vercel Analytics](https://vercel.com/analytics) integrado
-- Docker + Nginx em produção com headers de segurança, CSP e cache de assets
+- Docker + nginx do sistema (porta 80/443) como proxy reverso no VPS — o container roda apenas Node.js standalone
 - [Vitest](https://vitest.dev/) para testes unitários e [Playwright](https://playwright.dev/) para e2e
 - GitHub Actions com pipeline CI/CD completo (quality → build → audit → lighthouse → deploy → smoke)
 
@@ -24,27 +25,60 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 
 ### Implementado
 
-- Home com experiência visual imersiva (BlackHole canvas) e cards abastecidos pelo dashboard
+- Home com experiência visual imersiva (BlackHole canvas) e cards abastecidos pelo dashboard via SSR
+- Páginas individuais de post com hero, metadados, imagem de capa e navegação contextual
+- Seis categorias editoriais (tech, carreira, livros, música, aleatoriedades, notícias)
 - Paginação estática por URL em `/categorias/{slug}/pagina/{n}` para SEO
 - Cards de posts com progresso de leitura em tempo real e estado de conclusão
-- Seis categorias editoriais (tech, carreira, livros, música, aleatoriedades, notícias)
-- Páginas individuais de post com hero, metadados, imagem de capa e navegação contextual
+- Excerpt extraído do primeiro parágrafo real do post (ignora imagens e headings em markdown)
+- Busca client-side em `/busca` com índice embutido no build e suporte ao parâmetro `?q=`
+- RSS feed em `/rss.xml` atualizado em cada request (SSR)
+- Sitemap dinâmico em `/sitemap.xml` que reflete novos posts sem rebuild
 - Comentários integrados: envio de draft, login social, moderação e exibição de aprovados
 - Página de newsletter com formulário, honeypot e consentimento LGPD
 - CTA de newsletter dentro de posts com validação, double opt-in e resposta de UX
 - Página de manifesto com crawl scroll-driven em perspectiva
 - SEO completo: canonical, Open Graph, JSON-LD, sitemap.xml dinâmico, robots.txt
 - AEO/GEO: `llms.txt`, `llms-full.txt`, `/ai-index.json` e `/docs.json`
-- Healthcheck estático em `/health.json` com versão do commit
+- Healthcheck em `/health.json` com versão do commit (SSR)
 - Headers de segurança: CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
 - Rollback automático no VPS se o smoke test pós-deploy falhar
+- Deploy dual Vercel + VPS com detecção automática de adapter
 
 ### Planejado
 
-- Busca pública
-- RSS/Atom
-- Releases versionadas com symlink para rollback zero-downtime
-- Integrações futuras com automação e IA editorial assistiva
+- Analytics editorial mais completo
+- Recomendações de posts relacionados
+- Automação de publicação
+
+## Arquitetura de Deploy
+
+### VPS (produção principal)
+
+```
+Internet → nginx do sistema (porta 80/443)
+              │  proxy_pass http://127.0.0.1:4321
+              │  security headers (CSP, HSTS, X-Frame-Options…)
+              │  rate limiting
+              ▼
+         Docker container (porta 4321)
+              │  @astrojs/node standalone
+              │  serve estáticos de dist/client/
+              │  render SSR routes
+              ▼
+         dashboard.devsaderiva.com.br (API de posts)
+```
+
+### Vercel (CDN/serverless)
+
+```
+Internet → Vercel CDN
+              │  headers de segurança via vercel.json
+              │  arquivos estáticos do .vercel/output/static/
+              │  SSR via funções serverless
+              ▼
+         dashboard.devsaderiva.com.br (API de posts)
+```
 
 ## Estrutura do Projeto
 
@@ -54,18 +88,20 @@ devs-a-deriva/
 ├── public/              # Assets estáticos, llms.txt, robots.txt
 ├── src/
 │   ├── components/      # Componentes Astro reutilizáveis
-│   ├── layouts/         # Layout base da aplicação
+│   ├── layouts/         # Layouts base da aplicação
 │   ├── lib/             # Utilitários, dados e validações
-│   ├── pages/           # Rotas Astro (+ health.json, sitemap.xml, newsletter)
+│   ├── pages/           # Rotas Astro (SSR e estáticas)
 │   └── styles/          # Tokens e estilos globais
 ├── scripts/             # Scripts de qualidade, deploy e rollback
 ├── tests/               # Testes unitários Vitest e e2e Playwright
 ├── docs/                # Documentação técnica e de produto
-├── Dockerfile           # Build Node 22 Alpine + Nginx
-├── docker-compose.yml   # Orquestração Docker
+├── Dockerfile           # Build Node 22 Alpine — imagem final com Node standalone
+├── docker-compose.yml   # Orquestração Docker (dev)
+├── docker-compose.prod.yml # Orquestração Docker (produção)
 ├── lighthouserc.cjs     # Configuração Lighthouse CI
-├── nginx.conf           # Servidor estático com try_files e cache
-├── astro.config.mjs     # Configuração do Astro
+├── nginx.conf           # Nginx do sistema: proxy reverso para porta 4321
+├── astro.config.mjs     # Configuração do Astro (dual adapter)
+├── vercel.json          # Headers de segurança para Vercel
 ├── tsconfig.json        # TypeScript strict
 ├── vitest.config.ts     # Configuração dos testes unitários
 ├── playwright.config.ts # Configuração dos testes e2e
@@ -80,16 +116,19 @@ Clone o repositório e instale as dependências:
 npm install
 ```
 
-Rode o servidor de desenvolvimento:
+Rode o servidor de desenvolvimento (usa `@astrojs/node`, sem `VERCEL=1`):
 
 ```bash
 npm run dev
 ```
 
+O blog busca posts de `http://localhost:3000`. Se o dashboard não estiver rodando, `isApiOffline()` retorna `true` e o blog exibe estado offline.
+
 Gere o build de produção:
 
 ```bash
-npm run build
+npm run build          # adapter node (VPS)
+VERCEL=1 npm run build # adapter vercel
 ```
 
 Visualize o build localmente:
@@ -103,7 +142,8 @@ npm run preview
 | Comando | Descrição |
 | --- | --- |
 | `npm run dev` | Servidor local de desenvolvimento. |
-| `npm run build` | Gera a versão estática de produção. |
+| `npm run build` | Build com adapter node (padrão VPS/local). |
+| `VERCEL=1 npm run build` | Build com adapter Vercel. |
 | `npm run preview` | Preview local do build. |
 | `npm run lint` | Verifica conflitos Git, CRLF e newlines. |
 | `npm run typecheck` | Typecheck via `astro check`. |
@@ -115,8 +155,17 @@ npm run preview
 | `npm test` | Testes unitários com Vitest. |
 | `npm run test:watch` | Vitest em modo watch. |
 | `npm run test:e2e` | Testes e2e Playwright (roda localmente). |
+| `npm run test:ci` | Suite completa CI (ci:check + e2e + security). |
 | `npm run lighthouse` | Lighthouse CI contra o `dist/` estático. |
 | `BASE_URL=https://... npm run smoke:test` | Smoke test contra ambiente publicado. |
+
+## Variáveis de Ambiente
+
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `PUBLIC_DASHBOARD_URL` | Sim | URL do dashboard (`https://dashboard.devsaderiva.com.br`) |
+
+Em desenvolvimento local, o padrão é `http://localhost:3000`.
 
 ## Pipeline CI/CD
 
@@ -141,7 +190,7 @@ Documentação completa do pipeline em [`docs/ci-cd.md`](./docs/ci-cd.md).
 
 ## Status
 
-Em desenvolvimento ativo.
+Em produção ativo em [devsaderiva.com.br](https://www.devsaderiva.com.br/).
 
 ## Links
 
