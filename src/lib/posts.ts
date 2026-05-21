@@ -56,13 +56,14 @@ function firstTextParagraph(markdown: string): string {
   for (const block of blocks) {
     const trimmed = block.trim();
     if (!trimmed) continue;
-    if (/^#{1,6}\s/.test(trimmed)) continue;
     if (/^!\[/.test(trimmed)) continue;
+    if (/^!\S+$/.test(trimmed)) continue;
     if (/^\[.*\]\(.*\)/.test(trimmed)) continue;
     if (/^[-*_]{3,}$/.test(trimmed)) continue;
-    return markdownToText(trimmed);
+    const text = markdownToText(trimmed);
+    if (text.includes(' ') && text.length > 80) return text;
   }
-  return markdownToText(markdown);
+  return '';
 }
 
 function formatInline(value: string): string {
@@ -186,7 +187,7 @@ function mapPost(raw: any): Post {
   const cat = getCatInfo(categorySlug);
   const title = raw.title ?? 'Post sem titulo';
   const content = stripTitleHeading(raw.content ?? '', title);
-  const excerpt = firstTextParagraph(raw.excerpt ?? content).slice(0, 360);
+  const excerpt = (firstTextParagraph(content) || firstTextParagraph(raw.excerpt ?? '') || markdownToText(raw.excerpt ?? content)).slice(0, 360);
   const author: Author = raw.author?.displayName
     ? {
         name: raw.author.displayName,
