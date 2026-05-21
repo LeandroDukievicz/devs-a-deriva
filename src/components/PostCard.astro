@@ -131,6 +131,10 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     color: #a0c4cc;
     font-family: monospace;
     line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .section-img {
@@ -301,6 +305,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   .post-actions {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 16px;
     margin-top: auto;
     padding-bottom: 4px;

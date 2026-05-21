@@ -51,6 +51,20 @@ function markdownToText(value: string): string {
     .trim();
 }
 
+function firstTextParagraph(markdown: string): string {
+  const blocks = markdown.replace(/\r\n?/g, '\n').split(/\n{2,}/);
+  for (const block of blocks) {
+    const trimmed = block.trim();
+    if (!trimmed) continue;
+    if (/^#{1,6}\s/.test(trimmed)) continue;
+    if (/^!\[/.test(trimmed)) continue;
+    if (/^\[.*\]\(.*\)/.test(trimmed)) continue;
+    if (/^[-*_]{3,}$/.test(trimmed)) continue;
+    return markdownToText(trimmed);
+  }
+  return markdownToText(markdown);
+}
+
 function formatInline(value: string): string {
   let html = escapeHtml(value);
 
@@ -172,7 +186,7 @@ function mapPost(raw: any): Post {
   const cat = getCatInfo(categorySlug);
   const title = raw.title ?? 'Post sem titulo';
   const content = stripTitleHeading(raw.content ?? '', title);
-  const excerpt = markdownToText(raw.excerpt ?? content).slice(0, 240);
+  const excerpt = firstTextParagraph(raw.excerpt ?? content).slice(0, 360);
   const author: Author = raw.author?.displayName
     ? {
         name: raw.author.displayName,

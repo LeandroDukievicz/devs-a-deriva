@@ -23,3 +23,26 @@ const PATHS: Record<Network, string> = {
     <path d={PATHS[network]} />
   </svg>
 </a>
+
+<style>
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--color-star);
+    background: transparent;
+    border: 1px outset var(--color-star);
+    border-radius: 50%;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+
+  .cta-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-accent-08);
+  }
+</style>
