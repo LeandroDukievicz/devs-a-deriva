@@ -8,7 +8,7 @@ const errors = [];
 const checked = new Set();
 
 // SSR paths: served at runtime but never generate static files in dist/client/
-const SSR_EXACT = new Set(['/ai-index.json', '/sitemap.xml', '/rss.xml', '/busca']);
+const SSR_EXACT = new Set(['/ai-index.json', '/sitemap.xml', '/rss.xml', '/busca', '/devs']);
 const SSR_PREFIXES = ['/posts/'];
 
 async function walk(dir) {
