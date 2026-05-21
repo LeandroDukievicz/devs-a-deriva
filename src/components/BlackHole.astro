@@ -614,7 +614,7 @@ function loop() {
 window.addEventListener('resize', () => {
   cancelAnimationFrame(RAF);
   resize();
-  if (!animationDone) loop();
+  if (!reduceMotion) loop();
 });
 
 resize();
@@ -628,7 +628,8 @@ function completeIntroImmediately() {
 
 if (skipIntro || reduceMotion) {
   completeIntroImmediately();
-} else {
+}
+if (!reduceMotion) {
   loop();
 }
 </script>
