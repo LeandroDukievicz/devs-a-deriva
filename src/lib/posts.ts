@@ -138,15 +138,15 @@ function markdownToHtml(markdown: string): string {
       continue;
     }
 
-    const heading = trimmed.match(/^(#{2,6})\s+(.+)$/);
+    const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushAll();
+      const hashes = heading[1].length;
       const content = heading[2];
-      if (content.length > 120) {
+      if (hashes >= 3) {
         blocks.push(`<p>${formatInline(content)}</p>`);
       } else {
-        const level = Math.min(4, heading[1].length);
-        blocks.push(`<h${level}>${formatInline(content)}</h${level}>`);
+        blocks.push(`<h${hashes}>${formatInline(content)}</h${hashes}>`);
       }
       continue;
     }
