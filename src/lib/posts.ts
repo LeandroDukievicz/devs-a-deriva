@@ -141,8 +141,13 @@ function markdownToHtml(markdown: string): string {
     const heading = trimmed.match(/^(#{2,6})\s+(.+)$/);
     if (heading) {
       flushAll();
-      const level = Math.min(4, heading[1].length);
-      blocks.push(`<h${level}>${formatInline(heading[2])}</h${level}>`);
+      const content = heading[2];
+      if (content.length > 120) {
+        blocks.push(`<p>${formatInline(content)}</p>`);
+      } else {
+        const level = Math.min(4, heading[1].length);
+        blocks.push(`<h${level}>${formatInline(content)}</h${level}>`);
+      }
       continue;
     }
 
