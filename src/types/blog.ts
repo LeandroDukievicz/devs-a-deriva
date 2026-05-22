@@ -16,7 +16,6 @@ export interface Post {
   category: string;
   categorySlug: string;
   excerpt: string;
-  tldr: string;
   content: string;
   contentHtml: string;
   readTime: string;

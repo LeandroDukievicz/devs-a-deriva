@@ -37,6 +37,9 @@ const postHeroImage = post.thumbUrl ?? postImages[post.slug] ?? categoryImages[p
 const postHeroImageAbsolute = postHeroImage.startsWith('http') ? postHeroImage : `${SITE}${postHeroImage}`;
 const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
+const postAbsoluteUrl = `${SITE}/posts/${post.slug}`;
+const geminiSummaryPrompt = `Gere um resumo em português do Brasil, em um parágrafo, para este post: ${postAbsoluteUrl}. Foque no contexto geral e nos principais pontos.`;
+const geminiSummaryUrl = `https://gemini.google.com/app?prompt=${encodeURIComponent(geminiSummaryPrompt)}`;
 
 const articleSchema = {
   '@context': 'https://schema.org',
@@ -97,10 +100,10 @@ const articleSchema = {
           </a>
 
           <h1 class="post-title">{post.title}</h1>
-          <section class="post-tldr" aria-labelledby="post-tldr-title">
-            <h2 id="post-tldr-title" class="post-tldr-title">TL;DR</h2>
-            <p>{post.tldr}</p>
-          </section>
+          <a class="post-tldr-cta" href={geminiSummaryUrl} target="_blank" rel="noopener noreferrer">
+            <span>TL;DR</span>
+            Clique aqui pra ver o resumo
+          </a>
           <div class="post-theme-row" data-home-only="true">
             <p class="post-theme"><span class="post-theme-label">Tema</span>: {post.category}</p>
             <div class="post-reading-time post-reading-time-mobile">
@@ -255,31 +258,37 @@ const articleSchema = {
     letter-spacing: 0.02em;
   }
 
-  .post-tldr {
-    margin: 0;
-    max-width: 620px;
-    padding: 14px 16px;
-    border-left: 2px solid var(--color-accent);
+  .post-tldr-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--color-accent-40);
+    border-radius: 8px;
     background: var(--color-accent-06);
+    font-family: monospace;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: var(--color-reading-text);
+    text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
   }
 
-  .post-tldr-title {
-    margin: 0 0 6px;
-    font-family: monospace;
-    font-size: 0.68rem;
-    line-height: 1.2;
-    letter-spacing: 0.12em;
+  .post-tldr-cta span {
+    font-weight: 700;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-accent);
   }
 
-  .post-tldr p {
-    margin: 0;
-    font-family: monospace;
-    font-size: 0.82rem;
-    line-height: 1.7;
-    color: var(--color-reading-text);
-    opacity: 0.78;
+  .post-tldr-cta:hover,
+  .post-tldr-cta:focus-visible {
+    border-color: var(--color-accent);
+    background: var(--color-accent-08);
+    transform: translateY(-1px);
+    outline: none;
   }
 
   .post-theme-row {
@@ -656,8 +665,9 @@ const articleSchema = {
       letter-spacing: 0.12em;
     }
 
-    .post-tldr p {
+    .post-tldr-cta {
       font-size: 0.78rem;
+      flex-wrap: wrap;
     }
 
     .post-theme {
