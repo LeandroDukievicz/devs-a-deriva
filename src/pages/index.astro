@@ -116,6 +116,14 @@ const clientHomePosts = homePosts.map((post) => ({
       margin: 0;
     }
 
+    :global(.title-link) {
+      color: var(--color-text);
+    }
+
+    :global(.post-topic-label) {
+      color: var(--color-accent);
+    }
+
     .load-more-wrap {
       display: flex;
       justify-content: center;
@@ -283,7 +291,7 @@ const clientHomePosts = homePosts.map((post) => ({
                 </div>
               </div>
               <div class="post-topic-row">
-                <span class="post-topic">Tema: ${escapeHtml(post.category)}</span>
+                <span class="post-topic"><span class="post-topic-label">Tema</span>: ${escapeHtml(post.category)}</span>
                 <div class="reading-progress">
                   <svg class="progress-ring" width="20" height="20" viewBox="0 0 20 20">
                     <circle class="progress-ring-bg" cx="10" cy="10" r="7" fill="none" stroke-width="2"></circle>

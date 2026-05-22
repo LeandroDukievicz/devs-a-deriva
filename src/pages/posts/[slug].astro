@@ -99,7 +99,7 @@ const articleSchema = {
           <h1 class="post-title">{post.title}</h1>
           <p class="post-excerpt">{post.excerpt}</p>
           <div class="post-theme-row" data-home-only="true">
-            <p class="post-theme">Tema: {post.category}</p>
+            <p class="post-theme"><span class="post-theme-label">Tema</span>: {post.category}</p>
             <div class="post-reading-time post-reading-time-mobile">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -272,9 +272,13 @@ const articleSchema = {
     font-size: 0.66rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-accent);
+    color: var(--color-star);
     opacity: 0.8;
     overflow-wrap: anywhere;
+  }
+
+  .post-theme-label {
+    color: var(--color-accent);
   }
 
   .post-meta {

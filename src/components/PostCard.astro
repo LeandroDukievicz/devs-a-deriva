@@ -40,7 +40,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
       </div>
 
       <div class="post-topic-row">
-        <span class="post-topic">Tema: {category}</span>
+        <span class="post-topic"><span class="post-topic-label">Tema</span>: {category}</span>
         <div class="reading-progress">
           <svg class="progress-ring" width="20" height="20" viewBox="0 0 20 20">
             <circle class="progress-ring-bg" cx="10" cy="10" r="7" fill="none" stroke-width="2"/>
@@ -190,7 +190,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   }
 
   .title-link {
-    color: var(--color-star);
+    color: var(--color-text);
     text-decoration: none;
     transition: color 0.2s ease;
   }
@@ -300,6 +300,10 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     font-size: 0.72rem;
     color: #7bc7d2;
     font-family: monospace;
+  }
+
+  .post-topic-label {
+    color: var(--color-accent);
   }
 
   .post-actions {
