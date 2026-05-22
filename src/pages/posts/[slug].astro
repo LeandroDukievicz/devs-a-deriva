@@ -38,8 +38,8 @@ const postHeroImageAbsolute = postHeroImage.startsWith('http') ? postHeroImage :
 const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 const postAbsoluteUrl = `${SITE}/posts/${post.slug}`;
-const geminiSummaryPrompt = `Gere um resumo em português do Brasil, em um parágrafo, para este post: ${postAbsoluteUrl}. Foque no contexto geral e nos principais pontos.`;
-const geminiSummaryUrl = `https://gemini.google.com/app?prompt=${encodeURIComponent(geminiSummaryPrompt)}`;
+const tldrPrompt = `Gere um resumo em português do Brasil, em um parágrafo, para este post: ${postAbsoluteUrl}. Foque no contexto geral e nos principais pontos.`;
+const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPrompt)}`;
 
 const articleSchema = {
   '@context': 'https://schema.org',
@@ -100,7 +100,7 @@ const articleSchema = {
           </a>
 
           <h1 class="post-title">{post.title}</h1>
-          <a class="post-tldr-cta" href={geminiSummaryUrl} target="_blank" rel="noopener noreferrer">
+          <a class="post-tldr-cta" href={tldrUrl} target="_blank" rel="noopener noreferrer">
             <span>TL;DR</span>
             Clique aqui pra ver o resumo
           </a>
@@ -439,8 +439,11 @@ const articleSchema = {
     font-family: monospace;
     font-size: 0.88rem;
     line-height: 1.9;
-    color: var(--color-reading-text);
     opacity: 0.85;
+  }
+
+  .post-body :global(p) {
+    color: var(--color-reading-text);
   }
 
   .post-body :global(h2),
@@ -469,12 +472,31 @@ const articleSchema = {
     background: var(--color-star-05);
   }
 
-  .post-body :global(ul) {
+  .post-body :global(ul),
+  .post-body :global(ol) {
     margin: 0;
     padding-left: 22px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .post-body :global(pre) {
+    margin: 0;
+    padding: 16px 18px;
+    border: 1px solid var(--color-star-16);
+    border-radius: 8px;
+    background: var(--color-star-05);
+    overflow-x: auto;
+  }
+
+  .post-body :global(pre) :global(code) {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-star);
+    font-size: 0.82rem;
   }
 
   .post-body :global(hr) {
