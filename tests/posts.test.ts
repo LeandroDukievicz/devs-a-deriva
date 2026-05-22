@@ -9,6 +9,7 @@ function makePost(slug: string): Post {
     category: 'Tech',
     categorySlug: 'tech',
     excerpt: `Resumo ${slug}`,
+    tldr: `Resumo ${slug}`,
     content: `Conteudo ${slug}`,
     contentHtml: `<p>Conteudo ${slug}</p>`,
     readTime: '1 min',
@@ -109,6 +110,47 @@ describe('getPost', () => {
     vi.stubGlobal('fetch', vi.fn(async () => Response.json({ data: [makePost('existe')] })));
 
     await expect(getPost('nao-existe')).resolves.toBeUndefined();
+  });
+
+  it('normalizes TL;DR as plain text from API data', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          data: [
+            {
+              ...makePost('seguro'),
+              tldr: undefined,
+              summary: '<strong>Resumo seguro</strong> <script>alert("xss")</script> sobre o contexto geral.',
+            },
+          ],
+        }),
+      ),
+    );
+
+    await expect(getPost('seguro')).resolves.toMatchObject({
+      tldr: 'Resumo seguro sobre o contexto geral.',
+    });
+  });
+
+  it('renders markdown br tags as line breaks instead of visible text', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          data: [
+            {
+              ...makePost('quebras'),
+              content: 'Primeira linha<br>Segunda linha<br />Terceira linha',
+            },
+          ],
+        }),
+      ),
+    );
+
+    await expect(getPost('quebras')).resolves.toMatchObject({
+      contentHtml: '<p>Primeira linha<br>Segunda linha<br>Terceira linha</p>',
+    });
   });
 });
 

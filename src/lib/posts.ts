@@ -41,6 +41,9 @@ function stripTitleHeading(content: string, title: string): string {
 function markdownToText(value: string): string {
   return value
     .replace(/\r\n?/g, '\n')
+    .replace(/<\s*(script|style)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^>\s?/gm, '')
     .replace(/^\s*[-*_]{3,}\s*$/gm, '')
@@ -66,8 +69,43 @@ function firstTextParagraph(markdown: string): string {
   return '';
 }
 
+function safeText(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  const withoutExecutableBlocks = value.replace(/<\s*(script|style)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, ' ');
+  return markdownToText(withoutExecutableBlocks)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[<>]/g, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function clampParagraph(value: string, maxLength = 420): string {
+  const text = value.replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLength) return text;
+
+  const sentenceEnd = text.slice(0, maxLength).match(/^(.+[.!?])\s+/);
+  if (sentenceEnd?.[1] && sentenceEnd[1].length >= 120) return sentenceEnd[1];
+
+  const boundary = text.lastIndexOf(' ', maxLength - 1);
+  return `${text.slice(0, boundary > 120 ? boundary : maxLength).trim()}...`;
+}
+
+function buildTldr(raw: unknown, content: string, excerpt: string): string {
+  const source =
+    safeText((raw as { tldr?: unknown })?.tldr) ||
+    safeText((raw as { summary?: unknown })?.summary) ||
+    safeText((raw as { description?: unknown })?.description) ||
+    safeText(excerpt) ||
+    safeText(firstTextParagraph(content)) ||
+    safeText(content);
+
+  return clampParagraph(source || 'Resumo indisponível para este post.');
+}
+
 function formatInline(value: string): string {
-  let html = escapeHtml(value);
+  const softBreak = '\uE000';
+  let html = escapeHtml(value.replace(/<br\s*\/?>/gi, softBreak));
 
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -77,6 +115,7 @@ function formatInline(value: string): string {
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g, (_match, label, href) => {
     return `<a href="${href}" target="${href.startsWith('http') ? '_blank' : '_self'}" rel="noopener noreferrer">${label}</a>`;
   });
+  html = html.replaceAll(softBreak, '<br>');
 
   return html;
 }
@@ -188,6 +227,7 @@ function mapPost(raw: any): Post {
   const title = raw.title ?? 'Post sem titulo';
   const content = stripTitleHeading(raw.content ?? '', title);
   const excerpt = (firstTextParagraph(content) || firstTextParagraph(raw.excerpt ?? '') || markdownToText(raw.excerpt ?? content)).slice(0, 360);
+  const tldr = buildTldr(raw, content, excerpt);
   const author: Author = raw.author?.displayName
     ? {
         name: raw.author.displayName,
@@ -213,6 +253,7 @@ function mapPost(raw: any): Post {
     category: cat.label,
     categorySlug,
     excerpt,
+    tldr,
     content,
     contentHtml: markdownToHtml(content),
     readTime: estimateReadTime(content),

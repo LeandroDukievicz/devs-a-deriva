@@ -9,6 +9,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     category: 'Tech',
     categorySlug: 'tech',
     excerpt: 'A short excerpt about programming.',
+    tldr: 'A short excerpt about programming.',
     content: '# Test Post\nContent here.',
     contentHtml: '<p>Content here.</p>',
     readTime: '1 min',

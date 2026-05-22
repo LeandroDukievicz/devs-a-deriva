@@ -97,7 +97,10 @@ const articleSchema = {
           </a>
 
           <h1 class="post-title">{post.title}</h1>
-          <p class="post-excerpt">{post.excerpt}</p>
+          <section class="post-tldr" aria-labelledby="post-tldr-title">
+            <h2 id="post-tldr-title" class="post-tldr-title">TL;DR</h2>
+            <p>{post.tldr}</p>
+          </section>
           <div class="post-theme-row" data-home-only="true">
             <p class="post-theme"><span class="post-theme-label">Tema</span>: {post.category}</p>
             <div class="post-reading-time post-reading-time-mobile">
@@ -252,14 +255,31 @@ const articleSchema = {
     letter-spacing: 0.02em;
   }
 
-  .post-excerpt {
+  .post-tldr {
+    margin: 0;
+    max-width: 620px;
+    padding: 14px 16px;
+    border-left: 2px solid var(--color-accent);
+    background: var(--color-accent-06);
+  }
+
+  .post-tldr-title {
+    margin: 0 0 6px;
+    font-family: monospace;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .post-tldr p {
     margin: 0;
     font-family: monospace;
     font-size: 0.82rem;
     line-height: 1.7;
-    color: var(--color-star);
-    opacity: 0.55;
-    max-width: 520px;
+    color: var(--color-reading-text);
+    opacity: 0.78;
   }
 
   .post-theme-row {
@@ -410,7 +430,7 @@ const articleSchema = {
     font-family: monospace;
     font-size: 0.88rem;
     line-height: 1.9;
-    color: var(--color-text);
+    color: var(--color-reading-text);
     opacity: 0.85;
   }
 
@@ -636,7 +656,7 @@ const articleSchema = {
       letter-spacing: 0.12em;
     }
 
-    .post-excerpt {
+    .post-tldr p {
       font-size: 0.78rem;
     }
 
