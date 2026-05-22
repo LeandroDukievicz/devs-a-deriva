@@ -59,9 +59,17 @@ const { dashboardUrl, postSlug } = Astro.props;
       <span>SINAL RECEBIDO</span>
     </div>
     <div class="newsletter-overlay-copy">
-      <span class="newsletter-overlay-kicker">&gt; transmissão confirmada</span>
-      <strong>Houston, temos um novo assinante!</strong>
+      <span class="newsletter-overlay-kicker">&gt; confirmação pendente</span>
+      <strong>Agora confirme o e-mail recebido para finalizar a inscrição.</strong>
     </div>
+  </div>
+  <div class="newsletter-toast" id="newsletter-toast" role="status" aria-live="polite" aria-hidden="true">
+    <span class="newsletter-toast-signal" aria-hidden="true"></span>
+    <span class="newsletter-toast-copy">
+      <strong>Quase lá.</strong>
+      <span>Confirme o e-mail recebido para finalizar a inscrição.</span>
+    </span>
+    <span class="newsletter-toast-progress" aria-hidden="true"></span>
   </div>
 </div>
 
@@ -309,6 +317,9 @@ const { dashboardUrl, postSlug } = Astro.props;
     .newsletter-overlay,
     .newsletter-overlay.is-visible .newsletter-overlay-badge,
     .newsletter-overlay.is-visible .newsletter-overlay-copy,
+    .newsletter-toast,
+    .newsletter-toast-signal,
+    .newsletter-toast.is-visible .newsletter-toast-progress,
     .newsletter-consent input:not(:checked) + .newsletter-check {
       animation: none !important;
       transition: none !important;
@@ -426,6 +437,76 @@ const { dashboardUrl, postSlug } = Astro.props;
     animation: newsletter-overlay-copy-in 0.58s ease-out 0.08s both;
   }
 
+  .newsletter-toast {
+    position: fixed;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    z-index: 80;
+    width: min(360px, calc(100vw - 36px));
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 16px 16px;
+    border: 1px solid var(--color-accent-40);
+    border-radius: 8px;
+    background: var(--color-bg-95);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.38), 0 0 24px var(--color-accent-12);
+    opacity: 0;
+    transform: translateY(14px);
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.24s ease, transform 0.28s ease;
+  }
+
+  .newsletter-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .newsletter-toast-signal {
+    width: 10px;
+    height: 10px;
+    margin-top: 4px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 12px var(--color-accent);
+    animation: newsletter-toast-signal 1.2s ease-in-out infinite;
+  }
+
+  .newsletter-toast-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    font-family: monospace;
+  }
+
+  .newsletter-toast-copy strong {
+    color: var(--color-star);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .newsletter-toast-copy span {
+    color: var(--color-reading-text);
+    font-size: 0.7rem;
+    line-height: 1.5;
+  }
+
+  .newsletter-toast-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-star));
+    transform-origin: left center;
+  }
+
+  .newsletter-toast.is-visible .newsletter-toast-progress {
+    animation: newsletter-toast-progress 4.2s linear both;
+  }
+
   @keyframes newsletter-overlay-pulse {
     0% { opacity: 0; }
     18% { opacity: 1; }
@@ -440,6 +521,16 @@ const { dashboardUrl, postSlug } = Astro.props;
   @keyframes newsletter-overlay-copy-in {
     0% { opacity: 0; transform: translateY(12px); }
     100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes newsletter-toast-signal {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.42; transform: scale(0.76); }
+  }
+
+  @keyframes newsletter-toast-progress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
   }
 
   @media (max-width: 760px) {
@@ -460,9 +551,11 @@ const { dashboardUrl, postSlug } = Astro.props;
   const consent = document.getElementById('newsletter-consent') as HTMLInputElement | null;
   const honeypot = document.getElementById('newsletter-website') as HTMLInputElement | null;
   const overlay = document.getElementById('newsletter-overlay') as HTMLElement | null;
+  const toast = document.getElementById('newsletter-toast') as HTMLElement | null;
   const newsletterEndpoint = dashboardUrl ? `${dashboardUrl}/api/newsletter/subscribe` : '';
   const newsletterMountedAt = Date.now();
   let overlayTimeout: number | undefined;
+  let toastTimeout: number | undefined;
 
   const showNewsletterOverlay = () => {
     if (!overlay || !block) return;
@@ -478,6 +571,19 @@ const { dashboardUrl, postSlug } = Astro.props;
       overlay.classList.remove('is-visible');
       overlay.setAttribute('aria-hidden', 'true');
     }, 2400);
+  };
+
+  const showNewsletterToast = () => {
+    if (!toast) return;
+    toast.classList.remove('is-visible');
+    void toast.offsetWidth;
+    toast.classList.add('is-visible');
+    toast.setAttribute('aria-hidden', 'false');
+    if (toastTimeout) window.clearTimeout(toastTimeout);
+    toastTimeout = window.setTimeout(() => {
+      toast.classList.remove('is-visible');
+      toast.setAttribute('aria-hidden', 'true');
+    }, 4200);
   };
 
   form?.addEventListener('submit', async (e) => {
@@ -532,6 +638,7 @@ const { dashboardUrl, postSlug } = Astro.props;
       status.textContent = '> se esse e-mail puder entrar na órbita, você receberá a confirmação.';
       status.className = 'newsletter-status success';
       showNewsletterOverlay();
+      showNewsletterToast();
     } catch {
       status.textContent = '> não foi possível registrar agora. tente novamente.';
       status.className = 'newsletter-status error';
