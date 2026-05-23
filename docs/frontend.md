@@ -81,7 +81,7 @@ Formulário de inscrição com honeypot e consentimento LGPD. O backend do dashb
 
 | Rota | Modo | Descrição |
 |---|---|---|
-| `/rss.xml` | SSR | Feed RSS atualizado sem rebuild |
+| `/rss.xml` | SSR | Feed RSS atualizado sem rebuild, com cache compartilhado de 1h |
 | `/sitemap.xml` | SSR | Sitemap que reflete novos posts |
 | `/ai-index.json` | SSR | Índice para bots e crawlers de IA |
 | `/health.json` | SSR | Healthcheck com versão do commit |

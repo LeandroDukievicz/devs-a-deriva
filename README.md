@@ -32,7 +32,7 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - Cards de posts com progresso de leitura em tempo real e estado de conclusão
 - Excerpt extraído do primeiro parágrafo real do post (ignora imagens e headings em markdown)
 - Busca client-side em `/busca` com índice embutido no build e suporte ao parâmetro `?q=`
-- RSS feed em `/rss.xml` atualizado em cada request (SSR)
+- RSS feed em `/rss.xml` servido via SSR com cache compartilhado de 1h e revalidacao em background
 - Sitemap dinâmico em `/sitemap.xml` que reflete novos posts sem rebuild
 - Comentários integrados: envio de draft, login social, moderação e exibição de aprovados
 - Página de newsletter com formulário, honeypot e consentimento LGPD
