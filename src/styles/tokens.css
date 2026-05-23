@@ -5,6 +5,8 @@
 
 /* ─── Tema padrão: Órbita Baixa ─────────────────────────────── */
 :root {
+  color-scheme: dark;
+
   /* Cores base */
   --color-bg:          #020b18;
   --color-star:        #00d4e8;

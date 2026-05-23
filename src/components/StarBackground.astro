@@ -74,9 +74,8 @@ const { backgroundColor = 'var(--color-bg)', tone = 'default' } = Astro.props;
     if (!container) return;
 
     const css = getComputedStyle(document.documentElement);
-    const configuredBg = container.dataset.backgroundColor?.trim();
-    const bg = configuredBg || css.getPropertyValue('--color-bg').trim();
-    if (bg) container.style.background = bg;
+    const bg = css.getPropertyValue('--color-bg').trim() || '#020b18';
+    container.style.background = bg;
 
     container.querySelectorAll<HTMLElement>('.stars').forEach((layer) => {
       layer.style.animationName = 'none';

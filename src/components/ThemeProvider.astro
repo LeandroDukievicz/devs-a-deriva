@@ -23,6 +23,7 @@
     Object.keys(vars).forEach(function(key) {
       root.style.setProperty(key, vars[key]);
     });
+    root.style.colorScheme = 'dark';
     root.style.backgroundColor = '#020b18';
     window.__bgColor = '#020b18';
     try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
