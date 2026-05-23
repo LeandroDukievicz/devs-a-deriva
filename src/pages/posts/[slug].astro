@@ -121,6 +121,8 @@ const articleSchema = {
                 class="post-author-avatar"
                 src={post.author.photo}
                 alt={`Foto de ${post.author.name}`}
+                width="60"
+                height="60"
                 loading="eager"
                 decoding="async"
               />
@@ -143,7 +145,7 @@ const articleSchema = {
         </div>
 
         <figure class="post-hero">
-          <img src={postHeroImage} alt={post.title} class="post-hero-image" />
+          <img src={postHeroImage} alt={post.title} class="post-hero-image" width="720" height="450" loading="eager" decoding="async" />
         </figure>
       </div>
     </header>

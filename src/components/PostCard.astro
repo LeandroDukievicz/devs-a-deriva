@@ -19,7 +19,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
 
 <div class="content-section" data-section-id={sectionId} data-post-slug={slug} data-post-href={href} role="link" tabindex="0">
   <div class="section-image">
-    <img src={imageSrc} alt={category} class="section-img" />
+    <img src={imageSrc} alt={category} class="section-img" width="400" height="266" loading="lazy" decoding="async" />
   </div>
   <div class="section-body">
     <div class="section-info">
@@ -30,6 +30,8 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
           class="post-author-photo"
           src={author.photo}
           alt={`Foto de ${author.name}`}
+          width="46"
+          height="46"
           loading="lazy"
           decoding="async"
         />
