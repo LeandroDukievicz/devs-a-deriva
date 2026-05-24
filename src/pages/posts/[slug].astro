@@ -6,7 +6,7 @@ import StarBackground from '../../components/StarBackground.astro';
 import Comments from '../../components/Comments.astro';
 import Newsletter from '../../components/Newsletter.astro';
 import SocialIcon from '../../components/SocialIcon.astro';
-import { fetchPosts } from '../../lib/posts';
+import { fetchPosts, formatDate } from '../../lib/posts';
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect('/404');
@@ -40,6 +40,7 @@ const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 const postAbsoluteUrl = `${SITE}/posts/${post.slug}`;
 const hasAuthorSocialLinks = Object.values(post.author.socialLinks).some(Boolean);
+const postPublishedDate = post.publishedAt ? formatDate(post.publishedAt) : null;
 const tldrPrompt = `Gere um resumo em português do Brasil, em um parágrafo, para este post: ${postAbsoluteUrl}. Foque no contexto geral e nos principais pontos.`;
 const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPrompt)}`;
 
@@ -102,10 +103,15 @@ const articleSchema = {
           </a>
 
           <h1 class="post-title">{post.title}</h1>
-          <a class="post-tldr-cta" href={tldrUrl} target="_blank" rel="noopener noreferrer">
-            <span>TL;DR</span>
-            Clique aqui pra ver o resumo
-          </a>
+          <div class="post-tldr-row">
+            <a class="post-tldr-cta" href={tldrUrl} target="_blank" rel="noopener noreferrer">
+              <span>TL;DR</span>
+              Clique aqui pra ver o resumo
+            </a>
+            {postPublishedDate && (
+              <p class="post-published-date">Postado em : {postPublishedDate}</p>
+            )}
+          </div>
           <div class="post-theme-row" data-home-only="true">
             <p class="post-theme"><span class="post-theme-label">Tema</span>: {post.category}</p>
             <div class="post-reading-time post-reading-time-mobile">
@@ -287,6 +293,13 @@ const articleSchema = {
     letter-spacing: 0.02em;
   }
 
+  .post-tldr-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
   .post-tldr-cta {
     display: inline-flex;
     align-items: center;
@@ -318,6 +331,16 @@ const articleSchema = {
     background: var(--color-accent-08);
     transform: translateY(-1px);
     outline: none;
+  }
+
+  .post-published-date {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    opacity: 0.68;
   }
 
   .post-theme-row {
@@ -787,6 +810,17 @@ const articleSchema = {
     .post-tldr-cta {
       font-size: 0.78rem;
       flex-wrap: wrap;
+    }
+
+    .post-tldr-row {
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .post-published-date {
+      width: 100%;
+      font-size: 0.6rem;
+      line-height: 1.5;
     }
 
     .post-theme {

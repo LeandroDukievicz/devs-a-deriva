@@ -3,12 +3,10 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 const logoRaw = readFileSync(resolve('./public/logohelmet.svg'), 'utf-8');
-const logoForCanvas = Buffer.from(
-  logoRaw
-    .replace(/<\?xml[^?]*\?>\s*/g, '')
-    .replace(/<!DOCTYPE[^>]*>\s*/g, '')
-    .replace(/fill="#000000"/g, 'fill="white"')
-).toString('base64');
+const logoShape = logoRaw.match(/<g[\s\S]*<\/g>/)?.[0] ?? '';
+const logoSymbolMarkup = logoShape
+  .replace(/\sfill="#000000"/g, '')
+  .replace(/\sstroke="none"/g, '');
 ---
 
 <a
@@ -17,69 +15,191 @@ const logoForCanvas = Buffer.from(
   class="nav-logo-link"
   aria-label="Ir para a home"
 >
-  <canvas
-    id="nav-logo-canvas"
-    width="198"
-    height="198"
-    data-logo-svg={`data:image/svg+xml;base64,${logoForCanvas}`}
-    class="nav-logo-canvas"
-  ></canvas>
+  <svg
+    class="nav-logo-svg"
+    viewBox="0 0 1365 768"
+    role="img"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <defs>
+      <symbol id="dda-nav-logo-shape" viewBox="0 0 1365 768">
+        <g set:html={logoSymbolMarkup} />
+      </symbol>
+
+      <linearGradient id="dda-nav-logo-shell" x1="220" y1="120" x2="1120" y2="650" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="var(--color-star)" />
+        <stop offset="0.54" stop-color="#2f7bff" />
+        <stop offset="1" stop-color="var(--color-accent)" />
+      </linearGradient>
+
+      <linearGradient id="dda-nav-logo-circuit-a" x1="0" y1="0" x2="900" y2="360" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="var(--color-star)" stop-opacity="0.28" />
+        <stop offset="0.52" stop-color="#33a5ff" stop-opacity="0.42" />
+        <stop offset="1" stop-color="var(--color-accent)" stop-opacity="0.34" />
+      </linearGradient>
+
+      <linearGradient id="dda-nav-logo-circuit-b" x1="1050" y1="120" x2="320" y2="700" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="var(--color-accent)" stop-opacity="0.2" />
+        <stop offset="0.5" stop-color="var(--color-star)" stop-opacity="0.38" />
+        <stop offset="1" stop-color="#2f7bff" stop-opacity="0.26" />
+      </linearGradient>
+
+      <clipPath id="dda-nav-logo-clip">
+        <use href="#dda-nav-logo-shape" />
+      </clipPath>
+    </defs>
+
+    <use class="nav-logo-shell" href="#dda-nav-logo-shape" />
+
+    <g class="nav-logo-circuit-field" clip-path="url(#dda-nav-logo-clip)">
+      <rect class="nav-logo-panel" x="170" y="96" width="1030" height="590" />
+
+      <g class="nav-logo-circuit-layer nav-logo-circuit-layer-a">
+        <path d="M290 500H450V440H585V385H720" />
+        <path d="M370 300H520V250H700V205H845" />
+        <path d="M520 585H680V535H790V470H935" />
+        <path d="M760 335H900V280H1045" />
+        <path d="M810 560H940V505H1085" />
+        <circle cx="450" cy="440" r="10" />
+        <circle cx="585" cy="385" r="8" />
+        <circle cx="845" cy="205" r="9" />
+        <circle cx="935" cy="470" r="8" />
+        <circle cx="1085" cy="505" r="10" />
+      </g>
+
+      <g class="nav-logo-circuit-layer nav-logo-circuit-layer-b">
+        <path d="M1080 245H930V315H790V365H650" />
+        <path d="M1010 605H850V655H655" />
+        <path d="M335 610H505V660H630" />
+        <path d="M255 390H410V340H540" />
+        <circle cx="930" cy="315" r="8" />
+        <circle cx="790" cy="365" r="10" />
+        <circle cx="655" cy="655" r="8" />
+        <circle cx="410" cy="340" r="8" />
+      </g>
+    </g>
+  </svg>
 </a>
 
 <style>
   .nav-logo-link {
     position: fixed;
-    top: -50px;
-    left: -50px;
+    top: 7px;
+    left: 24px;
     z-index: 101;
     display: block;
-    width: 198px;
-    height: 198px;
+    width: 128px;
+    aspect-ratio: 1365 / 768;
     flex-shrink: 0;
     text-decoration: none;
     opacity: 0;
     pointer-events: none;
+    transform: translateY(-4px);
     transition: opacity 0.45s ease, transform 0.35s ease;
   }
 
   .nav-logo-link:focus-visible {
     outline: 2px solid var(--color-accent);
-    outline-offset: 4px;
-    border-radius: 6px;
+    outline-offset: 5px;
+    border-radius: 8px;
   }
 
   .nav-logo-link.is-visible {
     opacity: 1;
     pointer-events: auto;
+    transform: translateY(0);
   }
 
-  .nav-logo-canvas {
+  .nav-logo-svg {
     display: block;
-    width: 198px;
-    height: 198px;
-    transition: filter 0.35s ease, transform 0.35s ease;
+    width: 100%;
+    height: auto;
+    overflow: visible;
   }
 
-  .nav-logo-link:hover .nav-logo-canvas,
-  .nav-logo-link:focus-visible .nav-logo-canvas {
-    animation: logo-cyberpunk 2.2s linear infinite, logo-pulse 1.4s ease-in-out infinite;
+  .nav-logo-shell {
+    fill: url(#dda-nav-logo-shell);
+    opacity: 0.92;
   }
 
-  @keyframes logo-cyberpunk {
-    0%   { filter: hue-rotate(0deg)   saturate(1)    brightness(1); }
-    33%  { filter: hue-rotate(24deg)  saturate(1.35) brightness(1.08); }
-    66%  { filter: hue-rotate(-18deg) saturate(1.45) brightness(1.02); }
-    100% { filter: hue-rotate(0deg)   saturate(1)    brightness(1); }
+  .nav-logo-circuit-field {
+    opacity: 0.78;
   }
 
-  @keyframes logo-pulse {
-    0%, 100% { transform: scale(1); }
-    50%      { transform: scale(1.045); }
+  .nav-logo-panel {
+    fill: rgba(0, 10, 18, 0.28);
   }
 
-  @media (max-width: 480px) {
+  .nav-logo-circuit-layer {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 12;
+    will-change: transform, opacity;
+  }
+
+  .nav-logo-circuit-layer circle {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  .nav-logo-circuit-layer-a {
+    color: var(--color-star);
+    stroke: url(#dda-nav-logo-circuit-a);
+    animation: nav-logo-circuit-breathe 8s ease-in-out infinite;
+  }
+
+  .nav-logo-circuit-layer-b {
+    color: var(--color-accent);
+    stroke: url(#dda-nav-logo-circuit-b);
+    animation: nav-logo-circuit-drift 11s ease-in-out infinite;
+  }
+
+  .nav-logo-link:hover .nav-logo-circuit-layer-a,
+  .nav-logo-link:focus-visible .nav-logo-circuit-layer-a {
+    animation-duration: 6s;
+  }
+
+  @keyframes nav-logo-circuit-breathe {
+    0%, 100% { opacity: 0.46; transform: translate3d(0, 0, 0); }
+    50%      { opacity: 0.84; transform: translate3d(8px, -4px, 0); }
+  }
+
+  @keyframes nav-logo-circuit-drift {
+    0%, 100% { opacity: 0.34; transform: translate3d(0, 0, 0); }
+    50%      { opacity: 0.72; transform: translate3d(-10px, 5px, 0); }
+  }
+
+  @media (max-width: 900px) {
+    .nav-logo-link {
+      top: 8px;
+      left: 14px;
+      width: 104px;
+    }
+  }
+
+  @media (max-width: 640px) {
     .nav-logo-link {
       display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-logo-link,
+    .nav-logo-circuit-layer {
+      animation: none !important;
+      transition: opacity 0.2s ease !important;
+    }
+
+    .nav-logo-circuit-layer-a {
+      opacity: 0.58;
+      transform: none;
+    }
+
+    .nav-logo-circuit-layer-b {
+      opacity: 0.42;
+      transform: none;
     }
   }
 </style>

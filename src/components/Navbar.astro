@@ -22,8 +22,6 @@ import NavbarLinks from './navbar/NavbarLinks.astro';
   const TODAY     = new Date().toISOString().slice(0, 10);
   const navbar    = document.querySelector('.navbar') as HTMLElement | null;
   const logoLink  = document.getElementById('nav-logo-link') as HTMLAnchorElement | null;
-  const logoCanvas = document.getElementById('nav-logo-canvas') as HTMLCanvasElement | null;
-  const logoCtx   = logoCanvas?.getContext('2d') ?? null;
 
   function showNavbar() {
     navbar?.classList.add('is-visible');
@@ -36,36 +34,6 @@ import NavbarLinks from './navbar/NavbarLinks.astro';
 
   syncScrolledNavbar();
   window.addEventListener('scroll', syncScrolledNavbar, { passive: true, signal: navSignal });
-
-  if (logoCanvas && logoCtx) {
-    const css = getComputedStyle(document.documentElement);
-    const colorStar   = css.getPropertyValue('--color-star').trim()   || '#00d4e8';
-    const colorAccent = css.getPropertyValue('--color-accent').trim() || '#e800d4';
-    const logoImage = new Image();
-    logoImage.src = logoCanvas.dataset.logoSvg!;
-
-    logoImage.onload = () => {
-      const size = logoCanvas.width;
-      const iw = logoImage.naturalWidth  || 1365;
-      const ih = logoImage.naturalHeight || 768;
-      const scale = Math.min(size / iw, size / ih);
-      const dw = iw * scale;
-      const dh = ih * scale;
-      const dx = (size - dw) / 2;
-      const dy = (size - dh) / 2;
-
-      logoCtx.clearRect(0, 0, size, size);
-      logoCtx.drawImage(logoImage, dx, dy, dw, dh);
-
-      const grad = logoCtx.createLinearGradient(0, 0, size, size);
-      grad.addColorStop(0, colorStar);
-      grad.addColorStop(1, colorAccent);
-      logoCtx.globalCompositeOperation = 'source-atop';
-      logoCtx.fillStyle = grad;
-      logoCtx.fillRect(0, 0, size, size);
-      logoCtx.globalCompositeOperation = 'source-over';
-    };
-  }
 
   const isHome = window.location.pathname === '/' || window.location.pathname === '';
   if (!isHome || localStorage.getItem(INTRO_KEY) === TODAY) {
