@@ -154,6 +154,7 @@ const articleSchema = {
                       <path d="M5 16H4.5A1.5 1.5 0 0 1 3 14.5v-10A1.5 1.5 0 0 1 4.5 3h10A1.5 1.5 0 0 1 16 4.5V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                     </svg>
                   </button>
+                  <span class="copy-confirm" data-copy-confirm aria-live="polite"></span>
                 </div>
               </div>
             </div>
@@ -339,15 +340,17 @@ const articleSchema = {
   }
 
   .post-meta {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px;
+    column-gap: 28px;
+    row-gap: 12px;
     font-family: monospace;
     font-size: 0.62rem;
     color: var(--color-star);
     opacity: 0.45;
     letter-spacing: 0.06em;
-    flex-wrap: wrap;
+    max-width: 720px;
   }
 
   .post-author {
@@ -355,6 +358,7 @@ const articleSchema = {
     align-items: center;
     gap: 10px;
     min-width: 0;
+    max-width: 100%;
   }
 
   .post-author-avatar {
@@ -372,7 +376,6 @@ const articleSchema = {
     flex-direction: column;
     gap: 2px;
     min-width: 0;
-    overflow: hidden;
   }
 
   .post-author-name,
@@ -406,6 +409,7 @@ const articleSchema = {
 
   .post-author-actions {
     margin-top: 6px;
+    min-height: 26px;
   }
 
   .post-author-socials :global(.cta-btn) {
@@ -441,12 +445,20 @@ const articleSchema = {
   }
 
   .copy-confirm {
+    display: inline-flex;
+    align-items: center;
+    width: 58px;
+    min-height: 26px;
     font-family: monospace;
     font-size: 0.455rem;
     letter-spacing: 0.08em;
     color: var(--color-accent);
     white-space: nowrap;
     pointer-events: none;
+    opacity: 0;
+  }
+
+  .copy-confirm.is-visible {
     animation: copy-fade 2s ease forwards;
   }
 
@@ -458,16 +470,15 @@ const articleSchema = {
   }
 
   .post-meta-separator {
-    width: 1px;
-    height: 28px;
-    background: linear-gradient(to bottom, transparent, var(--color-star), transparent);
-    opacity: 0.25;
+    display: none;
   }
 
   .post-reading-time {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    justify-self: start;
+    white-space: nowrap;
   }
 
   .post-reading-progress {
@@ -812,12 +823,26 @@ const articleSchema = {
     }
 
     .post-meta {
+      grid-template-columns: 1fr;
       align-items: flex-start;
       gap: 12px;
+      max-width: 100%;
     }
 
     .post-meta-separator {
       display: none;
+    }
+
+    .post-reading-time {
+      justify-self: start;
+    }
+
+    .post-author-actions {
+      gap: 7px;
+    }
+
+    .copy-confirm {
+      width: 54px;
     }
 
     .post-author-avatar {
@@ -978,14 +1003,18 @@ const articleSchema = {
   let ticking = false;
 
   const copyPostButton = document.querySelector<HTMLButtonElement>('.post-copy-btn');
+  const copyConfirm = document.querySelector<HTMLElement>('[data-copy-confirm]');
   copyPostButton?.addEventListener('click', () => {
     void navigator.clipboard.writeText(postUrl).then(() => {
-      copyPostButton.parentElement?.querySelector('.copy-confirm')?.remove();
-      const confirm = document.createElement('span');
-      confirm.className = 'copy-confirm';
-      confirm.textContent = 'Copiado!';
-      copyPostButton.insertAdjacentElement('afterend', confirm);
-      setTimeout(() => confirm.remove(), 2000);
+      if (!copyConfirm) return;
+      copyConfirm.textContent = 'Copiado!';
+      copyConfirm.classList.remove('is-visible');
+      void copyConfirm.offsetWidth;
+      copyConfirm.classList.add('is-visible');
+      setTimeout(() => {
+        copyConfirm.classList.remove('is-visible');
+        copyConfirm.textContent = '';
+      }, 2000);
     });
   });
 
