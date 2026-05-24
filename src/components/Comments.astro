@@ -1,4 +1,8 @@
 ---
+import CommentForm from './comments/CommentForm.astro';
+import CommentAuth from './comments/CommentAuth.astro';
+import CommentList from './comments/CommentList.astro';
+
 interface Props {
   postSlug: string;
 }
@@ -25,79 +29,12 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 
   <!-- Formulário sempre visível -->
   <div class="comments-compose">
-    <!-- Estado: escrevendo (padrão) -->
-    <div class="compose-write" id="compose-write">
-      <input
-        type="text"
-        class="comments-honeypot"
-        id="comments-website"
-        name="website"
-        autocomplete="off"
-        tabindex="-1"
-        aria-hidden="true"
-      />
-      <div class="comments-textarea-wrap">
-        <textarea
-          class="comments-textarea"
-          id="comments-textarea"
-          placeholder="> comentar..."
-          rows="3"
-          maxlength="1000"
-          aria-label="Escreva seu comentário"
-        ></textarea>
-        <span class="comments-char-count" id="comments-char-count">0 / 1000</span>
-      </div>
-      <div class="compose-actions">
-        <p class="comments-moderation-note">&gt; comentários são moderados antes de serem publicados.</p>
-        <button class="comments-submit-btn" id="btn-comentar" type="button">
-          <span>Comentar</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Estado: prompt de login -->
-    <div class="compose-auth-prompt" id="compose-auth-prompt" hidden>
-      <div class="auth-prompt-inner">
-        <div class="auth-prompt-copy">
-          <span class="auth-prompt-kicker">&gt;_ quase lá</span>
-          <p class="auth-prompt-text">Entre com uma de suas contas para registrar seu comentário.</p>
-        </div>
-        <div class="auth-prompt-actions">
-          <button class="social-btn" type="button" data-provider="google">
-            <svg class="social-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Google
-          </button>
-          <button class="social-btn" type="button" data-provider="github">
-            <svg class="social-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.934.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-            </svg>
-            GitHub
-          </button>
-          <button class="social-btn" type="button" data-provider="discord">
-            <svg class="social-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#5865F2" d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-            </svg>
-            Discord
-          </button>
-          <button class="auth-prompt-cancel" id="btn-auth-cancel" type="button">cancelar</button>
-        </div>
-      </div>
-      <p class="auth-error" id="auth-error" aria-live="polite"></p>
-    </div>
+    <CommentForm />
+    <CommentAuth />
   </div>
 
   <!-- Lista de comentários (preenchida via JS) -->
-  <ul class="comments-list" id="comments-list" role="list" hidden></ul>
-  <p class="comments-empty" id="comments-empty" hidden>&gt; nenhum comentário ainda. seja o primeiro.</p>
-  <p class="comments-loading" id="comments-loading">&gt; carregando comentários...</p>
+  <CommentList />
 </section>
 
 <style>
@@ -177,383 +114,8 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     50%       { opacity: 0.4; }
   }
 
-  .comments-honeypot {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* Compose */
   .comments-compose {
     margin-bottom: 32px;
-  }
-
-  .comments-textarea-wrap {
-    position: relative;
-    border: 1px solid var(--color-star-22);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .comments-textarea-wrap:focus-within {
-    border-color: var(--color-star-45);
-    box-shadow: 0 0 14px var(--color-star-10);
-  }
-
-  .comments-textarea {
-    display: block;
-    width: 100%;
-    background: var(--color-star-05);
-    border: none;
-    outline: none;
-    padding: 14px 16px 32px;
-    font-family: monospace;
-    font-size: 0.8rem;
-    line-height: 1.7;
-    color: var(--color-text);
-    letter-spacing: 0.03em;
-    resize: none;
-    box-sizing: border-box;
-  }
-
-  .comments-textarea::placeholder {
-    color: var(--color-star);
-    opacity: 0.28;
-  }
-
-  .comments-char-count {
-    position: absolute;
-    bottom: 10px;
-    right: 14px;
-    font-family: monospace;
-    font-size: 0.56rem;
-    letter-spacing: 0.08em;
-    color: var(--color-star);
-    opacity: 0.3;
-    pointer-events: none;
-  }
-
-  .compose-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-top: 12px;
-    flex-wrap: wrap;
-  }
-
-  .comments-moderation-note {
-    margin: 0;
-    font-family: monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    color: var(--color-star);
-    opacity: 0.35;
-    flex: 1;
-    min-width: 160px;
-  }
-
-  .comments-submit-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 999px;
-    border: 1px outset var(--color-star);
-    background: transparent;
-    color: var(--color-star);
-    font-family: monospace;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
-  }
-
-  .comments-submit-btn:hover {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-    background: var(--color-accent-08);
-    box-shadow: 0 0 14px var(--color-accent-20);
-    transform: translateY(-1px);
-  }
-
-  .comments-submit-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* Auth prompt */
-  .compose-auth-prompt {
-    margin-top: 12px;
-    padding: 20px 24px;
-    border: 1px solid var(--color-star-22);
-    border-radius: 10px;
-    background: var(--color-star-05);
-  }
-
-  .auth-prompt-inner {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-
-  .auth-prompt-copy {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 160px;
-  }
-
-  .auth-prompt-kicker {
-    font-family: monospace;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-accent);
-  }
-
-  .auth-prompt-text {
-    margin: 0;
-    font-family: monospace;
-    font-size: 0.76rem;
-    line-height: 1.6;
-    color: var(--color-text);
-    opacity: 0.7;
-  }
-
-  .auth-prompt-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-  }
-
-  .social-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--color-star-22);
-    background: var(--color-star-08);
-    color: var(--color-star);
-    font-family: monospace;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .social-btn:hover {
-    border-color: var(--color-star-40);
-    background: var(--color-star-10);
-    box-shadow: 0 0 14px var(--color-star-10);
-  }
-
-  .social-btn:focus-visible,
-  .auth-prompt-cancel:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-  }
-
-  .social-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .social-btn-icon {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-  }
-
-  .auth-prompt-cancel {
-    background: none;
-    border: none;
-    font-family: monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-star);
-    opacity: 0.4;
-    cursor: pointer;
-    padding: 4px 0;
-    transition: opacity 0.2s ease, color 0.2s ease;
-  }
-
-  .auth-prompt-cancel:hover {
-    opacity: 1;
-    color: var(--color-accent);
-  }
-
-  .auth-error {
-    margin: 10px 0 0;
-    font-family: monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    color: var(--color-accent);
-    min-height: 1em;
-  }
-
-  /* Comment list */
-  .comments-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  /* Estilos globais — elementos criados dinamicamente via JS não recebem o scope do Astro */
-  :global(.comment-item) {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 16px 20px;
-    border-radius: 10px;
-    background: var(--color-star-05);
-  }
-
-  :global(.comment-avatar) {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-star-22), var(--color-accent-08));
-    border: 1px solid var(--color-star-18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: monospace;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--color-star);
-    letter-spacing: 0.04em;
-    flex-shrink: 0;
-    text-transform: uppercase;
-    overflow: hidden;
-  }
-
-  :global(.comment-avatar img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  :global(.comment-body) {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-    flex: 1;
-    padding-top: 2px;
-  }
-
-  :global(.comment-meta) {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: monospace;
-  }
-
-  :global(.comment-name) {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: var(--color-star);
-    letter-spacing: 0.06em;
-  }
-
-  :global(.comment-provider) {
-    display: flex;
-    align-items: center;
-    opacity: 0.45;
-  }
-
-  :global(.comment-provider svg) {
-    width: 12px;
-    height: 12px;
-  }
-
-  :global(.comment-text) {
-    margin: 0;
-    font-family: monospace;
-    font-size: 0.78rem;
-    line-height: 1.75;
-    color: var(--color-text);
-    opacity: 0.75;
-  }
-
-  :global(.comment-actions) {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 2px;
-    width: 100%;
-  }
-
-  :global(.comment-reply-btn) {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    width: fit-content;
-    padding: 7px 13px;
-    border-radius: 999px;
-    border: 1px solid var(--color-accent-40);
-    background: var(--color-accent-06);
-    color: var(--color-accent);
-    font-family: monospace;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-  }
-
-  :global(.comment-reply-btn:hover) {
-    border-color: var(--color-accent);
-    background: var(--color-accent-08);
-    box-shadow: 0 0 14px var(--color-accent-20);
-    transform: translateY(-1px);
-  }
-
-  :global(.comment-reply-btn:focus-visible) {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
-  }
-
-  :global(.comment-reply-btn svg) {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
-  }
-
-  .comments-empty,
-  .comments-loading {
-    margin: 0;
-    padding: 28px 0;
-    font-family: monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    color: var(--color-star);
-    opacity: 0.35;
   }
 
   @keyframes fade-up {
@@ -564,47 +126,16 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   @media (prefers-reduced-motion: reduce) {
     .comments-section,
     .comments-success,
-    .comments-success-dot,
-    .comments-textarea-wrap,
-    .comments-submit-btn,
-    .social-btn,
-    .auth-prompt-cancel,
-    :global(.comment-reply-btn) {
+    .comments-success-dot {
       animation: none !important;
       transition: none !important;
-    }
-
-    .comments-submit-btn:hover,
-    :global(.comment-reply-btn:hover) {
-      transform: none;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .compose-actions {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .comments-submit-btn {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .auth-prompt-inner {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .auth-prompt-actions {
-      width: 100%;
     }
   }
 </style>
 
 <script>
-  import { sanitizeImageUrl } from '../lib/utils/string';
+  import { sanitizeImageUrl, initials } from '../lib/utils/string';
+  import { ALLOWED_PROVIDERS, providerIconSvg } from '../lib/comments';
 
   const section      = document.getElementById('comments') as HTMLElement;
   const slug         = section?.dataset.slug ?? '';
@@ -618,15 +149,15 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   const honeypot     = document.getElementById('comments-website') as HTMLInputElement | null;
   const commentsMountedAt = Date.now();
   let firstTypedAt: number | null = null;
-  const composeWrite = document.getElementById('compose-write');
-  const composeAuth  = document.getElementById('compose-auth-prompt');
+  const composeWrite  = document.getElementById('compose-write');
+  const composeAuth   = document.getElementById('compose-auth-prompt');
   const successBanner = document.getElementById('comments-success');
-  const listEl       = document.getElementById('comments-list');
-  const emptyEl      = document.getElementById('comments-empty');
-  const loadingEl    = document.getElementById('comments-loading');
-  const countEl      = document.getElementById('comments-count');
-  // ── Helpers ────────────────────────────────────────────────────
+  const listEl        = document.getElementById('comments-list');
+  const emptyEl       = document.getElementById('comments-empty');
+  const loadingEl     = document.getElementById('comments-loading');
+  const countEl       = document.getElementById('comments-count');
 
+  // ── Helpers ────────────────────────────────────────────────────
   const setState = (s: 'writing' | 'auth-prompt') => {
     if (!composeWrite || !composeAuth) return;
     composeWrite.hidden = s === 'auth-prompt';
@@ -639,8 +170,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     }
   };
 
-  // ── Keyboard Events ───────────────────────────────────────────
-
+  // ── Keyboard events ────────────────────────────────────────────
   const getAuthControls = () => Array.from(
     composeAuth?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []
   );
@@ -652,8 +182,8 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     const index = Math.max(0, controls.indexOf(current));
     const targetIndex =
       direction === 'first' ? 0 :
-      direction === 'last' ? controls.length - 1 :
-      direction === 'next' ? (index + 1) % controls.length :
+      direction === 'last'  ? controls.length - 1 :
+      direction === 'next'  ? (index + 1) % controls.length :
       (index - 1 + controls.length) % controls.length;
 
     controls[targetIndex]?.focus();
@@ -691,20 +221,6 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     }
   });
 
-  const timeAgo = (iso: string) => {
-    const diff = Date.now() - new Date(iso).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1)  return 'agora mesmo';
-    if (m < 60) return `há ${m} min`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `há ${h}h`;
-    const d = Math.floor(h / 24);
-    return `há ${d} dia${d > 1 ? 's' : ''}`;
-  };
-
-  const initials = (name: string) =>
-    name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-
   const updateCharCount = () => {
     if (textarea && charCount) charCount.textContent = `${textarea.value.length} / 1000`;
   };
@@ -728,7 +244,6 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   };
 
   // ── Carregar comentários aprovados ─────────────────────────────
-
   const loadComments = async () => {
     try {
       const res = await fetch(`${dashboardUrl}/api/comments?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
@@ -744,15 +259,6 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 
       if (countEl) countEl.textContent = String(comments.length);
       if (listEl)  listEl.hidden = false;
-
-      const ALLOWED_PROVIDERS = new Set(['github', 'discord', 'google']);
-
-      const providerIconSvg = (p: string): string => {
-        if (p === 'github')  return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.934.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>`;
-        if (p === 'discord') return `<svg viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`;
-        if (p === 'google')  return `<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`;
-        return '';
-      };
 
       comments.forEach(c => {
         const li = document.createElement('li');
@@ -834,18 +340,15 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   };
 
   // ── Verificar retorno do OAuth ─────────────────────────────────
-
   const params = new URLSearchParams(window.location.search);
   if (params.get('commented') === 'true') {
     if (successBanner) successBanner.hidden = false;
-    // Remove o parâmetro da URL sem recarregar
     params.delete('commented');
     const clean = [window.location.pathname, params.toString()].filter(Boolean).join('?');
     window.history.replaceState({}, '', clean);
   }
 
   // ── Eventos ────────────────────────────────────────────────────
-
   textarea?.addEventListener('input', () => {
     if (firstTypedAt === null) firstTypedAt = Date.now();
     updateCharCount();
@@ -867,7 +370,6 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
       const text = textarea?.value.trim();
       if (!text) return;
 
-      // Desabilita botões durante a requisição
       document.querySelectorAll<HTMLButtonElement>('[data-provider], #btn-auth-cancel').forEach(b => {
         b.disabled = true;
       });

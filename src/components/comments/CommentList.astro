@@ -1,0 +1,160 @@
+<ul class="comments-list" id="comments-list" role="list" hidden></ul>
+<p class="comments-empty" id="comments-empty" hidden>&gt; nenhum comentário ainda. seja o primeiro.</p>
+<p class="comments-loading" id="comments-loading">&gt; carregando comentários...</p>
+
+<style>
+  .comments-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Estilos globais — elementos criados dinamicamente via JS não recebem o scope do Astro */
+  :global(.comment-item) {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    background: var(--color-star-05);
+  }
+
+  :global(.comment-avatar) {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-star-22), var(--color-accent-08));
+    border: 1px solid var(--color-star-18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-star);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    overflow: hidden;
+  }
+
+  :global(.comment-avatar img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :global(.comment-body) {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    padding-top: 2px;
+  }
+
+  :global(.comment-meta) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: monospace;
+  }
+
+  :global(.comment-name) {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-star);
+    letter-spacing: 0.06em;
+  }
+
+  :global(.comment-provider) {
+    display: flex;
+    align-items: center;
+    opacity: 0.45;
+  }
+
+  :global(.comment-provider svg) {
+    width: 12px;
+    height: 12px;
+  }
+
+  :global(.comment-text) {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.78rem;
+    line-height: 1.75;
+    color: var(--color-text);
+    opacity: 0.75;
+  }
+
+  :global(.comment-actions) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 2px;
+    width: 100%;
+  }
+
+  :global(.comment-reply-btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    width: fit-content;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--color-accent-40);
+    background: var(--color-accent-06);
+    color: var(--color-accent);
+    font-family: monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  :global(.comment-reply-btn:hover) {
+    border-color: var(--color-accent);
+    background: var(--color-accent-08);
+    box-shadow: 0 0 14px var(--color-accent-20);
+    transform: translateY(-1px);
+  }
+
+  :global(.comment-reply-btn:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  :global(.comment-reply-btn svg) {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  .comments-empty,
+  .comments-loading {
+    margin: 0;
+    padding: 28px 0;
+    font-family: monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-star);
+    opacity: 0.35;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.comment-reply-btn) {
+      transition: none !important;
+    }
+
+    :global(.comment-reply-btn:hover) {
+      transform: none;
+    }
+  }
+</style>

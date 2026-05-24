@@ -1,0 +1,165 @@
+<div class="compose-write" id="compose-write">
+  <input
+    type="text"
+    class="comments-honeypot"
+    id="comments-website"
+    name="website"
+    autocomplete="off"
+    tabindex="-1"
+    aria-hidden="true"
+  />
+  <div class="comments-textarea-wrap">
+    <textarea
+      class="comments-textarea"
+      id="comments-textarea"
+      placeholder="> comentar..."
+      rows="3"
+      maxlength="1000"
+      aria-label="Escreva seu comentário"
+    ></textarea>
+    <span class="comments-char-count" id="comments-char-count">0 / 1000</span>
+  </div>
+  <div class="compose-actions">
+    <p class="comments-moderation-note">&gt; comentários são moderados antes de serem publicados.</p>
+    <button class="comments-submit-btn" id="btn-comentar" type="button">
+      <span>Comentar</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .comments-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .comments-textarea-wrap {
+    position: relative;
+    border: 1px solid var(--color-star-22);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .comments-textarea-wrap:focus-within {
+    border-color: var(--color-star-45);
+    box-shadow: 0 0 14px var(--color-star-10);
+  }
+
+  .comments-textarea {
+    display: block;
+    width: 100%;
+    background: var(--color-star-05);
+    border: none;
+    outline: none;
+    padding: 14px 16px 32px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--color-text);
+    letter-spacing: 0.03em;
+    resize: none;
+    box-sizing: border-box;
+  }
+
+  .comments-textarea::placeholder {
+    color: var(--color-star);
+    opacity: 0.28;
+  }
+
+  .comments-char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    font-family: monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+    color: var(--color-star);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .compose-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .comments-moderation-note {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--color-star);
+    opacity: 0.35;
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .comments-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px outset var(--color-star);
+    background: transparent;
+    color: var(--color-star);
+    font-family: monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  }
+
+  .comments-submit-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-accent-08);
+    box-shadow: 0 0 14px var(--color-accent-20);
+    transform: translateY(-1px);
+  }
+
+  .comments-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .comments-textarea-wrap,
+    .comments-submit-btn {
+      transition: none !important;
+    }
+
+    .comments-submit-btn:hover {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .compose-actions {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .comments-submit-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
