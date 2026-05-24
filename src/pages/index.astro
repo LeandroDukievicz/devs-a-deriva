@@ -396,22 +396,6 @@ const clientHomePosts = homePosts.map((post) => ({
       navigateToPost(section.dataset.postHref);
     });
 
-    document.querySelectorAll<HTMLElement>('.content-section').forEach((section) => {
-      const postHref = section.dataset.postHref ?? window.location.href;
-      const copyBtn = section.querySelector<HTMLButtonElement>('.copy-btn');
-
-      copyBtn?.addEventListener('click', () => {
-        navigator.clipboard.writeText(new URL(postHref, window.location.origin).toString()).then(() => {
-          copyBtn.parentElement?.querySelector('.copy-confirm')?.remove();
-          const confirm = document.createElement('span');
-          confirm.className = 'copy-confirm';
-          confirm.textContent = 'Copiado!';
-          copyBtn.insertAdjacentElement('afterend', confirm);
-          setTimeout(() => confirm.remove(), 2000);
-        });
-      });
-    });
-
     function spaghettifyElement(el: HTMLElement, bhX: number, bhY: number, duration: number): Promise<void> {
       return new Promise(resolve => {
         const rect = el.getBoundingClientRect();
@@ -537,11 +521,6 @@ const clientHomePosts = homePosts.map((post) => ({
 
       const sectionText = section.querySelector('.section-text') as HTMLElement | null;
       if (sectionText) await spaghettifyElement(sectionText, bhX, bhY, 520);
-
-      await sleep(80);
-
-      const postActions = section.querySelector('.post-actions') as HTMLElement | null;
-      if (postActions) await spaghettifyElement(postActions, bhX, bhY, 420);
 
       await sleep(80);
 

@@ -51,11 +51,6 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
         </div>
       </div>
 
-      <div class="post-actions">
-        <button class="cta-btn copy-btn" aria-label="Copiar link do post">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        </button>
-      </div>
     </div>
 
     <div class="section-text">
@@ -295,53 +290,6 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     color: inherit;
   }
 
-  .post-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px;
-    margin-top: auto;
-    padding-bottom: 4px;
-  }
-
-  .cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    color: var(--color-star);
-    background: transparent;
-    border: 1px outset var(--color-star);
-    border-radius: 50%;
-    cursor: pointer;
-    text-decoration: none;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
-  }
-
-  .cta-btn:hover {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-    background: var(--color-accent-08);
-  }
-
-  .copy-confirm {
-    font-family: monospace;
-    font-size: 0.455rem;
-    letter-spacing: 0.08em;
-    color: var(--color-accent);
-    white-space: nowrap;
-    pointer-events: none;
-    animation: copy-fade 2s ease forwards;
-  }
-
-  @keyframes copy-fade {
-    0%   { opacity: 0; transform: translateX(-4px); }
-    15%  { opacity: 1; transform: translateX(0); }
-    70%  { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
   .reading-progress {
     display: flex;
     align-items: center;
@@ -432,15 +380,6 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
       font-size: 0.68rem;
     }
 
-    .post-actions {
-      gap: 10px;
-    }
-
-    .cta-btn {
-      width: 30px;
-      height: 30px;
-    }
-
     .cta-read {
       align-self: flex-start;
       margin-top: 16px;
@@ -467,9 +406,6 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
       flex-wrap: wrap;
     }
 
-    .post-actions {
-      gap: 8px;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -83,7 +83,7 @@ const articleSchema = {
   </Fragment>
   <StarBackground />
 
-  <article id="main-content" class="post-page" data-post-slug={post.slug} data-dashboard-url={DASHBOARD_URL}>
+  <article id="main-content" class="post-page" data-post-slug={post.slug} data-post-url={postAbsoluteUrl} data-dashboard-url={DASHBOARD_URL}>
     <header class="post-header">
       <div class="post-header-main">
         <div class="post-header-copy">
@@ -131,22 +131,30 @@ const articleSchema = {
               <div class="post-author-copy">
                 <span class="post-author-name">{post.author.name}</span>
                 <span class="post-author-role">{post.author.role}</span>
-                {hasAuthorSocialLinks && (
-                  <div class="post-author-socials" aria-label={`Links sociais de ${post.author.name}`}>
-                    {post.author.socialLinks.linkedin && (
-                      <SocialIcon network="linkedin" href={post.author.socialLinks.linkedin} label={`LinkedIn de ${post.author.name}`} size={14} />
-                    )}
-                    {post.author.socialLinks.github && (
-                      <SocialIcon network="github" href={post.author.socialLinks.github} label={`GitHub de ${post.author.name}`} size={14} />
-                    )}
-                    {post.author.socialLinks.instagram && (
-                      <SocialIcon network="instagram" href={post.author.socialLinks.instagram} label={`Instagram de ${post.author.name}`} size={14} />
-                    )}
-                    {post.author.socialLinks.twitter && (
-                      <SocialIcon network="twitter" href={post.author.socialLinks.twitter} label={`X de ${post.author.name}`} size={14} />
-                    )}
-                  </div>
-                )}
+                <div class="post-author-actions" aria-label={`Links do post e de ${post.author.name}`}>
+                  {hasAuthorSocialLinks && (
+                    <div class="post-author-socials">
+                      {post.author.socialLinks.linkedin && (
+                        <SocialIcon network="linkedin" href={post.author.socialLinks.linkedin} label={`LinkedIn de ${post.author.name}`} size={14} />
+                      )}
+                      {post.author.socialLinks.github && (
+                        <SocialIcon network="github" href={post.author.socialLinks.github} label={`GitHub de ${post.author.name}`} size={14} />
+                      )}
+                      {post.author.socialLinks.instagram && (
+                        <SocialIcon network="instagram" href={post.author.socialLinks.instagram} label={`Instagram de ${post.author.name}`} size={14} />
+                      )}
+                      {post.author.socialLinks.twitter && (
+                        <SocialIcon network="twitter" href={post.author.socialLinks.twitter} label={`X de ${post.author.name}`} size={14} />
+                      )}
+                    </div>
+                  )}
+                  <button class="post-copy-btn" type="button" aria-label="Copiar link do post">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <rect x="8" y="8" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                      <path d="M5 16H4.5A1.5 1.5 0 0 1 3 14.5v-10A1.5 1.5 0 0 1 4.5 3h10A1.5 1.5 0 0 1 16 4.5V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -388,17 +396,65 @@ const articleSchema = {
     opacity: 0.6;
   }
 
+  .post-author-actions,
   .post-author-socials {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .post-author-actions {
     margin-top: 6px;
   }
 
   .post-author-socials :global(.cta-btn) {
     width: 26px;
     height: 26px;
+  }
+
+  .post-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    color: var(--color-star);
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.72;
+    transition: color 0.2s, opacity 0.2s, transform 0.2s;
+  }
+
+  .post-copy-btn:hover {
+    color: var(--color-accent);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .post-copy-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .copy-confirm {
+    font-family: monospace;
+    font-size: 0.455rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+    white-space: nowrap;
+    pointer-events: none;
+    animation: copy-fade 2s ease forwards;
+  }
+
+  @keyframes copy-fade {
+    0%   { opacity: 0; transform: translateX(-4px); }
+    15%  { opacity: 1; transform: translateX(0); }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
   }
 
   .post-meta-separator {
@@ -916,9 +972,22 @@ const articleSchema = {
   const postPage = document.querySelector<HTMLElement>('.post-page[data-post-slug]');
   const postBody = document.querySelector<HTMLElement>('.post-body');
   const postSlug = postPage?.dataset.postSlug;
+  const postUrl = postPage?.dataset.postUrl ?? window.location.href;
   const dashboardUrl = postPage?.dataset.dashboardUrl;
   let lastSentProgress = postSlug ? getLocalProgress(postSlug).progress : 0;
   let ticking = false;
+
+  const copyPostButton = document.querySelector<HTMLButtonElement>('.post-copy-btn');
+  copyPostButton?.addEventListener('click', () => {
+    void navigator.clipboard.writeText(postUrl).then(() => {
+      copyPostButton.parentElement?.querySelector('.copy-confirm')?.remove();
+      const confirm = document.createElement('span');
+      confirm.className = 'copy-confirm';
+      confirm.textContent = 'Copiado!';
+      copyPostButton.insertAdjacentElement('afterend', confirm);
+      setTimeout(() => confirm.remove(), 2000);
+    });
+  });
 
   function calculateReadingProgress(): number {
     if (!postBody) return 0;
