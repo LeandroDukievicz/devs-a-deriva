@@ -1,0 +1,85 @@
+---
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+const logoRaw = readFileSync(resolve('./public/logohelmet.svg'), 'utf-8');
+const logoForCanvas = Buffer.from(
+  logoRaw
+    .replace(/<\?xml[^?]*\?>\s*/g, '')
+    .replace(/<!DOCTYPE[^>]*>\s*/g, '')
+    .replace(/fill="#000000"/g, 'fill="white"')
+).toString('base64');
+---
+
+<a
+  id="nav-logo-link"
+  href="/"
+  class="nav-logo-link"
+  aria-label="Ir para a home"
+>
+  <canvas
+    id="nav-logo-canvas"
+    width="198"
+    height="198"
+    data-logo-svg={`data:image/svg+xml;base64,${logoForCanvas}`}
+    class="nav-logo-canvas"
+  ></canvas>
+</a>
+
+<style>
+  .nav-logo-link {
+    position: fixed;
+    top: -50px;
+    left: -50px;
+    z-index: 101;
+    display: block;
+    width: 198px;
+    height: 198px;
+    flex-shrink: 0;
+    text-decoration: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.35s ease;
+  }
+
+  .nav-logo-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+
+  .nav-logo-link.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav-logo-canvas {
+    display: block;
+    width: 198px;
+    height: 198px;
+    transition: filter 0.35s ease, transform 0.35s ease;
+  }
+
+  .nav-logo-link:hover .nav-logo-canvas,
+  .nav-logo-link:focus-visible .nav-logo-canvas {
+    animation: logo-cyberpunk 2.2s linear infinite, logo-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes logo-cyberpunk {
+    0%   { filter: hue-rotate(0deg)   saturate(1)    brightness(1); }
+    33%  { filter: hue-rotate(24deg)  saturate(1.35) brightness(1.08); }
+    66%  { filter: hue-rotate(-18deg) saturate(1.45) brightness(1.02); }
+    100% { filter: hue-rotate(0deg)   saturate(1)    brightness(1); }
+  }
+
+  @keyframes logo-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.045); }
+  }
+
+  @media (max-width: 480px) {
+    .nav-logo-link {
+      display: none;
+    }
+  }
+</style>
