@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 import StarBackground from '../../components/StarBackground.astro';
 import Comments from '../../components/Comments.astro';
 import Newsletter from '../../components/Newsletter.astro';
+import SocialIcon from '../../components/SocialIcon.astro';
 import { fetchPosts } from '../../lib/posts';
 
 const { slug } = Astro.params;
@@ -38,6 +39,7 @@ const postHeroImageAbsolute = postHeroImage.startsWith('http') ? postHeroImage :
 const categoryBackHref = `/categorias/${post.categorySlug}`;
 const categoryNextHref = `/posts/${nextPost.slug}?from=category`;
 const postAbsoluteUrl = `${SITE}/posts/${post.slug}`;
+const hasAuthorSocialLinks = Object.values(post.author.socialLinks).some(Boolean);
 const tldrPrompt = `Gere um resumo em português do Brasil, em um parágrafo, para este post: ${postAbsoluteUrl}. Foque no contexto geral e nos principais pontos.`;
 const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPrompt)}`;
 
@@ -129,6 +131,22 @@ const articleSchema = {
               <div class="post-author-copy">
                 <span class="post-author-name">{post.author.name}</span>
                 <span class="post-author-role">{post.author.role}</span>
+                {hasAuthorSocialLinks && (
+                  <div class="post-author-socials" aria-label={`Links sociais de ${post.author.name}`}>
+                    {post.author.socialLinks.linkedin && (
+                      <SocialIcon network="linkedin" href={post.author.socialLinks.linkedin} label={`LinkedIn de ${post.author.name}`} size={14} />
+                    )}
+                    {post.author.socialLinks.github && (
+                      <SocialIcon network="github" href={post.author.socialLinks.github} label={`GitHub de ${post.author.name}`} size={14} />
+                    )}
+                    {post.author.socialLinks.instagram && (
+                      <SocialIcon network="instagram" href={post.author.socialLinks.instagram} label={`Instagram de ${post.author.name}`} size={14} />
+                    )}
+                    {post.author.socialLinks.twitter && (
+                      <SocialIcon network="twitter" href={post.author.socialLinks.twitter} label={`X de ${post.author.name}`} size={14} />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -368,6 +386,19 @@ const articleSchema = {
     font-size: 0.58rem;
     letter-spacing: 0.05em;
     opacity: 0.6;
+  }
+
+  .post-author-socials {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .post-author-socials :global(.cta-btn) {
+    width: 26px;
+    height: 26px;
   }
 
   .post-meta-separator {
