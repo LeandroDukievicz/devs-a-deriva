@@ -300,12 +300,12 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   .post-topic {
     display: block;
     font-size: 0.72rem;
-    color: #7bc7d2;
+    color: var(--color-accent);
     font-family: monospace;
   }
 
   .post-topic-label {
-    color: var(--color-accent);
+    color: inherit;
   }
 
   .post-actions {
@@ -367,11 +367,11 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   }
 
   .progress-ring-bg {
-    stroke: var(--color-accent-18);
+    stroke: var(--color-star-18);
   }
 
   .progress-ring-fill {
-    stroke: var(--color-accent);
+    stroke: var(--color-star);
     transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
   }
 
@@ -387,7 +387,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   }
 
   .progress-text.completed {
-    color: var(--color-star);
+    color: var(--color-accent);
   }
 
   @media (max-width: 1024px) {
