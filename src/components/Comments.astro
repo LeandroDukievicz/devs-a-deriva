@@ -149,6 +149,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   const honeypot     = document.getElementById('comments-website') as HTMLInputElement | null;
   const commentsMountedAt = Date.now();
   let firstTypedAt: number | null = null;
+  let replyParentId: number | null = null;
   const composeWrite  = document.getElementById('compose-write');
   const composeAuth   = document.getElementById('compose-auth-prompt');
   const successBanner = document.getElementById('comments-success');
@@ -225,9 +226,10 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
     if (textarea && charCount) charCount.textContent = `${textarea.value.length} / 1000`;
   };
 
-  const startReply = (authorName: string) => {
+  const startReply = (authorName: string, parentId: number) => {
     if (!textarea) return;
 
+    replyParentId = parentId;
     const mention = `@${authorName.replace(/^@+/, '')}`;
     setState('writing');
     textarea.placeholder = `> respondendo ${mention}...`;
@@ -244,11 +246,86 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   };
 
   // ── Carregar comentários aprovados ─────────────────────────────
+  type CommentData = { id: number; parentId: number | null; authorName: string; authorImage: string | null; provider: string | null; body: string; createdAt: string };
+
+  function buildCommentEl(c: CommentData, isReply: boolean): HTMLLIElement {
+    const li = document.createElement('li');
+    li.className = isReply ? 'comment-item comment-item--reply' : 'comment-item';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'comment-avatar';
+    avatar.setAttribute('aria-hidden', 'true');
+    const safeImg = sanitizeImageUrl(c.authorImage);
+    if (safeImg) {
+      const img = document.createElement('img');
+      img.src = safeImg;
+      img.alt = c.authorName ?? '';
+      img.loading = 'lazy';
+      avatar.appendChild(img);
+    } else {
+      avatar.textContent = initials(c.authorName ?? 'A');
+    }
+
+    const body = document.createElement('div');
+    body.className = 'comment-body';
+
+    const meta = document.createElement('div');
+    meta.className = 'comment-meta';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'comment-name';
+    nameSpan.textContent = '@' + (c.authorName ?? 'anônimo');
+    meta.appendChild(nameSpan);
+
+    // Provider — apenas providers da allowlist recebem ícone; innerHTML aqui é estático
+    const provider = c.provider && ALLOWED_PROVIDERS.has(c.provider) ? c.provider : null;
+    if (provider) {
+      const providerSpan = document.createElement('span');
+      providerSpan.className = 'comment-provider';
+      providerSpan.title = provider;
+      providerSpan.innerHTML = providerIconSvg(provider);
+      meta.appendChild(providerSpan);
+    }
+
+    body.appendChild(meta);
+
+    const textP = document.createElement('p');
+    textP.className = 'comment-text';
+    textP.textContent = c.body;
+    body.appendChild(textP);
+
+    // Só comentários raiz têm botão Responder (threading 1 nível)
+    if (!isReply) {
+      const actions = document.createElement('div');
+      actions.className = 'comment-actions';
+
+      const replyButton = document.createElement('button');
+      replyButton.className = 'comment-reply-btn';
+      replyButton.type = 'button';
+      replyButton.setAttribute('aria-label', `Responder comentário de ${c.authorName ?? 'anônimo'}`);
+      replyButton.innerHTML = `
+        <span>Responder</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 17 4 12 9 7"></polyline>
+          <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+        </svg>
+      `;
+      replyButton.addEventListener('click', () => startReply(c.authorName ?? 'anônimo', c.id));
+
+      actions.appendChild(replyButton);
+      body.appendChild(actions);
+    }
+
+    li.appendChild(avatar);
+    li.appendChild(body);
+    return li;
+  }
+
   const loadComments = async () => {
     try {
       const res = await fetch(`${dashboardUrl}/api/comments?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
       const json = await res.json();
-      const comments: { id: number; authorName: string; authorImage: string | null; provider: string | null; body: string; createdAt: string }[] = json?.data?.comments ?? [];
+      const comments: CommentData[] = json?.data?.comments ?? [];
 
       if (loadingEl) loadingEl.hidden = true;
 
@@ -260,79 +337,24 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
       if (countEl) countEl.textContent = String(comments.length);
       if (listEl)  listEl.hidden = false;
 
-      comments.forEach(c => {
-        const li = document.createElement('li');
-        li.className = 'comment-item';
-
-        // Avatar — imagem somente se URL for https; fallback para iniciais via textContent
-        const avatar = document.createElement('div');
-        avatar.className = 'comment-avatar';
-        avatar.setAttribute('aria-hidden', 'true');
-        const safeImg = sanitizeImageUrl(c.authorImage);
-        if (safeImg) {
-          const img = document.createElement('img');
-          img.src = safeImg;
-          img.alt = c.authorName ?? '';
-          img.loading = 'lazy';
-          avatar.appendChild(img);
-        } else {
-          avatar.textContent = initials(c.authorName ?? 'A');
+      const topLevel = comments.filter(c => !c.parentId);
+      const repliesMap = new Map<number, CommentData[]>();
+      for (const c of comments) {
+        if (c.parentId) {
+          const arr = repliesMap.get(c.parentId) ?? [];
+          arr.push(c);
+          repliesMap.set(c.parentId, arr);
         }
+      }
 
-        // Body
-        const body = document.createElement('div');
-        body.className = 'comment-body';
+      for (const c of topLevel) {
+        listEl?.appendChild(buildCommentEl(c, false));
 
-        // Meta
-        const meta = document.createElement('div');
-        meta.className = 'comment-meta';
-
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'comment-name';
-        nameSpan.textContent = '@' + (c.authorName ?? 'anônimo');
-        meta.appendChild(nameSpan);
-
-        // Provider — apenas providers da allowlist recebem ícone; innerHTML aqui é estático
-        const provider = c.provider && ALLOWED_PROVIDERS.has(c.provider) ? c.provider : null;
-        if (provider) {
-          const providerSpan = document.createElement('span');
-          providerSpan.className = 'comment-provider';
-          providerSpan.title = provider;
-          providerSpan.innerHTML = providerIconSvg(provider);
-          meta.appendChild(providerSpan);
+        const replies = repliesMap.get(c.id) ?? [];
+        for (const r of replies) {
+          listEl?.appendChild(buildCommentEl(r, true));
         }
-
-        body.appendChild(meta);
-
-        // Texto do comentário via textContent — nunca interpretado como HTML
-        const textP = document.createElement('p');
-        textP.className = 'comment-text';
-        textP.textContent = c.body;
-        body.appendChild(textP);
-
-        // Ações
-        const actions = document.createElement('div');
-        actions.className = 'comment-actions';
-
-        const replyButton = document.createElement('button');
-        replyButton.className = 'comment-reply-btn';
-        replyButton.type = 'button';
-        replyButton.setAttribute('aria-label', `Responder comentário de ${c.authorName ?? 'anônimo'}`);
-        replyButton.innerHTML = `
-          <span>Responder</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="9 17 4 12 9 7"></polyline>
-            <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
-          </svg>
-        `;
-        replyButton.addEventListener('click', () => startReply(c.authorName ?? 'anônimo'));
-
-        actions.appendChild(replyButton);
-        body.appendChild(actions);
-        li.appendChild(avatar);
-        li.appendChild(body);
-        listEl?.appendChild(li);
-      });
+      }
     } catch {
       if (loadingEl) loadingEl.hidden = true;
       if (emptyEl)   emptyEl.hidden = false;
@@ -360,6 +382,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
   });
 
   btnCancel?.addEventListener('click', () => {
+    replyParentId = null;
     setState('writing');
     textarea?.focus();
   });
@@ -384,6 +407,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
             text,
             provider,
             redirectTo: window.location.href,
+            parentId: replyParentId,
             website: honeypot?.value ?? '',
             elapsedMs: Date.now() - commentsMountedAt,
             typingElapsedMs: firstTypedAt !== null ? firstTypedAt - commentsMountedAt : null,
@@ -396,6 +420,9 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
         const draftJson = await res.json();
         const signInUrl = draftJson?.data?.signInUrl as string | undefined;
         if (!signInUrl) throw new Error('URL de login não retornada');
+
+        replyParentId = null;
+        if (textarea) textarea.placeholder = '';
         window.location.href = signInUrl;
       } catch {
         if (authError) authError.textContent = '> erro ao conectar com o servidor. tente novamente.';
