@@ -196,6 +196,7 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
   .posts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 260px;
     gap: 20px;
   }
 
@@ -206,6 +207,8 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
     cursor: pointer;
     text-decoration: none;
     display: block;
+    height: 100%;
+    overflow: hidden;
     transition: border-color 0.22s ease;
   }
 
@@ -218,6 +221,9 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .card-tag {
@@ -236,6 +242,10 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
     font-weight: 700;
     line-height: 1.4;
     color: var(--color-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .post-card-excerpt {
@@ -245,13 +255,17 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
     line-height: 1.6;
     color: var(--color-text);
     opacity: 0.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .post-card-meta {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 6px;
+    margin-top: auto;
   }
 
   .card-meta {
@@ -344,7 +358,10 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
     .categoria-header { padding: 20px 20px 24px; }
     .categoria-divider { margin: 0 20px; }
     .posts-section { padding: 32px 20px 40px; }
-    .posts-grid { grid-template-columns: 1fr; }
+    .posts-grid {
+      grid-template-columns: 1fr;
+      grid-auto-rows: 280px;
+    }
   }
 </style>
 

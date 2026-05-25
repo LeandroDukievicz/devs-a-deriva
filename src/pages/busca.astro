@@ -386,7 +386,11 @@ const searchIndex = allPosts.map((post) => ({
   }
 
   .busca-result-link {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    height: 188px;
+    box-sizing: border-box;
+    overflow: hidden;
     padding: 20px 24px;
     border: 1px solid var(--color-star-14);
     border-radius: 12px;
@@ -445,6 +449,10 @@ const searchIndex = allPosts.map((post) => ({
     line-height: 1.4;
     letter-spacing: -0.01em;
     color: var(--color-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .busca-result-excerpt {
@@ -455,6 +463,10 @@ const searchIndex = allPosts.map((post) => ({
     letter-spacing: 0.02em;
     color: var(--color-text);
     opacity: 0.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .busca-result-meta {
@@ -462,6 +474,7 @@ const searchIndex = allPosts.map((post) => ({
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    margin-top: auto;
   }
 
   .busca-result-author {
@@ -502,7 +515,10 @@ const searchIndex = allPosts.map((post) => ({
   @media (max-width: 520px) {
     .busca-page { padding: 64px 0 48px; }
     .busca-container { width: calc(100% - 32px); }
-    .busca-result-link { padding: 16px 18px; }
+    .busca-result-link {
+      height: 220px;
+      padding: 16px 18px;
+    }
     .busca-result-date { display: none; }
   }
 </style>
