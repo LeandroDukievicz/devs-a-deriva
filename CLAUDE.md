@@ -38,7 +38,7 @@ O blog usa **modo híbrido** (estático + SSR seletivo). A distinção é feita 
 | `sitemap.xml.ts` | SSR | Sitemap reflete novos posts |
 | `ai-index.json.ts` | SSR | Index para bots atualizado |
 | `health.json.ts` | SSR | Versão do commit em runtime |
-| `categorias/[categoria].astro` | Estático | Baseado na constante `CATEGORIES` |
+| `categorias/[categoria].astro` | SSR | Posts novos aparecem sem rebuild |
 | Demais páginas | Estático | Conteúdo fixo (manifesto, privacidade…) |
 
 **Resultado:** publicar um post novo faz ele aparecer em **até 30 segundos**, sem rebuild.
