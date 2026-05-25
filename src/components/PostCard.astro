@@ -296,7 +296,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   .post-topic {
     display: block;
     font-size: 0.72rem;
-    color: var(--color-star);
+    color: #ff00ff;
     font-family: monospace;
   }
 
@@ -359,11 +359,13 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
       height: 428px;
       min-height: 428px;
       border-radius: 10px;
+      flex-direction: column;
     }
 
     .section-image {
       display: block;
       flex: 0 0 auto;
+      width: calc(100% - 24px);
       height: 160px;
       min-height: 160px;
       margin: 12px 12px 0;
