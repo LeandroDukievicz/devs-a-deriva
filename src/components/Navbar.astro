@@ -1,9 +1,11 @@
 ---
 import NavbarLogo from './navbar/NavbarLogo.astro';
 import NavbarLinks from './navbar/NavbarLinks.astro';
+
+const isHomePage = Astro.url.pathname === '/';
 ---
 
-<NavbarLogo />
+{isHomePage && <NavbarLogo />}
 <NavbarLinks />
 
 <script>
