@@ -1,104 +1,18 @@
----
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
-
-const logoRaw = readFileSync(resolve('./public/logohelmet.svg'), 'utf-8');
-const logoShape = logoRaw.match(/<g[\s\S]*<\/g>/)?.[0] ?? '';
-const logoSymbolMarkup = logoShape
-  .replace(/\sfill="#000000"/g, '')
-  .replace(/\sstroke="none"/g, '');
----
-
 <a
   id="nav-logo-link"
   href="/"
   class="nav-logo-link"
   aria-label="Ir para a home"
 >
-  <svg
-    class="nav-logo-svg"
-    viewBox="0 0 1365 768"
-    role="img"
+  <img
+    class="nav-logo-image"
+    src="/logotipo.webp"
+    alt=""
+    width="1365"
+    height="768"
     aria-hidden="true"
-    focusable="false"
-  >
-    <defs>
-      <symbol id="dda-nav-logo-shape" viewBox="0 0 1365 768">
-        <g set:html={logoSymbolMarkup} />
-      </symbol>
-
-      <linearGradient id="dda-nav-logo-shell" x1="220" y1="120" x2="1120" y2="650" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#02131b" />
-        <stop offset="0.54" stop-color="#062245" />
-        <stop offset="1" stop-color="#24072d" />
-      </linearGradient>
-
-      <linearGradient id="dda-nav-logo-energy-a" x1="120" y1="90" x2="1180" y2="680" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="var(--color-star)" stop-opacity="0.82" />
-        <stop offset="0.5" stop-color="#2f7bff" stop-opacity="0.68" />
-        <stop offset="1" stop-color="var(--color-accent)" stop-opacity="0.74" />
-      </linearGradient>
-
-      <linearGradient id="dda-nav-logo-energy-b" x1="1120" y1="120" x2="280" y2="700" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="var(--color-accent)" stop-opacity="0.56" />
-        <stop offset="0.48" stop-color="var(--color-star)" stop-opacity="0.52" />
-        <stop offset="1" stop-color="#2f7bff" stop-opacity="0.38" />
-      </linearGradient>
-
-      <linearGradient id="dda-nav-logo-circuit-a" x1="0" y1="0" x2="900" y2="360" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="var(--color-star)" />
-        <stop offset="0.52" stop-color="#43a7ff" />
-        <stop offset="1" stop-color="var(--color-accent)" />
-      </linearGradient>
-
-      <linearGradient id="dda-nav-logo-circuit-b" x1="1050" y1="120" x2="320" y2="700" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="var(--color-accent)" />
-        <stop offset="0.5" stop-color="var(--color-star)" />
-        <stop offset="1" stop-color="#2f7bff" />
-      </linearGradient>
-
-      <clipPath id="dda-nav-logo-clip">
-        <use href="#dda-nav-logo-shape" />
-      </clipPath>
-    </defs>
-
-    <use class="nav-logo-shell" href="#dda-nav-logo-shape" />
-
-    <g class="nav-logo-circuit-field" clip-path="url(#dda-nav-logo-clip)">
-      <rect class="nav-logo-energy nav-logo-energy-a" x="90" y="36" width="1220" height="710" />
-      <rect class="nav-logo-energy nav-logo-energy-b" x="120" y="52" width="1160" height="690" />
-      <rect class="nav-logo-panel" x="170" y="96" width="1030" height="590" />
-
-      <g class="nav-logo-circuit-layer nav-logo-circuit-layer-a">
-        <path d="M290 500H450V440H585V385H720" />
-        <path d="M370 300H520V250H700V205H845" />
-        <path d="M520 585H680V535H790V470H935" />
-        <path d="M760 335H900V280H1045" />
-        <path d="M810 560H940V505H1085" />
-        <circle cx="450" cy="440" r="10" />
-        <circle cx="585" cy="385" r="8" />
-        <circle cx="845" cy="205" r="9" />
-        <circle cx="935" cy="470" r="8" />
-        <circle cx="1085" cy="505" r="10" />
-      </g>
-
-      <g class="nav-logo-circuit-layer nav-logo-circuit-layer-b">
-        <path d="M1080 245H930V315H790V365H650" />
-        <path d="M1010 605H850V655H655" />
-        <path d="M335 610H505V660H630" />
-        <path d="M255 390H410V340H540" />
-        <circle cx="930" cy="315" r="8" />
-        <circle cx="790" cy="365" r="10" />
-        <circle cx="655" cy="655" r="8" />
-        <circle cx="410" cy="340" r="8" />
-      </g>
-
-      <g class="nav-logo-signal-layer">
-        <path class="nav-logo-signal nav-logo-signal-a" d="M290 500H450V440H585V385H720" />
-        <path class="nav-logo-signal nav-logo-signal-b" d="M1080 245H930V315H790V365H650" />
-      </g>
-    </g>
-  </svg>
+    decoding="async"
+  />
 </a>
 
 <style>
@@ -130,121 +44,11 @@ const logoSymbolMarkup = logoShape
     transform: translateY(0);
   }
 
-  .nav-logo-svg {
+  .nav-logo-image {
     display: block;
     width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .nav-logo-shell {
-    fill: url(#dda-nav-logo-shell);
-    opacity: 1;
-  }
-
-  .nav-logo-circuit-field {
-    opacity: 1;
-  }
-
-  .nav-logo-energy {
-    will-change: transform, opacity;
-  }
-
-  .nav-logo-energy-a {
-    fill: url(#dda-nav-logo-energy-a);
-    opacity: 0.34;
-    animation: nav-logo-energy-sweep 14s ease-in-out infinite;
-  }
-
-  .nav-logo-energy-b {
-    fill: url(#dda-nav-logo-energy-b);
-    opacity: 0.28;
-    animation: nav-logo-energy-counter 17s ease-in-out infinite;
-  }
-
-  .nav-logo-panel {
-    fill: rgba(0, 8, 14, 0.1);
-  }
-
-  .nav-logo-circuit-layer {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 14;
-    opacity: 0.88;
-    will-change: transform, opacity;
-  }
-
-  .nav-logo-circuit-layer circle {
-    fill: currentColor;
-    stroke: none;
-  }
-
-  .nav-logo-circuit-layer-a {
-    color: var(--color-star);
-    stroke: url(#dda-nav-logo-circuit-a);
-    animation: nav-logo-circuit-breathe 7s ease-in-out infinite;
-  }
-
-  .nav-logo-circuit-layer-b {
-    color: var(--color-accent);
-    stroke: url(#dda-nav-logo-circuit-b);
-    animation: nav-logo-circuit-drift 10s ease-in-out infinite;
-  }
-
-  .nav-logo-signal-layer {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    pointer-events: none;
-  }
-
-  .nav-logo-signal {
-    stroke: #ffffff;
-    stroke-width: 8;
-    stroke-dasharray: 58 245;
-    opacity: 0.76;
-    will-change: stroke-dashoffset, opacity;
-  }
-
-  .nav-logo-signal-a {
-    animation: nav-logo-signal-flow 4.8s linear infinite;
-  }
-
-  .nav-logo-signal-b {
-    animation: nav-logo-signal-flow 5.6s linear infinite reverse;
-  }
-
-  .nav-logo-link:hover .nav-logo-circuit-layer-a,
-  .nav-logo-link:focus-visible .nav-logo-circuit-layer-a {
-    animation-duration: 6s;
-  }
-
-  @keyframes nav-logo-energy-sweep {
-    0%, 100% { opacity: 0.22; transform: translate3d(-18px, 0, 0); }
-    50%      { opacity: 0.46; transform: translate3d(22px, -8px, 0); }
-  }
-
-  @keyframes nav-logo-energy-counter {
-    0%, 100% { opacity: 0.2; transform: translate3d(18px, 4px, 0); }
-    50%      { opacity: 0.4; transform: translate3d(-18px, 8px, 0); }
-  }
-
-  @keyframes nav-logo-circuit-breathe {
-    0%, 100% { opacity: 0.62; transform: translate3d(0, 0, 0); }
-    50%      { opacity: 1; transform: translate3d(10px, -5px, 0); }
-  }
-
-  @keyframes nav-logo-circuit-drift {
-    0%, 100% { opacity: 0.5; transform: translate3d(0, 0, 0); }
-    50%      { opacity: 0.92; transform: translate3d(-12px, 6px, 0); }
-  }
-
-  @keyframes nav-logo-signal-flow {
-    0%   { opacity: 0.18; stroke-dashoffset: 0; }
-    16%  { opacity: 0.82; }
-    70%  { opacity: 0.82; }
-    100% { opacity: 0.18; stroke-dashoffset: -303; }
+    height: 100%;
+    object-fit: contain;
   }
 
   @media (max-width: 900px) {
@@ -262,37 +66,8 @@ const logoSymbolMarkup = logoShape
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .nav-logo-link,
-    .nav-logo-energy,
-    .nav-logo-circuit-layer,
-    .nav-logo-signal {
-      animation: none !important;
+    .nav-logo-link {
       transition: opacity 0.2s ease !important;
-    }
-
-    .nav-logo-energy-a {
-      opacity: 0.32;
-      transform: none;
-    }
-
-    .nav-logo-energy-b {
-      opacity: 0.22;
-      transform: none;
-    }
-
-    .nav-logo-circuit-layer-a {
-      opacity: 0.86;
-      transform: none;
-    }
-
-    .nav-logo-circuit-layer-b {
-      opacity: 0.7;
-      transform: none;
-    }
-
-    .nav-logo-signal {
-      opacity: 0.36;
-      stroke-dashoffset: 0;
     }
   }
 </style>
