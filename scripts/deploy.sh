@@ -10,10 +10,26 @@ HEALTH_URL="http://127.0.0.1:4321/health.json"
 
 echo "$PREVIOUS_REV" > "$APP_DIR/.previous-rev"
 
+cleanup_compose_recreate_conflicts() {
+  local stale_containers
+  stale_containers="$(
+    docker ps -a --format '{{.ID}} {{.Names}}' |
+      awk '$2 ~ /^[0-9a-f]+_devs-a-deriva-blog-1$/ { print $1 }'
+  )"
+
+  if [[ -z "$stale_containers" ]]; then
+    return 0
+  fi
+
+  echo "==> Removendo containers temporários órfãos do Docker Compose..."
+  echo "$stale_containers" | xargs -r docker rm -f
+}
+
 rollback() {
   echo "==> Falha durante deploy. Tentando rollback para $PREVIOUS_REV..."
   git -C "$APP_DIR" checkout -q "$PREVIOUS_REV" || true
   PUBLIC_COMMIT_SHA="$PREVIOUS_REV" $COMPOSE build blog || true
+  cleanup_compose_recreate_conflicts || true
   PUBLIC_COMMIT_SHA="$PREVIOUS_REV" $COMPOSE up -d --remove-orphans || true
 }
 
@@ -59,6 +75,7 @@ echo "==> Build da imagem (busca posts do dashboard no build)..."
 $COMPOSE build --no-cache blog
 
 echo "==> Subindo serviço..."
+cleanup_compose_recreate_conflicts
 $COMPOSE up -d --remove-orphans
 
 echo "==> Validando healthcheck..."
