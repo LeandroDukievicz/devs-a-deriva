@@ -201,7 +201,7 @@ function mapPost(raw: any): Post {
   const author: Author = raw.author?.displayName
     ? {
         name: raw.author.displayName,
-        role: raw.author.jobTitle ?? 'Colaborador',
+        role: raw.author.jobTitle ?? 'Membro',
         photo: raw.author.photoUrl ?? '/logo-high-color.webp',
         socialLinks: {
           linkedin: raw.author.socialLinks?.linkedin ?? raw.author.linkedinUrl ?? null,
