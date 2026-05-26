@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano de Implementação — Qualidade, Observabilidade e Resiliência</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #18181f;
+    --border: #2a2a3a;
+    --text: #e2e2f0;
+    --muted: #8a8aa8;
+    --critical: #ff4d6d;
+    --critical-bg: #1a0a10;
+    --critical-border: #4a1525;
+    --high: #ff9f43;
+    --high-bg: #1a1005;
+    --high-border: #4a2e0a;
+    --medium: #ffd166;
+    --medium-bg: #1a1500;
+    --medium-border: #4a3a00;
+    --low: #06d6a0;
+    --low-bg: #001a12;
+    --low-border: #004a30;
+    --info: #4cc9f0;
+    --info-bg: #00111a;
+    --info-border: #00304a;
+    --accent: #7c3aed;
+    --accent2: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #a78bfa, #4cc9f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .progress-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 260px;
+  }
+  .progress-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .progress-stats strong { color: var(--text); font-size: 15px; }
+  .progress-bar-wrap {
+    width: 260px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7c3aed, #4cc9f0);
+    border-radius: 99px;
+    transition: width 0.25s ease;
+  }
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .reset-btn:hover { border-color: var(--critical); color: var(--critical); }
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 24px 80px; }
+  .phase-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .tab-btn:hover, .tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 11px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .section { margin-bottom: 40px; display: none; }
+  .section.visible { display: block; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .tag-contracts { background: rgba(255,159,67,0.15); color: var(--high); border: 1px solid rgba(255,159,67,0.3); }
+  .tag-observability { background: rgba(76,201,240,0.1); color: var(--info); border: 1px solid rgba(76,201,240,0.2); }
+  .tag-resilience { background: rgba(6,214,160,0.12); color: var(--low); border: 1px solid rgba(6,214,160,0.24); }
+  .tag-roadmap { background: rgba(124,58,237,0.15); color: var(--accent2); border: 1px solid rgba(124,58,237,0.3); }
+  .section-title { font-size: 20px; font-weight: 700; }
+  .section-count { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .group { margin-bottom: 24px; }
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .group-title { font-size: 17px; font-weight: 600; opacity: 0.88; }
+  .group-count-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .collapse-icon { margin-left: auto; color: var(--muted); font-size: 11px; transition: transform 0.2s; }
+  .group.collapsed .collapse-icon { transform: rotate(-90deg); }
+  .group.collapsed .items { display: none; }
+  .items { display: flex; flex-direction: column; gap: 6px; }
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .item:hover { transform: translateX(2px); }
+  .item.critical { background: var(--critical-bg); border-color: var(--critical-border); }
+  .item.high { background: var(--high-bg); border-color: var(--high-border); }
+  .item.medium { background: var(--medium-bg); border-color: var(--medium-border); }
+  .item.low { background: var(--low-bg); border-color: var(--low-border); }
+  .item.info { background: var(--info-bg); border-color: var(--info-border); }
+  .item.done { opacity: 0.45; filter: grayscale(0.5); }
+  .item.done .item-text { text-decoration: line-through; }
+  .item-check {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 5px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    font-size: 11px;
+  }
+  .item.critical .item-check { border-color: var(--critical); }
+  .item.high .item-check { border-color: var(--high); }
+  .item.medium .item-check { border-color: var(--medium); }
+  .item.low .item-check { border-color: var(--low); }
+  .item.info .item-check { border-color: var(--info); }
+  .item.done .item-check { background: var(--accent); border-color: var(--accent); }
+  .item-body { flex: 1; min-width: 0; }
+  .item-text { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.4; }
+  .item-meta { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
+  .item-file {
+    font-size: 10px;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    color: var(--accent2);
+    background: rgba(124,58,237,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(124,58,237,0.2);
+  }
+  .item-detail { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .badge-critical { background: rgba(255,77,109,0.15); color: var(--critical); border: 1px solid rgba(255,77,109,0.3); }
+  .badge-high { background: rgba(255,159,67,0.15); color: var(--high); border: 1px solid rgba(255,159,67,0.3); }
+  .badge-medium { background: rgba(255,209,102,0.15); color: var(--medium); border: 1px solid rgba(255,209,102,0.3); }
+  .badge-low { background: rgba(6,214,160,0.15); color: var(--low); border: 1px solid rgba(6,214,160,0.3); }
+  .badge-dash { background: rgba(124,58,237,0.15); color: var(--accent2); border: 1px solid rgba(124,58,237,0.3); }
+  .badge-blog { background: rgba(76,201,240,0.1); color: var(--info); border: 1px solid rgba(76,201,240,0.2); }
+  .badge-both { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+  .solution-details {
+    margin-top: 0.75rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+    padding-top: 0.75rem;
+  }
+  .solution-details > summary {
+    cursor: pointer;
+    color: #a78bfa;
+    font-weight: 600;
+    font-size: 12px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    padding: 4px 0;
+  }
+  .solution-details > summary::-webkit-details-marker { display: none; }
+  .solution-details > summary::before { content: "\25B8"; font-size: 10px; transition: transform 0.2s; }
+  .solution-details[open] > summary::before { transform: rotate(90deg); }
+  .solution-block { margin-top: 0.75rem; color: #cbd5e1; line-height: 1.6; font-size: 12px; }
+  .solution-block p { margin-bottom: 0.5rem; }
+  .solution-block ul { margin: 0.4rem 0 0.5rem 1.2rem; }
+  .solution-block li { margin-bottom: 0.25rem; }
+  .solution-block code {
+    color: #67e8f9;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+  }
+  .solution-block strong { color: #e2e2f0; }
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(124,58,237,0.4);
+    color: var(--accent2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .copy-btn.copied { background: rgba(6,214,160,0.2); border-color: var(--low); color: var(--low); }
+  .note {
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    background: rgba(76,201,240,0.06);
+    border: 1px solid rgba(76,201,240,0.18);
+    border-radius: 10px;
+    color: #cbd5e1;
+    font-size: 12px;
+  }
+  @media (max-width: 700px) {
+    .header-inner { flex-direction: column; }
+    .progress-block { align-items: flex-start; width: 100%; }
+    .progress-bar-wrap { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Plano de Implementação — Qualidade, Observabilidade e Resiliência</h1>
+      <div class="subtitle">Blog Devs à Deriva + Dashboard LD Studio · Contratos, logs, métricas, cache e degradação · Mai 2026</div>
+    </div>
+    <div class="progress-block">
+      <div class="progress-stats">
+        <span><strong id="done-count">0</strong> / <span id="total-count">0</span> concluídos</span>
+        <span id="pct-text">0%</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      <button class="reset-btn" onclick="resetAll()">Limpar tudo</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="phase-tabs">
+    <button class="tab-btn active" onclick="showTab('all', this)">Todos</button>
+    <button class="tab-btn" onclick="showTab('contratos', this)">Contratos e Testes</button>
+    <button class="tab-btn" onclick="showTab('observabilidade', this)">Observabilidade</button>
+    <button class="tab-btn" onclick="showTab('resiliencia', this)">Resiliência</button>
+    <button class="tab-btn" onclick="showTab('execucao', this)">Ordem de Execução</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--critical)"></div> Crítico</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--high)"></div> Alto</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--medium)"></div> Médio</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--low)"></div> Baixo</div>
+    <div class="legend-item"><span class="badge badge-dash">Dashboard</span></div>
+    <div class="legend-item"><span class="badge badge-blog">Blog</span></div>
+    <div class="legend-item"><span class="badge badge-both">Ambos</span></div>
+  </div>
+
+  <div class="note">
+    Este plano não substitui auditoria no código antes de editar. Cada item começa por confirmar o estado atual com <code>rg</code>, testes existentes e contratos reais da API. Se algo já estiver resolvido, transforme o item em teste, documentação ou evidência operacional.
+  </div>
+
+  <section class="section visible" data-tab="contratos">
+    <div class="section-header">
+      <span class="section-tag tag-contracts">Contratos</span>
+      <h2 class="section-title">Aumentar cobertura de testes entre Dashboard e Blog</h2>
+      <span class="section-count">fase 1</span>
+    </div>
+
+    <div class="group" id="g-contract-baseline">
+      <div class="group-header" onclick="toggleGroup('g-contract-baseline')">
+        <span class="group-title">Contrato base das APIs públicas</span>
+        <span class="group-count-badge" id="cnt-g-contract-baseline"></span>
+        <span class="collapse-icon">▾</span>
+      </div>
+      <div class="items">
+        <div class="item high" onclick="toggle(this)" data-id="contract-1">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Inventariar endpoints consumidos pelo blog e congelar o contrato mínimo</div>
+            <div class="item-meta">
+              <span class="badge badge-high">Alto</span>
+              <span class="badge badge-both">Ambos</span>
+              <span class="item-file">src/lib/posts.ts · src/lib/comments.ts · src/lib/reading-progress-client.ts · dashboard app/api/**</span>
+            </div>
+            <div class="item-detail">Mapear formato esperado para posts, categorias, autores, comentários, newsletter, progresso de leitura e devs. O resultado deve virar documentação curta e fixtures reutilizáveis.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> criar uma tabela em <code>docs/dashboard.md</code> ou novo <code>docs/api-contracts.md</code> com endpoint, método, payload aceito, resposta mínima, status de erro e comportamento esperado quando a API falha.</p>
+                <ul>
+                  <li>Blog: buscar chamadas com <code>rg "PUBLIC_DASHBOARD_URL|/api/" src</code>.</li>
+                  <li>Dashboard: buscar rotas públicas com <code>rg "export async function (GET|POST|PATCH)" app/api</code>.</li>
+                  <li>Registrar campos obrigatórios e opcionais por endpoint.</li>
+                  <li>Adicionar fixtures em <code>tests/fixtures/dashboard-api.ts</code> no blog para respostas válidas, vazias e malformadas.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> todos os endpoints consumidos pelo blog têm contrato documentado e fixture associada.</p>
+                <p><strong>Validação:</strong> <code>npm run lint</code> no blog e, no dashboard, comando equivalente de check/test se o contrato também for documentado lá.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item high" onclick="toggle(this)" data-id="contract-2">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Adicionar validação defensiva para payload de posts no blog</div>
+            <div class="item-meta">
+              <span class="badge badge-high">Alto</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/lib/posts.ts · tests/posts.test.ts</span>
+            </div>
+            <div class="item-detail">O blog precisa continuar previsível quando o dashboard retornar campos ausentes, tipos errados, markdown vazio, categoria desconhecida ou autor incompleto.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> usar os helpers já existentes em <code>src/lib/posts.ts</code> e ampliar testes para payloads hostis, sem depender de string matching frágil.</p>
+                <ul>
+                  <li>Testar resposta sem chave de posts, array vazio e item inválido.</li>
+                  <li>Testar categoria desconhecida: deve cair em fallback ou descartar com segurança, conforme padrão atual.</li>
+                  <li>Testar autor sem foto/social: deve usar fallback documentado.</li>
+                  <li>Testar markdown com HTML perigoso e campos opcionais ausentes.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> falhas de payload externo viram estado vazio, fallback ou erro controlado, nunca crash não tratado.</p>
+                <p><strong>Validação:</strong> <code>npm test -- tests/posts.test.ts</code> e <code>npm run ci:check</code>.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item medium" onclick="toggle(this)" data-id="contract-3">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Cobrir contratos de comentários, newsletter e progresso de leitura</div>
+            <div class="item-meta">
+              <span class="badge badge-medium">Médio</span>
+              <span class="badge badge-both">Ambos</span>
+              <span class="item-file">src/components/Comments.astro · src/components/Newsletter.astro · src/lib/reading-progress-client.ts · dashboard app/api/comments/**</span>
+            </div>
+            <div class="item-detail">Esses fluxos têm escrita pública e dependem de respostas específicas do dashboard. Testar sucesso, erro genérico, rate limit, payload inválido e indisponibilidade.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> separar o que é teste unitário de contrato e o que é e2e.</p>
+                <ul>
+                  <li>Blog: testar validadores/clientes puros em <code>tests/comments.test.ts</code>, <code>tests/newsletter-email.test.ts</code> e <code>tests/search.test.ts</code> quando aplicável.</li>
+                  <li>E2E: interceptar respostas do dashboard com Playwright para estados 200, 400, 429 e 500.</li>
+                  <li>Dashboard: adicionar testes dos route handlers públicos para garantir resposta genérica onde houver anti-enumeração.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> cada fluxo público tem pelo menos um teste para sucesso e um para falha controlada.</p>
+                <p><strong>Validação:</strong> blog <code>npm run ci:check</code>; dashboard <code>npm run check</code> e integração quando rota/banco forem tocados.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item medium" onclick="toggle(this)" data-id="contract-4">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Criar teste de contrato reverso no dashboard para payload público de posts</div>
+            <div class="item-meta">
+              <span class="badge badge-medium">Médio</span>
+              <span class="badge badge-dash">Dashboard</span>
+              <span class="item-file">dashboard tests/** · app/api/posts/**</span>
+            </div>
+            <div class="item-detail">O dashboard deve provar que a API pública ainda entrega o formato que o blog consome antes de qualquer deploy.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> no dashboard, adicionar testes para a rota pública de listagem/detalhe de posts usando fixtures de banco ou mocks de service layer.</p>
+                <ul>
+                  <li>Validar que posts não publicados/agendados indevidamente não aparecem.</li>
+                  <li>Validar campos obrigatórios: <code>slug</code>, <code>title</code>, <code>content</code>, <code>categorySlug</code>, <code>author</code>, <code>publishedAt</code>.</li>
+                  <li>Validar que markdown/HTML exposto já sai sanitizado conforme regra do dashboard.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> alteração quebrando shape público falha no CI do dashboard antes de chegar no blog.</p>
+                <p><strong>Validação:</strong> comando de testes do dashboard para route/service layer.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-tab="observabilidade">
+    <div class="section-header">
+      <span class="section-tag tag-observability">Observabilidade</span>
+      <h2 class="section-title">Logs, métricas e sinais operacionais</h2>
+      <span class="section-count">fase 2</span>
+    </div>
+
+    <div class="group" id="g-observability-core">
+      <div class="group-header" onclick="toggleGroup('g-observability-core')">
+        <span class="group-title">Instrumentação mínima útil</span>
+        <span class="group-count-badge" id="cnt-g-observability-core"></span>
+        <span class="collapse-icon">▾</span>
+      </div>
+      <div class="items">
+        <div class="item high" onclick="toggle(this)" data-id="obs-1">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Padronizar logs estruturados nas integrações com o dashboard</div>
+            <div class="item-meta">
+              <span class="badge badge-high">Alto</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/lib/posts.ts · src/lib/comments.ts · src/pages/rss.xml.ts · src/pages/sitemap.xml.ts</span>
+            </div>
+            <div class="item-detail">Quando uma chamada ao dashboard falhar, o log precisa ter rota, endpoint, status, duração, tentativa, fallback usado e request id quando existir.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> criar helper pequeno em <code>src/lib/logger.ts</code> ou <code>src/lib/dashboard-client.ts</code>, mantendo saída em JSON via <code>console.info/warn/error</code> para VPS/Vercel coletarem.</p>
+                <ul>
+                  <li>Campos mínimos: <code>event</code>, <code>level</code>, <code>route</code>, <code>dashboardEndpoint</code>, <code>status</code>, <code>durationMs</code>, <code>fallback</code>.</li>
+                  <li>Nunca logar email, token, conteúdo de comentário, IP bruto ou dados pessoais.</li>
+                  <li>Centralizar timeouts e medição de duração no mesmo helper se possível.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> falhas em posts, RSS, sitemap, comentários/newsletter client-side e progresso de leitura têm sinal rastreável sem vazar dados sensíveis.</p>
+                <p><strong>Validação:</strong> testes unitários do helper e <code>npm run ci:check</code>.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item medium" onclick="toggle(this)" data-id="obs-2">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Medir tempo de resposta das rotas SSR críticas</div>
+            <div class="item-meta">
+              <span class="badge badge-medium">Médio</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/pages/index.astro · src/pages/posts/[slug].astro · src/pages/rss.xml.ts · src/pages/sitemap.xml.ts</span>
+            </div>
+            <div class="item-detail">Rotas SSR precisam indicar quando estão lentas por causa do dashboard, cache ou renderização local.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> medir duração no começo/fim dos frontmatters ou encapsular chamadas em helper comum.</p>
+                <ul>
+                  <li>Logar apenas quando passar de um limite inicial, por exemplo <code>750ms</code>, para evitar ruído.</li>
+                  <li>Separar duração total da rota e duração da chamada ao dashboard.</li>
+                  <li>Adicionar cabeçalho interno opcional em dev, como <code>x-dda-render-ms</code>, apenas se o adapter permitir sem acoplamento pesado.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> quando a home/post/RSS/sitemap ficarem lentos, há log suficiente para saber se o gargalo é dashboard, cache ou render.</p>
+                <p><strong>Validação:</strong> <code>npm run build</code> e smoke local das rotas principais.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item medium" onclick="toggle(this)" data-id="obs-3">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Expandir healthcheck para sinal de dependências sem transformar em gargalo</div>
+            <div class="item-meta">
+              <span class="badge badge-medium">Médio</span>
+              <span class="badge badge-both">Ambos</span>
+              <span class="item-file">src/pages/health.json.ts · dashboard app/api/health/route.ts</span>
+            </div>
+            <div class="item-detail">O health atual prova que o app responde. Falta um sinal barato sobre versão, uptime lógico, dashboard configurado e último erro conhecido de integração.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> manter <code>/health.json</code> rápido e sem chamada remota obrigatória. Expor <code>status</code>, <code>version</code>, <code>timestamp</code>, <code>dashboardConfigured</code> e, se existir cache global, <code>lastDashboardErrorAt</code>.</p>
+                <ul>
+                  <li>Não fazer healthcheck depender de consulta ao dashboard a cada request.</li>
+                  <li>No dashboard, health pode validar DB com timeout curto em rota separada, por exemplo <code>/api/health/deep</code>, se necessário.</li>
+                  <li>Documentar diferença entre liveness e readiness.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> monitor externo consegue distinguir app fora do ar, config ausente e dependência instável.</p>
+                <p><strong>Validação:</strong> <code>npm run build</code>, <code>BASE_URL=... npm run smoke:test</code> em ambiente publicado quando disponível.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item low" onclick="toggle(this)" data-id="obs-4">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Adicionar documentação de eventos observáveis e alertas</div>
+            <div class="item-meta">
+              <span class="badge badge-low">Baixo</span>
+              <span class="badge badge-both">Ambos</span>
+              <span class="item-file">docs/operations.md · docs/ci-cd.md</span>
+            </div>
+            <div class="item-detail">Definir quais eventos importam: API offline, falha de newsletter, falha de comentário, rota SSR lenta, cache stale e smoke pós-deploy.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> criar seção em <code>docs/operations.md</code> com tabela de evento, severidade, onde aparece, ação esperada e dono.</p>
+                <ul>
+                  <li>Alto: dashboard indisponível por mais de 5 minutos.</li>
+                  <li>Médio: newsletter/comentários falhando para usuários.</li>
+                  <li>Médio: RSS/sitemap usando cache stale por janela prolongada.</li>
+                  <li>Baixo: rota SSR acima do limite ocasionalmente.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> se um alerta aparecer, existe runbook curto para investigar.</p>
+                <p><strong>Validação:</strong> revisão manual da documentação.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-tab="resiliencia">
+    <div class="section-header">
+      <span class="section-tag tag-resilience">Resiliência</span>
+      <h2 class="section-title">Reduzir dependência frágil do dashboard</h2>
+      <span class="section-count">fase 3</span>
+    </div>
+
+    <div class="group" id="g-resilience-cache">
+      <div class="group-header" onclick="toggleGroup('g-resilience-cache')">
+        <span class="group-title">Cache, fallback e degradação explícita</span>
+        <span class="group-count-badge" id="cnt-g-resilience-cache"></span>
+        <span class="collapse-icon">▾</span>
+      </div>
+      <div class="items">
+        <div class="item critical" onclick="toggle(this)" data-id="res-1">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Implementar stale cache para posts/listagens quando o dashboard oscilar</div>
+            <div class="item-meta">
+              <span class="badge badge-critical">Crítico</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/lib/posts.ts · src/pages/index.astro · src/components/CategoriaPage.astro</span>
+            </div>
+            <div class="item-detail">O blog deve preferir dados frescos, mas servir o último payload válido por janela controlada quando o dashboard falhar.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> criar cache em memória por processo para respostas normalizadas de posts, com TTL fresco e janela stale.</p>
+                <ul>
+                  <li>Fresh TTL inicial: 30s para listagens/posts, alinhado ao comportamento descrito na documentação.</li>
+                  <li>Stale window inicial: 6h ou 24h, documentada e logada quando usada.</li>
+                  <li>Se não houver cache e o dashboard falhar, mostrar estado offline explícito já previsto pelo projeto.</li>
+                  <li>Não cachear respostas inválidas ou malformadas.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> dashboard fora por curto período não derruba home, categorias e posts já cacheados.</p>
+                <p><strong>Validação:</strong> testes unitários simulando sucesso, falha com cache, falha sem cache e payload inválido; <code>npm run ci:check</code>.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item high" onclick="toggle(this)" data-id="res-2">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Centralizar cliente HTTP do dashboard com timeout, retry curto e erro tipado</div>
+            <div class="item-meta">
+              <span class="badge badge-high">Alto</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/lib/dashboard-client.ts (criar) · src/lib/posts.ts · src/lib/comments.ts</span>
+            </div>
+            <div class="item-detail">Chamadas remotas precisam de comportamento uniforme. Timeout infinito ou retry sem critério aumenta latência e torna falhas difíceis de entender.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> criar wrapper sobre <code>fetch</code> com <code>AbortController</code>, timeout padrão, retry apenas para GET idempotente e erro normalizado.</p>
+                <ul>
+                  <li>Timeout inicial: 3s para SSR, 5s para tarefas menos críticas.</li>
+                  <li>Retry: no máximo 1 tentativa para GET em erro de rede/5xx, nunca para POST de newsletter/comentário.</li>
+                  <li>Erro tipado: <code>DashboardUnavailableError</code>, <code>DashboardInvalidPayloadError</code>, <code>DashboardHttpError</code>.</li>
+                  <li>Integrar logs estruturados do item de observabilidade.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> chamadas ao dashboard têm timeout previsível e falham com erro que o chamador sabe tratar.</p>
+                <p><strong>Validação:</strong> testes do cliente com fetch mockado e <code>npm run ci:check</code>.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item medium" onclick="toggle(this)" data-id="res-3">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Criar fallback específico para RSS, sitemap e AI index</div>
+            <div class="item-meta">
+              <span class="badge badge-medium">Médio</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/pages/rss.xml.ts · src/pages/sitemap.xml.ts · src/pages/ai-index.json.ts</span>
+            </div>
+            <div class="item-detail">Essas rotas têm valor para crawlers. Quando o dashboard falhar, elas devem servir último dado válido ou uma resposta mínima correta, não HTML de erro.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> reutilizar cache stale de posts, mas com headers apropriados para crawlers.</p>
+                <ul>
+                  <li>RSS: último feed válido com comentário XML ou header indicando stale, sem quebrar XML.</li>
+                  <li>Sitemap: rotas estáticas sempre presentes; posts entram se cache válido existir.</li>
+                  <li>AI index: resposta JSON mínima com categorias e metadados do site se posts estiverem indisponíveis.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> falha no dashboard não gera resposta inválida para crawlers.</p>
+                <p><strong>Validação:</strong> <code>npm run build</code>, <code>npm run check:seo</code> após build e testes unitários de geração quando possível.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item medium" onclick="toggle(this)" data-id="res-4">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Definir UX de degradação para comentários, newsletter e progresso de leitura</div>
+            <div class="item-meta">
+              <span class="badge badge-medium">Médio</span>
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/components/Comments.astro · src/components/Newsletter.astro · src/lib/reading-progress-client.ts</span>
+            </div>
+            <div class="item-detail">Interações client-side não devem parecer quebradas quando o dashboard estiver fora. O usuário precisa receber feedback honesto e recuperável.</div>
+            <details class="solution-details">
+              <summary>Solução definitiva sugerida</summary>
+              <div class="solution-block">
+                <p><strong>Implementação:</strong> padronizar estados de erro e retry manual nos componentes públicos.</p>
+                <ul>
+                  <li>Comentários: mostrar estado "temporariamente indisponível" sem esconder comentários já carregados.</li>
+                  <li>Newsletter: mensagem genérica, botão reabilitado e sem perder consentimento/email digitado localmente.</li>
+                  <li>Progresso: manter localStorage como fonte local e sincronizar depois, sem bloquear leitura.</li>
+                </ul>
+                <p><strong>Critério de pronto:</strong> com API interceptada em 500/offline, o usuário entende o estado e não perde ação local desnecessariamente.</p>
+                <p><strong>Validação:</strong> Playwright interceptando dashboard offline para comentários/newsletter/progresso.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-tab="execucao">
+    <div class="section-header">
+      <span class="section-tag tag-roadmap">Execução</span>
+      <h2 class="section-title">Sequência recomendada para implementar sem bagunçar o projeto</h2>
+      <span class="section-count">roteiro</span>
+    </div>
+
+    <div class="group" id="g-execution">
+      <div class="group-header" onclick="toggleGroup('g-execution')">
+        <span class="group-title">Roteiro incremental</span>
+        <span class="group-count-badge" id="cnt-g-execution"></span>
+        <span class="collapse-icon">▾</span>
+      </div>
+      <div class="items">
+        <div class="item info" onclick="toggle(this)" data-id="exec-1">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Sprint 1 — Contratos e fixtures antes de mudar comportamento</div>
+            <div class="item-meta">
+              <span class="badge badge-both">Ambos</span>
+              <span class="item-file">docs/api-contracts.md · tests/fixtures/**</span>
+            </div>
+            <div class="item-detail">Primeiro documentar contratos e criar fixtures. Isso reduz risco de implementar cache/log em cima de suposições erradas.</div>
+            <details class="solution-details">
+              <summary>Entregáveis</summary>
+              <div class="solution-block">
+                <ul>
+                  <li>Inventário de endpoints consumidos pelo blog.</li>
+                  <li>Fixtures válidas, vazias e malformadas.</li>
+                  <li>Testes de posts e devs cobrindo falha de payload.</li>
+                  <li>Checklist de contratos no dashboard para posts públicos.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item info" onclick="toggle(this)" data-id="exec-2">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Sprint 2 — Cliente HTTP, timeouts e logs estruturados</div>
+            <div class="item-meta">
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/lib/dashboard-client.ts · src/lib/logger.ts</span>
+            </div>
+            <div class="item-detail">Depois dos contratos, centralizar chamadas ao dashboard. Esse passo prepara cache e fallback sem espalhar lógica por páginas.</div>
+            <details class="solution-details">
+              <summary>Entregáveis</summary>
+              <div class="solution-block">
+                <ul>
+                  <li>Wrapper de fetch com timeout e erro tipado.</li>
+                  <li>Logs JSON sem dados pessoais.</li>
+                  <li>Medição de duração das chamadas remotas.</li>
+                  <li>Testes unitários do cliente.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item info" onclick="toggle(this)" data-id="exec-3">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Sprint 3 — Stale cache e degradação de UX</div>
+            <div class="item-meta">
+              <span class="badge badge-blog">Blog</span>
+              <span class="item-file">src/lib/posts.ts · src/pages/rss.xml.ts · src/components/Comments.astro · src/components/Newsletter.astro</span>
+            </div>
+            <div class="item-detail">Com contratos e cliente centralizado, implementar fallback sem aumentar complexidade nas páginas.</div>
+            <details class="solution-details">
+              <summary>Entregáveis</summary>
+              <div class="solution-block">
+                <ul>
+                  <li>Cache fresh/stale para posts normalizados.</li>
+                  <li>Fallback para RSS/sitemap/AI index.</li>
+                  <li>Estados offline controlados em comentários e newsletter.</li>
+                  <li>E2E interceptando dashboard offline.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="item info" onclick="toggle(this)" data-id="exec-4">
+          <div class="item-check">✓</div>
+          <div class="item-body">
+            <div class="item-text">Sprint 4 — Health, runbooks e alertas</div>
+            <div class="item-meta">
+              <span class="badge badge-both">Ambos</span>
+              <span class="item-file">src/pages/health.json.ts · docs/operations.md · scripts/smoke-test.mjs</span>
+            </div>
+            <div class="item-detail">Fechar com sinais operacionais e documentação. Não adianta logar melhor se ninguém sabe qual ação tomar quando algo falha.</div>
+            <details class="solution-details">
+              <summary>Entregáveis</summary>
+              <div class="solution-block">
+                <ul>
+                  <li>Healthcheck com campos úteis e baratos.</li>
+                  <li>Runbook de eventos observáveis.</li>
+                  <li>Smoke test verificando comportamento mínimo publicado.</li>
+                  <li>Critérios claros para alertas externos.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const STORAGE_KEY = "dda-quality-observability-resilience-plan";
+
+function allItems() {
+  return Array.from(document.querySelectorAll(".item[data-id]"));
+}
+
+function saveState() {
+  const done = allItems().filter(item => item.classList.contains("done")).map(item => item.dataset.id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+  updateProgress();
+}
+
+function applyState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const done = raw ? JSON.parse(raw) : [];
+  allItems().forEach(item => {
+    item.classList.toggle("done", done.includes(item.dataset.id));
+  });
+  updateProgress();
+}
+
+function toggle(item) {
+  item.classList.toggle("done");
+  saveState();
+}
+
+function resetAll() {
+  localStorage.removeItem(STORAGE_KEY);
+  allItems().forEach(item => item.classList.remove("done"));
+  updateProgress();
+}
+
+function updateProgress() {
+  const items = allItems();
+  const done = items.filter(item => item.classList.contains("done")).length;
+  const total = items.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById("done-count").textContent = done;
+  document.getElementById("total-count").textContent = total;
+  document.getElementById("pct-text").textContent = pct + "%";
+  document.getElementById("progress-bar").style.width = pct + "%";
+
+  document.querySelectorAll(".group").forEach(group => {
+    const groupItems = Array.from(group.querySelectorAll(".item[data-id]"));
+    const groupDone = groupItems.filter(item => item.classList.contains("done")).length;
+    const badge = document.getElementById("cnt-" + group.id);
+    if (badge) badge.textContent = groupDone + "/" + groupItems.length;
+  });
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".section").forEach(section => {
+    section.classList.toggle("visible", tab === "all" || section.dataset.tab === tab);
+  });
+}
+
+function toggleGroup(id) {
+  document.getElementById(id).classList.toggle("collapsed");
+}
+
+function copyPrompt(btn) {
+  const item = btn.closest(".item");
+  const title = item.querySelector(".item-text").textContent.trim();
+  const file = item.querySelector(".item-file")?.textContent.trim() || "Arquivos a descobrir por rg";
+  const detail = item.querySelector(".item-detail").textContent.trim();
+  const solution = item.querySelector(".solution-block").textContent.trim();
+  const prompt = `CONTEXTO
+Repos locais:
+/home/leandro-dukievicz/Projetos/devs-a-deriva
+/home/leandro-dukievicz/Projetos/dashboard-ldstudio
+
+ITEM DO PLANO
+${title}
+
+ARQUIVOS/ÁREAS INDICADAS
+${file}
+
+PROBLEMA
+${detail}
+
+SOLUÇÃO SUGERIDA
+${solution}
+
+TAREFA
+1. Audite o estado atual com rg antes de editar.
+2. Se já estiver implementado, não duplique: adicione teste, documentação ou evidência.
+3. Implemente de forma incremental, seguindo padrões do repo.
+4. Rode as validações relevantes.
+5. Explique mudanças, validações e riscos residuais.`;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "Copiado";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove("copied");
+    }, 1400);
+  });
+}
+
+function injectCopyButtons() {
+  document.querySelectorAll(".solution-block").forEach(block => {
+    if (block.querySelector(".copy-btn")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "copy-btn";
+    btn.textContent = "Copiar prompt de implementação";
+    btn.addEventListener("click", event => {
+      event.stopPropagation();
+      copyPrompt(btn);
+    });
+    block.prepend(btn);
+  });
+}
+
+applyState();
+injectCopyButtons();
+</script>
+</body>
+</html>

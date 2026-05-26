@@ -29,6 +29,7 @@
 - [x] Deploy dual Vercel + VPS com detecção automática de adapter.
 - [x] Migrar para modo híbrido SSR (posts e listagens sem rebuild).
 - Melhorar métricas de leitura.
+- Executar plano de qualidade, observabilidade e resiliência em [`plano-qualidade-observabilidade-resiliencia.html`](./plano-qualidade-observabilidade-resiliencia.html).
 
 ## Longo Prazo
 
