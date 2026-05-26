@@ -277,8 +277,10 @@ const clientHomePosts = homePosts.map((post) => ({
         <div class="content-section" data-section-id="${escapeHtml(post.sectionId)}" data-post-slug="${escapeHtml(post.slug)}" data-post-href="${escapeHtml(post.href)}" role="link" tabindex="0">
           <div class="section-image"><img src="${escapeHtml(post.imageSrc)}" alt="${escapeHtml(post.category)}" class="section-img" loading="lazy" decoding="async" /></div>
           <div class="section-content">
+            <a href="${escapeHtml(post.href)}" class="limbo-cta">Lançar ao limbo</a>
             <h2><a href="${escapeHtml(post.href)}" class="title-link">${escapeHtml(post.title)}</a></h2>
             <p>${escapeHtml(post.excerpt)}</p>
+            <a href="${escapeHtml(post.href)}" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             <div class="card-footer">
               <div class="post-meta">
                 <img class="post-author-photo" src="${escapeHtml(post.author.photo)}" alt="Foto de ${escapeHtml(post.author.name)}" loading="lazy" decoding="async" />
@@ -497,6 +499,11 @@ const clientHomePosts = homePosts.map((post) => ({
       const bhX = window.innerWidth;
       const bhY = 0;
 
+      const limboBtn = section.querySelector('.limbo-cta') as HTMLElement | null;
+      if (limboBtn) await spaghettifyElement(limboBtn, bhX, bhY, 420);
+
+      await sleep(80);
+
       const sectionContent = section.querySelector('.section-content') as HTMLElement | null;
       if (sectionContent) await spaghettifyElement(sectionContent, bhX, bhY, 520);
 
@@ -508,6 +515,15 @@ const clientHomePosts = homePosts.map((post) => ({
       await sleep(60);
       await collapseShell(section, bhX, bhY);
     }
+
+    document.querySelectorAll('.limbo-cta').forEach((cta) => {
+      cta.addEventListener('click', (event) => {
+        event.preventDefault();
+        const section = (cta as HTMLElement).closest('.content-section') as HTMLElement | null;
+        if (!section) return;
+        vanishSectionSequential(section);
+      });
+    });
 
     const PROGRESS_CIRCUMFERENCE = 43.98;
 

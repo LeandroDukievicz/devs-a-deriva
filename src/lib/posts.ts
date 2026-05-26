@@ -197,7 +197,8 @@ function mapPost(raw: any): Post {
   const cat = getCatInfo(categorySlug);
   const title = raw.title ?? 'Post sem titulo';
   const content = stripTitleHeading(raw.content ?? '', title);
-  const excerpt = (firstTextParagraph(content) || firstTextParagraph(raw.excerpt ?? '') || markdownToText(raw.excerpt ?? content)).slice(0, 360);
+  const excerptRaw = (firstTextParagraph(content) || firstTextParagraph(raw.excerpt ?? '') || markdownToText(raw.excerpt ?? content)).slice(0, 360);
+  const excerpt = excerptRaw.length === 360 ? excerptRaw.trimEnd() + '…' : excerptRaw;
   const author: Author = raw.author?.displayName
     ? {
         name: raw.author.displayName,

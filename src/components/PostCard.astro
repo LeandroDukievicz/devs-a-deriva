@@ -21,8 +21,10 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     <img src={imageSrc} alt={category} class="section-img" width="400" height="266" loading="lazy" decoding="async" />
   </div>
   <div class="section-content">
+    <a href={href} class="limbo-cta">Lançar ao limbo</a>
     <h2><a href={href} class="title-link">{title}</a></h2>
     <p>{excerpt}</p>
+    <a href={href} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
     <div class="card-footer">
       <div class="post-meta">
         <img
@@ -49,8 +51,8 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     position: relative;
     display: flex;
     flex-direction: row;
-    height: 200px;
-    min-height: 200px;
+    height: 220px;
+    min-height: 220px;
     box-sizing: border-box;
     border: 1px outset var(--color-star);
     border-radius: 8px;
@@ -81,7 +83,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   }
 
   .content-section h2 {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     font-size: 1.1rem;
     font-weight: 600;
     font-family: monospace;
@@ -93,7 +95,7 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   }
 
   .content-section p {
-    margin: 0;
+    margin: 0 0 6px;
     font-size: 0.8rem;
     color: #a0c4cc;
     font-family: monospace;
@@ -133,12 +135,44 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
   }
 
   .section-content {
+    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 18px 24px 16px 8px;
+    padding: 18px 20px 16px 8px;
     min-width: 0;
     overflow: hidden;
+  }
+
+  .limbo-cta {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    color: var(--color-star);
+    opacity: 0;
+    visibility: hidden;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.58rem;
+    font-family: monospace;
+    transform: translateY(-4px);
+    transition: color 0.3s ease, transform 0.35s ease, opacity 0.35s ease, visibility 0.35s ease;
+  }
+
+  .content-section:hover .limbo-cta {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .limbo-cta:hover {
+    color: var(--color-accent);
+    transform: translateY(-1px);
   }
 
   .title-link {
@@ -151,13 +185,36 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     color: var(--color-accent);
   }
 
+  .cta-read {
+    font-size: 0.7rem;
+    font-family: monospace;
+    color: var(--color-star);
+    text-decoration: none;
+    margin-bottom: 8px;
+    transition: color 0.2s;
+  }
+
+  .cta-read:hover {
+    color: var(--color-accent);
+  }
+
+  .dot {
+    display: inline-block;
+    animation: wave-dot 1.2s ease-in-out infinite;
+  }
+
+  @keyframes wave-dot {
+    0%, 100% { transform: translateY(0);    opacity: 1;   }
+    50%       { transform: translateY(-4px); opacity: 0.4; }
+  }
+
   .card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 8px;
     flex-shrink: 0;
   }
 
@@ -224,8 +281,8 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
 
   @media (max-width: 1024px) {
     .content-section {
-      height: 220px;
-      min-height: 220px;
+      height: 240px;
+      min-height: 240px;
     }
 
     .section-image {
@@ -239,8 +296,8 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
 
   @media (max-width: 768px) {
     .content-section {
-      height: 380px;
-      min-height: 380px;
+      height: 420px;
+      min-height: 420px;
       border-radius: 10px;
       flex-direction: column;
     }
@@ -272,12 +329,17 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
       width: 30px;
       height: 30px;
     }
+
+    .limbo-cta {
+      top: 12px;
+      right: 12px;
+    }
   }
 
   @media (max-width: 480px) {
     .content-section {
-      height: 340px;
-      min-height: 340px;
+      height: 380px;
+      min-height: 380px;
     }
 
     .section-image {
