@@ -51,7 +51,7 @@
   },
   "overrides": {
     "yaml": ">=2.9.0",
-    "tmp": ">=0.2.4",
+    "tmp": ">=0.2.6",
     "@vercel/routing-utils": {
       "path-to-regexp": ">=6.3.0"
     }
