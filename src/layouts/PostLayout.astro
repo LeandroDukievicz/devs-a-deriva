@@ -1,0 +1,55 @@
+---
+import PageLayout from './PageLayout.astro';
+import type { Post } from '../types/blog';
+
+interface Props {
+  post: Post;
+  heroImageAbsolute: string;
+}
+
+const { post, heroImageAbsolute } = Astro.props;
+const SITE = 'https://devsaderiva.com.br';
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.title,
+  description: post.excerpt,
+  image: heroImageAbsolute,
+  author: {
+    '@type': 'Person',
+    name: post.author.name,
+    ...(post.author.socialLinks.linkedin ? { url: post.author.socialLinks.linkedin } : {}),
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Devs à Deriva',
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE}/logo-high-color.webp`,
+    },
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `${SITE}/posts/${post.slug}`,
+  },
+  inLanguage: 'pt-BR',
+  keywords: post.category,
+  ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
+};
+---
+
+<PageLayout
+  title={`${post.title} · Devs à Deriva`}
+  description={post.excerpt}
+  ogImage={heroImageAbsolute}
+  ogType="article"
+  starBackground
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
+    <slot name="head" />
+  </Fragment>
+
+  <slot />
+</PageLayout>

@@ -1,0 +1,50 @@
+---
+import PageLayout from './PageLayout.astro';
+import type { CategoryMeta } from '../lib/categories';
+
+interface Props {
+  category: CategoryMeta;
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const SITE = 'https://devsaderiva.com.br';
+const { category } = Astro.props;
+const title = Astro.props.title ?? `${category.label} · Devs à Deriva`;
+const description = Astro.props.description ?? category.description;
+const ogImage = Astro.props.ogImage ?? `${SITE}${category.illustration}`;
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: SITE,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: category.label,
+      item: `${SITE}/categorias/${category.slug}/`,
+    },
+  ],
+};
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  starBackground
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+    <slot name="head" />
+  </Fragment>
+
+  <slot />
+</PageLayout>

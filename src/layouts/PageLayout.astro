@@ -1,0 +1,47 @@
+---
+import Base from './Base.astro';
+import StarBackground from '../components/StarBackground.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  hideNavbar?: boolean;
+  hideFooter?: boolean;
+  noindex?: boolean;
+  starBackground?: boolean;
+  starBackgroundColor?: string;
+  starBackgroundTone?: 'default' | 'home';
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  ogType,
+  hideNavbar = false,
+  hideFooter = false,
+  noindex = false,
+  starBackground = false,
+  starBackgroundColor,
+  starBackgroundTone,
+} = Astro.props;
+---
+
+<Base
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  ogType={ogType}
+  hideNavbar={hideNavbar}
+  hideFooter={hideFooter}
+  noindex={noindex}
+>
+  <Fragment slot="head">
+    <slot name="head" />
+  </Fragment>
+
+  {starBackground && <StarBackground backgroundColor={starBackgroundColor} tone={starBackgroundTone} />}
+  <slot />
+</Base>
