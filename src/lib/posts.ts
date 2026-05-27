@@ -2,6 +2,7 @@ export type { Author, Post } from '../types/blog';
 import type { Author, Post } from '../types/blog';
 import { escapeHtml, slugText } from './utils/string';
 import { CATEGORIES } from './categories';
+import { fetchWithRetry } from './api';
 
 export { escapeHtml, slugText };
 
@@ -248,7 +249,7 @@ export async function fetchPosts(): Promise<Post[]> {
   const now = Date.now();
   if (_cache && import.meta.env.PROD && now - _cacheTime < CACHE_TTL_MS) return _cache;
   try {
-    const res = await fetch(`${DASHBOARD_URL}/api/posts?status=PUBLISHED`);
+    const res = await fetchWithRetry(`${DASHBOARD_URL}/api/posts?status=PUBLISHED`);
     if (!res.ok) { _apiOffline = true; return _cache ?? []; }
     const json = await res.json();
     const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
