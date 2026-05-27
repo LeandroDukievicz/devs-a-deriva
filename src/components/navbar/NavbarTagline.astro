@@ -14,15 +14,11 @@
     top: 72px;
     left: 205px;
     z-index: 101;
-    display: flex;
-    align-items: center;
     max-width: min(520px, calc(100vw - 245px));
-    min-height: 22px;
-    overflow: hidden;
     color: var(--color-star);
     font-family: "JetBrains Mono", "Fira Code", monospace;
     font-size: 0.78rem;
-    line-height: 1.35;
+    line-height: 1.55;
     letter-spacing: 0;
     text-shadow: 0 0 10px var(--color-star-40);
     opacity: 0;
@@ -37,22 +33,21 @@
   }
 
   .nav-tagline-prefix {
-    flex: 0 0 auto;
+    display: inline;
     margin-right: 7px;
     color: var(--color-accent);
     text-shadow: 0 0 12px var(--color-accent-60);
   }
 
   .nav-tagline-text {
-    display: block;
-    min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: clip;
+    display: inline;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
 
   .nav-tagline-cursor {
-    flex: 0 0 auto;
+    display: inline-block;
+    vertical-align: text-bottom;
     width: 8px;
     height: 1.12em;
     margin-left: 3px;
