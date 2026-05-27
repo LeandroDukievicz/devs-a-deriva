@@ -58,7 +58,9 @@ const { slug, sectionId, href, title, category, excerpt, imageSrc, author, autho
     border: 1px outset var(--color-star);
     border-radius: 8px;
     overflow: hidden;
-    background: transparent;
+    background: rgba(2, 11, 24, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
   }
 
