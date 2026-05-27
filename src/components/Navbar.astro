@@ -1,11 +1,13 @@
 ---
 import NavbarLogo from './navbar/NavbarLogo.astro';
+import NavbarTagline from './navbar/NavbarTagline.astro';
 import NavbarLinks from './navbar/NavbarLinks.astro';
 
 const isHomePage = Astro.url.pathname === '/';
 ---
 
 {isHomePage && <NavbarLogo />}
+{isHomePage && <NavbarTagline />}
 <NavbarLinks />
 
 <script>
@@ -24,10 +26,12 @@ const isHomePage = Astro.url.pathname === '/';
   const TODAY     = new Date().toISOString().slice(0, 10);
   const navbar    = document.querySelector('.navbar') as HTMLElement | null;
   const logoLink  = document.getElementById('nav-logo-link') as HTMLAnchorElement | null;
+  const tagline   = document.getElementById('nav-tagline') as HTMLElement | null;
 
   function showNavbar() {
     navbar?.classList.add('is-visible');
     logoLink?.classList.add('is-visible');
+    tagline?.classList.add('is-visible');
   }
 
   function syncScrolledNavbar() {

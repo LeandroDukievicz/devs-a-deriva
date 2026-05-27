@@ -1,0 +1,195 @@
+<div
+  id="nav-tagline"
+  class="nav-tagline"
+  aria-label="Frases do Devs à Deriva"
+>
+  <span class="nav-tagline-prefix" aria-hidden="true">&gt;_</span>
+  <span class="nav-tagline-text" aria-hidden="true"></span>
+  <span class="nav-tagline-cursor" aria-hidden="true"></span>
+</div>
+
+<style>
+  .nav-tagline {
+    position: fixed;
+    top: 72px;
+    left: 205px;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    max-width: min(520px, calc(100vw - 245px));
+    min-height: 22px;
+    overflow: hidden;
+    color: var(--color-star);
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    letter-spacing: 0;
+    text-shadow: 0 0 10px var(--color-star-40);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 0.45s ease, transform 0.35s ease;
+  }
+
+  .nav-tagline.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .nav-tagline-prefix {
+    flex: 0 0 auto;
+    margin-right: 7px;
+    color: var(--color-accent);
+    text-shadow: 0 0 12px var(--color-accent-60);
+  }
+
+  .nav-tagline-text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+  }
+
+  .nav-tagline-cursor {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 1.12em;
+    margin-left: 3px;
+    background: var(--color-accent);
+    box-shadow: 0 0 12px var(--color-accent-60);
+    animation: nav-tagline-cursor 0.85s steps(1, end) infinite;
+  }
+
+  @keyframes nav-tagline-cursor {
+    0%, 45% {
+      opacity: 1;
+    }
+
+    46%, 100% {
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .nav-tagline {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-tagline {
+      transition: opacity 0.2s ease !important;
+      transform: none;
+    }
+
+    .nav-tagline-cursor {
+      animation: none !important;
+    }
+  }
+</style>
+
+<script>
+  const taglineWindow = window as typeof window & {
+    __ddaTaglineAbort?: AbortController;
+  };
+  taglineWindow.__ddaTaglineAbort?.abort();
+  const taglineAbort = new AbortController();
+  taglineWindow.__ddaTaglineAbort = taglineAbort;
+  const taglineSignal = taglineAbort.signal;
+
+  const phrases = [
+    'Um Blog de Dev pra Dev',
+    'Entre Bugs e muita sindrome do impostor e café é claro',
+    'Light mode? tu é doido é ?',
+    'a cada nova ia que surge, eu só quero entregar a minha task ermão !!',
+    'A tecnologia avança, A ansiedade vai junto !',
+    'O futuro chegou ! Blz, mas cadê a documentação?',
+    'A IA vai mudar o mundo ! mas vc ainda não vai saber centralizar aquela div marota!',
+    'Na Minha máquina funciona !',
+    'Nem tudo precisa caber numa sprint mano !',
+    'Como assim vc não gosta de café?',
+    'Blog pensado e criado pra quem ainda pensa pra dar enter !',
+    'O futuro chegou ! pena que ainda tá em beta',
+    'Inovação totalmente disruptiva, agora o botão que era azul vai passar a ser roxo !',
+    'dá pra automatizar tudo agora, menos a ansiedade!',
+    'Era pra hoje eu ser muito mais produtivo, mas tive que parar pra organizar o meu notion sobre produtividade e dai não deu..',
+    'Disseram e prometeram que eu ia trabalhar menos quando a IA chegasse, disseram mas...',
+  ];
+
+  const tagline = document.getElementById('nav-tagline');
+  const text = tagline?.querySelector<HTMLElement>('.nav-tagline-text');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (tagline && text) {
+    if (prefersReducedMotion) {
+      text.textContent = phrases[0];
+    } else {
+      let phraseIndex = 0;
+      let charIndex = 0;
+      let deleting = false;
+      let started = false;
+      let timer: number | null = null;
+
+      const schedule = (delay: number) => {
+        timer = window.setTimeout(typeNext, delay);
+      };
+
+      const clearTimer = () => {
+        if (timer !== null) {
+          window.clearTimeout(timer);
+          timer = null;
+        }
+      };
+
+      const typeNext = () => {
+        const phrase = phrases[phraseIndex];
+        text.textContent = phrase.slice(0, charIndex);
+
+        if (!deleting && charIndex < phrase.length) {
+          charIndex += 1;
+          schedule(42 + Math.random() * 26);
+          return;
+        }
+
+        if (!deleting) {
+          deleting = true;
+          schedule(1600);
+          return;
+        }
+
+        if (charIndex > 0) {
+          charIndex -= 1;
+          schedule(22);
+          return;
+        }
+
+        deleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        schedule(320);
+      };
+
+      const startTyping = () => {
+        if (started) return;
+        started = true;
+        schedule(280);
+      };
+
+      if (tagline.classList.contains('is-visible')) {
+        startTyping();
+      } else {
+        const observer = new MutationObserver(() => {
+          if (tagline.classList.contains('is-visible')) {
+            startTyping();
+            observer.disconnect();
+          }
+        });
+
+        observer.observe(tagline, { attributes: true, attributeFilter: ['class'] });
+        taglineSignal.addEventListener('abort', () => observer.disconnect(), { once: true });
+      }
+
+      taglineSignal.addEventListener('abort', clearTimer, { once: true });
+    }
+  }
+</script>
