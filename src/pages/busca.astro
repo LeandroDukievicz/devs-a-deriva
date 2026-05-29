@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import Base from '../layouts/Base.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import { fetchPosts, isApiOffline } from '../lib/posts';
 
 const allPosts = await fetchPosts();
@@ -16,9 +16,13 @@ const searchIndex = allPosts.map((post) => ({
   authorName: post.author.name,
   publishedAt: post.publishedAt ?? null,
 }));
+
+function safeJson(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
 ---
 
-<Base
+<PageLayout
   title="Busca · Devs à Deriva"
   description="Busque posts por título, resumo, categoria ou autor no Devs à Deriva."
 >
@@ -89,21 +93,27 @@ const searchIndex = allPosts.map((post) => ({
         <ul class="busca-list" id="busca-list" role="list" hidden></ul>
       </div>
     </div>
+    <script id="busca-data" type="application/json" set:html={safeJson(searchIndex)} />
   </main>
-</Base>
+</PageLayout>
 
-<script define:vars={{ searchIndex }}>
-  const inputEl   = document.getElementById('busca-input');
-  const clearBtn  = document.getElementById('busca-clear');
-  const hintEl    = document.getElementById('busca-hint');
-  const listEl    = document.getElementById('busca-list');
-  const stateIdle = document.getElementById('busca-state-idle');
-  const stateNoPosts   = document.getElementById('busca-state-no-posts');
-  const stateNoResults = document.getElementById('busca-state-no-results');
+<script>
+  const searchIndex: Array<{
+    slug: string; title: string; excerpt: string; category: string;
+    categorySlug: string; authorName: string; publishedAt: string | null;
+  }> = JSON.parse(document.getElementById('busca-data')!.textContent!);
+  type Post = typeof searchIndex[number];
+  const inputEl   = document.getElementById('busca-input') as HTMLInputElement | null;
+  const clearBtn  = document.getElementById('busca-clear') as HTMLButtonElement | null;
+  const hintEl    = document.getElementById('busca-hint') as HTMLElement | null;
+  const listEl    = document.getElementById('busca-list') as HTMLElement | null;
+  const stateIdle = document.getElementById('busca-state-idle') as HTMLElement | null;
+  const stateNoPosts   = document.getElementById('busca-state-no-posts') as HTMLElement | null;
+  const stateNoResults = document.getElementById('busca-state-no-results') as HTMLElement | null;
 
   const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
-  function fmtDate(iso) {
+  function fmtDate(iso: string | null): string {
     if (!iso) return '';
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '';
@@ -117,8 +127,8 @@ const searchIndex = allPosts.map((post) => ({
     if (listEl)        listEl.hidden        = !results;
   }
 
-  function render(items) {
-    listEl.innerHTML = '';
+  function render(items: Post[]) {
+    listEl!.innerHTML = '';
     for (const post of items) {
       const dateStr = fmtDate(post.publishedAt);
       const li   = document.createElement('li');
@@ -150,8 +160,8 @@ const searchIndex = allPosts.map((post) => ({
 
       const excerpt = document.createElement('p');
       excerpt.className = 'busca-result-excerpt';
-      const raw = post.excerpt ?? '';
-      excerpt.textContent = raw.length > 160 ? raw.slice(0, 160) + '…' : raw;
+      const rawExcerpt = post.excerpt ?? '';
+      excerpt.textContent = rawExcerpt.length > 160 ? rawExcerpt.slice(0, 160) + '…' : rawExcerpt;
 
       const meta = document.createElement('div');
       meta.className = 'busca-result-meta';
@@ -170,13 +180,13 @@ const searchIndex = allPosts.map((post) => ({
 
       a.append(top, title, excerpt, meta);
       li.appendChild(a);
-      listEl.appendChild(li);
+      listEl!.appendChild(li);
     }
   }
 
-  function search(raw) {
+  function search(raw: string) {
     const q = raw.trim().toLowerCase();
-    clearBtn.hidden = raw.length === 0;
+    if (clearBtn) clearBtn.hidden = raw.length === 0;
 
     if (!q) {
       if (searchIndex.length === 0) {
@@ -184,7 +194,7 @@ const searchIndex = allPosts.map((post) => ({
       } else {
         setUI({ idle: true });
       }
-      hintEl.textContent = '';
+      if (hintEl) hintEl.textContent = '';
       return;
     }
 
@@ -197,19 +207,19 @@ const searchIndex = allPosts.map((post) => ({
 
     if (results.length === 0) {
       setUI({ noResults: true });
-      hintEl.textContent = '';
+      if (hintEl) hintEl.textContent = '';
     } else {
       render(results);
       setUI({ results: true });
       const n = results.length;
-      hintEl.textContent = `${n} resultado${n !== 1 ? 's' : ''} encontrado${n !== 1 ? 's' : ''}.`;
+      if (hintEl) hintEl.textContent = `${n} resultado${n !== 1 ? 's' : ''} encontrado${n !== 1 ? 's' : ''}.`;
     }
   }
 
   // Initial state
   searchIndex.length === 0 ? setUI({ noPosts: true }) : setUI({ idle: true });
 
-  inputEl?.addEventListener('input', (e) => search(e.target.value));
+  inputEl?.addEventListener('input', (e) => search((e.target as HTMLInputElement).value));
 
   clearBtn?.addEventListener('click', () => {
     if (inputEl) { inputEl.value = ''; inputEl.focus(); }

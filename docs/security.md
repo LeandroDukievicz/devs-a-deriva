@@ -131,6 +131,19 @@ Gerencia SSL automaticamente via Let's Encrypt. Certificados ativos para:
 
 Localização: `/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/`
 
+### Content Security Policy
+
+O blog mantém uma CSP enforced em `nginx.conf` e `vercel.json` para bloquear enquadramento externo e restringir origens conhecidas. Como ainda existem scripts inline gerados por páginas/componentes Astro e integrações de analytics, a policy enforced preserva `script-src 'unsafe-inline'` temporariamente.
+
+Também existe uma CSP mais restritiva em `Content-Security-Policy-Report-Only`, com `script-src 'self'`, `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'` e `report-uri /api/csp-report`. Essa policy serve para monitorar violações antes de remover exceções da CSP enforced.
+
+Checklist para promover report-only para enforced:
+- Monitorar logs de `[csp-report]` por pelo menos 1 semana.
+- Confirmar que violações esperadas são apenas scripts inline/analytics já conhecidos.
+- Migrar scripts inline críticos para arquivos processados, hashes ou nonces.
+- Restringir `img-src` para o domínio definitivo de assets R2 quando ele estiver fixado.
+- Trocar a policy restritiva para `Content-Security-Policy` apenas depois de páginas de home, posts, categorias, comentários, newsletter e busca abrirem sem violações inesperadas.
+
 ---
 
 ## Checklist de manutenção

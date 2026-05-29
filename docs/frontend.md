@@ -113,8 +113,11 @@ Formulário de inscrição com honeypot e consentimento LGPD. O backend do dashb
 
 | Layout | Uso |
 |---|---|
-| `Base.astro` | Layout principal com meta tags SEO, OG, JSON-LD, Vercel Analytics |
-| `LegalLayout.astro` | Layout simplificado para páginas legais |
+| `Base.astro` | Esqueleto global com HTML, meta padrão, slots de head, tema, Navbar, Analytics, rodapé e controles globais |
+| `PageLayout.astro` | Wrapper genérico para páginas sem SEO estrutural próprio, com opção de fundo estrelado |
+| `PostLayout.astro` | Layout de posts; aplica OG article e JSON-LD `Article` |
+| `CategoryLayout.astro` | Layout de categorias; aplica metadados da categoria, fundo estrelado e JSON-LD `BreadcrumbList` |
+| `LegalLayout.astro` | Layout simplificado para páginas legais, herdando `PageLayout` |
 
 ## Lib
 

@@ -150,5 +150,5 @@ O projeto preserva:
 - JavaScript no cliente é usado apenas quando a interação exige.
 - Conteúdo principal vem do dashboard via API; mocks/hardcoded existem apenas como fallback visual ou conteúdo institucional.
 - O dashboard não contamina a complexidade da experiência pública.
-- O CSP usa `'unsafe-inline'` em `script-src` porque o blog usa scripts inline gerados pelo Astro `is:inline`. Nonce por request exigiria middleware adicional e fica como débito técnico.
+- A CSP enforced ainda usa `'unsafe-inline'` em `script-src` porque o blog usa scripts inline gerados pelo Astro `is:inline`. Uma CSP paralela em `Content-Security-Policy-Report-Only` testa `script-src 'self'` e envia violações para `/api/csp-report` antes do endurecimento definitivo.
 - Testes mínimos de helpers e smoke e2e fazem parte do baseline de CI.

@@ -2,8 +2,8 @@
 
 Projeto analisado: `/home/leandro-dukievicz/Projetos/devs-a-deriva`
 
-**Atualizado em:** 13/05/2026  
-**Documento original:** 05/05/2026 — Esta versão reflete o estado atual após implementação do pipeline CI/CD completo e configuração de segurança (Cloudflare + VPS).
+**Atualizado em:** 28/05/2026  
+**Documento original:** 05/05/2026 — Esta versão reflete o estado atual após implementação do pipeline CI/CD completo, configuração de segurança (Cloudflare + VPS) e hardening de CSP (remoção de `'unsafe-inline'`).
 
 ---
 
@@ -39,7 +39,9 @@ Desde a análise original (05/05/2026) foram implementados: **pipeline CI/CD com
 
 Em 13/05/2026 foram implementadas as configurações de **segurança e proteção DDoS**: proxy Cloudflare com WAF, SSL Full (strict), HSTS, Bot Fight Mode, regras de bloqueio de paths maliciosos, rate limiting, firewall UFW na VPS restrito aos IPs do Cloudflare e Fail2ban para proteção SSH.
 
-O projeto está em estágio **editorial funcional com infraestrutura de produção e segurança**: CI robusto, deploy com rollback, Lighthouse bloqueante, proteção DDoS em múltiplas camadas e documentação completa.
+Em 28/05/2026 foi implementado o **hardening de CSP**: remoção de `'unsafe-inline'` do `script-src`, substituído por SHA-256 hashes dos scripts inline fixos. Scripts `define:vars` em três páginas foram refatorados para o padrão `<script type="application/json">` + scripts bundled normais, eliminando a necessidade de inline dinâmico. Script pós-build `scripts/update-csp-hashes.mjs` extrai automaticamente todos os hashes do `dist/client/` e atualiza `vercel.json` e `nginx.conf` após cada build.
+
+O projeto está em estágio **editorial funcional com infraestrutura de produção e segurança**: CI robusto, deploy com rollback, Lighthouse bloqueante, proteção DDoS em múltiplas camadas, CSP sem `'unsafe-inline'` e documentação completa.
 
 ---
 
@@ -141,7 +143,7 @@ SSG com Astro: o servidor de build executa frontmatter de páginas e componentes
 
 | Arquivo | Linhas | Análise |
 | --- | --- | --- |
-| `package.json` | 38 | 14 scripts: dev, lint, typecheck, validate:content, check:seo, check:links, check:security, smoke:test, ci:check, build, preview, lighthouse, test, test:e2e, test:watch, test:ci. |
+| `package.json` | 39 | 15 scripts: dev, lint, typecheck, validate:content, check:seo, check:links, check:security, smoke:test, ci:check, build, postbuild, preview, lighthouse, test, test:e2e, test:watch, test:ci. |
 | `astro.config.mjs` | 9 | Integra Tailwind v4 via `@tailwindcss/vite` (plugin Vite, não integração Astro). Sem `tailwind.config.mjs`. |
 | `tsconfig.json` | 9 | Extends `astro/tsconfigs/strict`; inclui `vitest/globals` nos types; cobre `src/` e `tests/`. |
 | `vercel.json` | 17 | Headers globais: nosniff, DENY frame, referrer policy, permissions policy e CSP. |
@@ -168,7 +170,8 @@ SSG com Astro: o servidor de build executa frontmatter de páginas e componentes
 | `check:security` | `npm audit` + scan de segredos versionados + validação de `.env.example`. |
 | `smoke:test` | Valida rotas públicas e payload de `/health.json` contra `BASE_URL`. |
 | `ci:check` | `lint && typecheck && validate:content && test` — suite pré-build. |
-| `build` | Geração estática `astro build`. |
+| `build` | Geração estática `astro build`. Dispara `postbuild` automaticamente. |
+| `postbuild` | Executa `scripts/update-csp-hashes.mjs`: extrai hashes de scripts inline do `dist/client/` e atualiza `vercel.json` e `nginx.conf`. |
 | `preview` | Serve `dist/` localmente. |
 | `lighthouse` | Lighthouse CI contra `dist/` estático. |
 | `test` | Testes unitários Vitest. |
@@ -252,6 +255,17 @@ Os testes e2e não rodam no CI automaticamente; são executados localmente.
 ---
 
 ## Layout, tema e estilos
+
+### Layouts Astro
+
+`Base.astro` concentra o esqueleto HTML global, meta tags padrão, slots de head, tema, Navbar, Analytics, rodapé, cookie consent, CTA admin e botão de voltar ao topo.
+
+Layouts específicos compõem o `Base` para reduzir acoplamento das páginas:
+
+- `PageLayout.astro`: wrapper genérico com opção de `StarBackground`.
+- `PostLayout.astro`: metadados de post, `og:type=article` e JSON-LD `Article`.
+- `CategoryLayout.astro`: metadados de categoria, `StarBackground` e JSON-LD `BreadcrumbList`.
+- `LegalLayout.astro`: páginas legais herdando `PageLayout`.
 
 ### `src/layouts/Base.astro`
 
@@ -512,7 +526,7 @@ Positivos: Astro estático, cache Nginx longo para assets, lazy loading em image
 
 ## Segurança e infraestrutura
 
-Configurações implementadas em 13/05/2026. Documentação detalhada em [`docs/security.md`](security.md).
+Configurações de rede implementadas em 13/05/2026. Hardening de CSP implementado em 28/05/2026. Documentação detalhada em [`docs/security.md`](security.md).
 
 ### Arquitetura de proteção
 
@@ -550,6 +564,23 @@ O IP real da VPS fica oculto atrás do Cloudflare. Tráfego nas portas 80/443 s�
 
 **Caddy:** reverse proxy com SSL automático via Let's Encrypt. Certificados ativos para `devsaderiva.com.br`, `www.devsaderiva.com.br` e `dashboard.devsaderiva.com.br`.
 
+### Content Security Policy (CSP)
+
+A CSP enforced em `nginx.conf` e `vercel.json` usa `script-src` **hash-based, sem `'unsafe-inline'`** desde 28/05/2026.
+
+**Hashes gerenciados automaticamente:** o script `scripts/update-csp-hashes.mjs` (executado pelo `postbuild`) varre `dist/client/**/*.html` após cada build, extrai todos os hashes SHA-256 dos scripts inline presentes nas páginas pré-renderizadas e reescreve o `script-src` em ambos os arquivos de configuração. Isso garante que os hashes fiquem sempre sincronizados com o build atual sem intervenção manual.
+
+**Scripts inline existentes cobertos por hashes:**
+- `ThemeProvider.astro` — script `is:inline` de inicialização do tema (conteúdo fixo, hash estável entre builds)
+- `Base.astro` — script `is:inline` de inicialização do Google tag/gtag (conteúdo fixo)
+- Scripts bundled pelo Astro para páginas estáticas — módulos pequenos otimizados pelo Vite (Vercel Analytics, cookie consent, scripts de página)
+
+**Refatoração `define:vars`:** três scripts que usavam `define:vars` (passagem inline de dados do server para o browser) foram migrados para o padrão `<script type="application/json" id="...">` + `<script>` bundled normal. Esse padrão elimina o inline dinâmico sem perda de funcionalidade: `index.astro` (lista de posts para load more), `busca.astro` (índice de busca) e `CategoriaPage.astro` (posts de categoria para load more).
+
+**Páginas SSR:** scripts das páginas SSR são emitidos como arquivos externos (`/_astro/*.js`) pelo Astro, cobertos por `'self'` — não requerem hashes.
+
+A CSP `Content-Security-Policy-Report-Only` continua ativa com `script-src 'self'` para monitorar violações residuais.
+
 ---
 
 ## Riscos e oportunidades
@@ -564,6 +595,7 @@ O IP real da VPS fica oculto atrás do Cloudflare. Tráfego nas portas 80/443 s�
 | Média | E2E tests excluídos do CI | Parcial | Adicionar ao CI contra preview estático quando estabilizar. |
 | Baixa | Gitleaks — possíveis falsos positivos | Novo | Criar `.gitleaks.toml` com allowlist se necessário. |
 | Baixa | Releases versionadas com symlink | Futuro | `/releases/{sha}` + symlink `current` para rollback zero-downtime. |
+| Resolvido | CSP `'unsafe-inline'` no `script-src` | ✓ | Substituído por hash-based + `postbuild` de atualização automática. |
 | Resolvido | SEO — canonical, sitemap, OG, JSON-LD | ✓ | — |
 | Resolvido | Ausência de testes unitários | ✓ | — |
 | Resolvido | Ausência de CI/CD estruturado | ✓ | — |
@@ -642,6 +674,7 @@ O IP real da VPS fica oculto atrás do Cloudflare. Tráfego nas portas 80/443 s�
 | `package.json` | JSON | 38 | 14 scripts. Dependências Astro 6, Tailwind 4, Vitest, Playwright. |
 | `playwright.config.ts` | Config | 15 | Configuração e2e Playwright. |
 | `scripts/check-links.mjs` | Script | 103 | Links internos e âncoras em dist/. |
+| `scripts/update-csp-hashes.mjs` | Script | ~60 | Pós-build: extrai hashes SHA-256 de scripts inline do dist/client/ e atualiza vercel.json e nginx.conf. |
 | `scripts/check-security.mjs` | Script | 67 | npm audit + segredos + .env.example. |
 | `scripts/check-seo.mjs` | Script | 69 | SEO técnico em dist/. |
 | `scripts/deploy.sh` | Shell | 43 | .previous-rev, git, docker compose, trap ERR. |
@@ -721,9 +754,10 @@ O IP real da VPS fica oculto atrás do Cloudflare. Tráfego nas portas 80/443 s�
 | `docs/security.md` | Markdown | 145 | ~4 KB |
 | `lighthouserc.cjs` | CI/config | 35 | 1080 bytes |
 | `nginx.conf` | Infra/config | 18 | 460 bytes |
-| `package.json` | JSON | 38 | ~950 bytes |
+| `package.json` | JSON | 39 | ~1000 bytes |
 | `playwright.config.ts` | Config | 15 | 304 bytes |
 | `scripts/check-links.mjs` | Script | 103 | 3188 bytes |
+| `scripts/update-csp-hashes.mjs` | Script | ~60 | ~2 KB |
 | `scripts/check-security.mjs` | Script | 67 | 1989 bytes |
 | `scripts/check-seo.mjs` | Script | 69 | 2361 bytes |
 | `scripts/deploy.sh` | Shell | 43 | 1288 bytes |

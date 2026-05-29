@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/e2e',
   use: {
-    baseURL: 'https://devsaderiva.com.br',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'https://devsaderiva.com.br',
     trace: 'on-first-retry',
   },
   projects: [

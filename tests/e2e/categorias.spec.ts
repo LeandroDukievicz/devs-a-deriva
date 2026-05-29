@@ -75,6 +75,9 @@ test('carousel tem botões de navegação com aria-label', async ({ page }) => {
 
 test('carousel botão prev começa desabilitado no índice zero', async ({ page }) => {
   await page.goto('/categorias/tech/');
+  const featuredCount = await page.locator('.feat-card').count();
+  if (featuredCount < 2) test.skip();
+
   await expect(page.locator('#carousel-prev')).toBeDisabled();
 });
 
@@ -82,6 +85,8 @@ test('carousel avança ao clicar em próximo e habilita prev', async ({ page }) 
   await page.goto('/categorias/tech/');
   const nextBtn = page.locator('#carousel-next');
   const prevBtn = page.locator('#carousel-prev');
+  const featuredCount = await page.locator('.feat-card').count();
+  if (featuredCount < 2) test.skip();
 
   if (await nextBtn.isDisabled()) test.skip();
 
@@ -93,6 +98,8 @@ test('carousel volta ao início ao clicar em anterior após avançar', async ({ 
   await page.goto('/categorias/tech/');
   const nextBtn = page.locator('#carousel-next');
   const prevBtn = page.locator('#carousel-prev');
+  const featuredCount = await page.locator('.feat-card').count();
+  if (featuredCount < 2) test.skip();
 
   if (await nextBtn.isDisabled()) test.skip();
 

@@ -1,6 +1,5 @@
 ---
-import Base from './Base.astro';
-import StarBackground from '../components/StarBackground.astro';
+import PageLayout from './PageLayout.astro';
 
 interface Props {
   title: string;
@@ -8,14 +7,13 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<Base title={title}>
-  <StarBackground backgroundColor="#020b18" tone="home" />
+<PageLayout title={title} starBackground starBackgroundColor="#020b18" starBackgroundTone="home">
   <main id="main-content" class="legal-page">
     <article class="legal-content">
       <slot />
     </article>
   </main>
-</Base>
+</PageLayout>
 
 <style>
   .legal-page {

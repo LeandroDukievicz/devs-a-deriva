@@ -1,17 +1,15 @@
 ---
-import Base from '../layouts/Base.astro';
-import StarBackground from '../components/StarBackground.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 const description = 'Receba sinais curtos do Devs à Deriva: bastidores, links comentados, leituras, ferramentas e opiniões fora do formato dos posts.';
 ---
 
-<Base
+<PageLayout
   title="Newsletter · Devs à Deriva"
   description={description}
+  starBackground
 >
-  <StarBackground />
-
   <main id="main-content" class="newsletter-page" data-dashboard-url={DASHBOARD_URL}>
     <section class="newsletter-hero" aria-labelledby="newsletter-title">
       <div class="newsletter-copy">
@@ -98,7 +96,7 @@ const description = 'Receba sinais curtos do Devs à Deriva: bastidores, links c
       </article>
     </section>
   </main>
-</Base>
+</PageLayout>
 
 <style>
   .newsletter-page {

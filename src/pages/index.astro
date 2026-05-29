@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import Base from '../layouts/Base.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import BlackHole from '../components/BlackHole.astro';
 import PostCard from '../components/PostCard.astro';
 import { fetchPosts, isApiOffline, paginatePosts } from '../lib/posts';
@@ -39,9 +39,13 @@ const clientHomePosts = homePosts.map((post) => ({
   authorBio: post.authorBio,
   imageSrc: post.imageSrc,
 }));
+
+function safeJson(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
 ---
 
-<Base title="Devs à Deriva">
+<PageLayout title="Devs à Deriva">
   <BlackHole />
     <main id="main-content" class="page-overlay">
       <div id="sections-container" class="sections-container" data-dashboard-url={DASHBOARD_URL}>
@@ -72,7 +76,8 @@ const clientHomePosts = homePosts.map((post) => ({
         </div>
       </div>
     </main>
-</Base>
+    <script id="home-data" type="application/json" set:html={safeJson(clientHomePosts)} />
+</PageLayout>
 
 <style>
 
@@ -256,14 +261,21 @@ const clientHomePosts = homePosts.map((post) => ({
     }
   </style>
 
-  <script define:vars={{ clientHomePosts }}>
+  <script>
+    const clientHomePosts: Array<{
+      slug: string; title: string; category: string; categorySlug: string;
+      excerpt: string; author: { name: string; photo: string; role: string };
+      sectionId: string; href: string; authorBio: string; imageSrc: string;
+    }> = JSON.parse(document.getElementById('home-data')!.textContent!);
     const pageSize = 10;
     let renderedPosts = pageSize;
     const loadMoreButton = document.querySelector('.load-more-cta');
     const sectionsContainer = document.getElementById('sections-container');
     const loadMoreWrap = document.querySelector('.load-more-wrap');
 
-    function escapeHtml(value) {
+    type HomePost = typeof clientHomePosts[number];
+
+    function escapeHtml(value: unknown): string {
       return String(value ?? '')
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
@@ -272,7 +284,7 @@ const clientHomePosts = homePosts.map((post) => ({
         .replaceAll("'", '&#39;');
     }
 
-    function renderPostSection(post) {
+    function renderPostSection(post: HomePost): string {
       return `
         <div class="content-section" data-section-id="${escapeHtml(post.sectionId)}" data-post-slug="${escapeHtml(post.slug)}" data-post-href="${escapeHtml(post.href)}" role="link" tabindex="0">
           <div class="section-image"><img src="${escapeHtml(post.imageSrc)}" alt="${escapeHtml(post.category)}" class="section-img" loading="lazy" decoding="async" /></div>
@@ -304,7 +316,7 @@ const clientHomePosts = homePosts.map((post) => ({
       renderedPosts += nextPosts.length;
 
       if (renderedPosts >= clientHomePosts.length) {
-        loadMoreButton.hidden = true;
+        (loadMoreButton as HTMLButtonElement).hidden = true;
       }
     });
   </script>

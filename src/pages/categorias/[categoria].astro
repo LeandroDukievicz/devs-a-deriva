@@ -1,9 +1,8 @@
 ---
 export const prerender = false;
 
-import Base from '../../layouts/Base.astro';
+import CategoryLayout from '../../layouts/CategoryLayout.astro';
 import CategoriaPage from '../../components/CategoriaPage.astro';
-import StarBackground from '../../components/StarBackground.astro';
 import { getCategoryBySlug } from '../../lib/categories';
 
 const { categoria } = Astro.params;
@@ -15,8 +14,7 @@ if (!cat) return Astro.redirect('/404');
 const ogImage = `https://devsaderiva.com.br${cat.illustration}`;
 ---
 
-<Base title={`${cat.label} · Devs à Deriva`} ogImage={ogImage}>
-  <StarBackground />
+<CategoryLayout category={cat} ogImage={ogImage}>
   <CategoriaPage
     category={cat.label}
     categorySlug={cat.slug}
@@ -24,4 +22,4 @@ const ogImage = `https://devsaderiva.com.br${cat.illustration}`;
     cornerIllustration={cat.illustration}
     animateIllustration
   />
-</Base>
+</CategoryLayout>

@@ -13,6 +13,7 @@
     "smoke:test": "node scripts/smoke-test.mjs",
     "ci:check": "npm run lint && npm run typecheck && npm run validate:content && npm test",
     "build": "astro build",
+    "postbuild": "node scripts/update-csp-hashes.mjs",
     "preview": "astro preview",
     "lighthouse": "lhci autorun",
     "test": "vitest run",

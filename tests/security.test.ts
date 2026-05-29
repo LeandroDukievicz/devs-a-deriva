@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { escapeHtml, sanitizeImageUrl } from '../src/lib/utils/string';
+import { OPTIONS as cspReportOptions, POST as cspReportPost } from '../src/pages/api/csp-report';
 
 const XSS_PAYLOADS = [
   '<script>alert(1)</script>',
@@ -108,4 +111,76 @@ describe('Comments.astro — provider allowlist', () => {
       expect(ALLOWED_PROVIDERS.has(attempt)).toBe(false);
     });
   }
+});
+
+// ── Content Security Policy ────────────────────────────────────────────────
+
+const REQUIRED_REPORT_ONLY_DIRECTIVES = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://dashboard.devsaderiva.com.br https://*.r2.dev https://*.cloudflarestorage.com",
+  "connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com",
+  "frame-ancestors 'none'",
+  'report-uri /api/csp-report',
+];
+
+function getVercelHeader(name: string): string | undefined {
+  const config = JSON.parse(readFileSync(resolve('vercel.json'), 'utf8'));
+  const headers = config.headers?.[0]?.headers ?? [];
+  return headers.find((header: { key: string; value: string }) => header.key === name)?.value;
+}
+
+describe('CSP report-only', () => {
+  it('mantém CSP enforced e adiciona CSP report-only na Vercel', () => {
+    expect(getVercelHeader('Content-Security-Policy')).toContain("default-src 'self'");
+
+    const reportOnly = getVercelHeader('Content-Security-Policy-Report-Only');
+    expect(reportOnly).toBeTruthy();
+    for (const directive of REQUIRED_REPORT_ONLY_DIRECTIVES) {
+      expect(reportOnly).toContain(directive);
+    }
+    expect(reportOnly).not.toContain("script-src 'self' 'unsafe-inline'");
+  });
+
+  it('mantém CSP enforced e adiciona CSP report-only no nginx', () => {
+    const nginx = readFileSync(resolve('nginx.conf'), 'utf8');
+    expect(nginx).toContain('add_header Content-Security-Policy ');
+    expect(nginx).toContain('add_header Content-Security-Policy-Report-Only ');
+
+    const reportOnly = nginx.match(/Content-Security-Policy-Report-Only "([^"]+)"/)?.[1] ?? '';
+    for (const directive of REQUIRED_REPORT_ONLY_DIRECTIVES) {
+      expect(reportOnly).toContain(directive);
+    }
+    expect(reportOnly).not.toContain("script-src 'self' 'unsafe-inline'");
+  });
+
+  it('recebe relatórios CSP sem cachear resposta', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const request = new Request('https://devsaderiva.com.br/api/csp-report', {
+      method: 'POST',
+      headers: { 'content-type': 'application/csp-report' },
+      body: JSON.stringify({
+        'csp-report': {
+          'document-uri': 'https://devsaderiva.com.br/posts/exemplo',
+          'violated-directive': 'script-src',
+          'blocked-uri': 'inline',
+        },
+      }),
+    });
+
+    const response = await cspReportPost({ request } as Parameters<typeof cspReportPost>[0]);
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('responde preflight do endpoint de relatório CSP', async () => {
+    const response = await cspReportOptions({} as Parameters<typeof cspReportOptions>[0]);
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+  });
 });

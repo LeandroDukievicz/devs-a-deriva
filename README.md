@@ -41,7 +41,7 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - SEO completo: canonical, Open Graph, JSON-LD, sitemap.xml dinâmico, robots.txt
 - AEO/GEO: `llms.txt`, `llms-full.txt`, `/ai-index.json` e `/docs.json`
 - Healthcheck em `/health.json` com versão do commit (SSR)
-- Headers de segurança: CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
+- Headers de segurança: CSP enforced com `script-src` hash-based (sem `'unsafe-inline'`), CSP report-only para hardening progressivo, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
 - Rollback automático no VPS se o smoke test pós-deploy falhar
 - Deploy dual Vercel + VPS com detecção automática de adapter
 
@@ -142,7 +142,7 @@ npm run preview
 | Comando | Descrição |
 | --- | --- |
 | `npm run dev` | Servidor local de desenvolvimento. |
-| `npm run build` | Build com adapter node (padrão VPS/local). |
+| `npm run build` | Build com adapter node (padrão VPS/local). Executa `postbuild` automaticamente. |
 | `VERCEL=1 npm run build` | Build com adapter Vercel. |
 | `npm run preview` | Preview local do build. |
 | `npm run lint` | Verifica conflitos Git, CRLF e newlines. |

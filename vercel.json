@@ -10,7 +10,11 @@
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com; frame-ancestors 'none';"
+          "value": "default-src 'self'; script-src 'self' 'sha256-4iPTl5aVRdKQ5wE4OAoX2NC3EhrGaxnkS9f0BOw8zr0=' 'sha256-985X5cPdDDPGVU3TFrEri5IOSn5IzNljCKzxwWiBn5U=' 'sha256-SMCldObqEOEbsdrvl7YLnuqIpDkmhS9sPE2qcwYVzvI=' 'sha256-WZjN1H9CJPOd1Eu8VelOReBeYHaTP7HBfyKdCT0q4Go=' 'sha256-pq8Jic+PKe7Yc2hT4MZJpl/zFCNo/PEEHJholdFaTBk=' 'sha256-xBLRIEPyEi4wjnXKU0OdZPHuoVrkUo4zJHMQ/u4unzA=' https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com; frame-ancestors 'none';"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://dashboard.devsaderiva.com.br https://*.r2.dev https://*.cloudflarestorage.com; font-src 'self'; connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com; form-action 'self' https://dashboard.devsaderiva.com.br; frame-ancestors 'none'; report-uri /api/csp-report;"
         }
       ]
     }

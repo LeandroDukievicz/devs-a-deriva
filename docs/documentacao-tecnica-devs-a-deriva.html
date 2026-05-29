@@ -38,8 +38,8 @@ nav.toc a { color: #00c8e0; font-size: 11.5px; }
 <div class="cover">
   <h1>Documentação Técnica Completa<br>Devs à Deriva</h1>
   <p><strong>Projeto:</strong> /home/leandro-dukievicz/Projetos/devs-a-deriva</p>
-  <p><strong>Atualizado em:</strong> 22/05/2026</p>
-  <p><strong>Documento original:</strong> 05/05/2026 — Esta versão reflete o estado atual após migração para modo híbrido SSR, deploy duplo Vercel + VPS e melhorias editoriais.</p>
+  <p><strong>Atualizado em:</strong> 28/05/2026</p>
+  <p><strong>Documento original:</strong> 05/05/2026 — Esta versão reflete o estado atual após migração para modo híbrido SSR, deploy duplo Vercel + VPS, melhorias editoriais e hardening de CSP (remoção de <code>'unsafe-inline'</code>).</p>
 </div>
 
 <h2>Índice navegável</h2>
@@ -69,6 +69,7 @@ nav.toc a { color: #00c8e0; font-size: 11.5px; }
 <p>O projeto <strong>Devs à Deriva</strong> é um blog Astro com experiência visual forte em estética sci-fi/cyberpunk, conteúdo editorial dinâmico vindo de um dashboard externo e várias interações client-side. A camada pública do blog está separada do dashboard por uma fronteira HTTP definida por <code>PUBLIC_DASHBOARD_URL</code>.</p>
 <p>Desde a análise original (05/05/2026) foram implementados: <strong>pipeline CI/CD completo</strong> com seis jobs (quality, build, audit, lighthouse, deploy, smoke), suite de testes unitários com Vitest, testes e2e com Playwright, scripts de validação de qualidade, healthcheck em <code>/health.json</code>, rollback automático pós-smoke, integração de Gitleaks e Dependency Review, paginação de categorias, página de newsletter, sitemap.xml dinâmico, llms.txt e AEO.</p>
 <p>Em 13/05/2026 foram implementadas as configurações de <strong>segurança e proteção DDoS</strong>: proxy Cloudflare com WAF, SSL Full (strict), HSTS, Bot Fight Mode, rate limiting, firewall UFW na VPS e Fail2ban.</p>
+<p>Em 28/05/2026 foi implementado o <strong>hardening de CSP</strong>: remoção de <code>'unsafe-inline'</code> do <code>script-src</code>, substituído por SHA-256 hashes. Scripts <code>define:vars</code> em três páginas foram refatorados para <code>&lt;script type="application/json"&gt;</code> + scripts bundled normais. O script <code>scripts/update-csp-hashes.mjs</code> (executado via <code>postbuild</code>) atualiza os hashes automaticamente após cada build.</p>
 <p>Em 05/2026 o blog migrou de SSG puro para <strong>modo híbrido SSR + estático</strong> com deploy duplo: <strong>Vercel</strong> (CDN/serverless) e <strong>VPS próprio</strong> (Docker + <code>@astrojs/node</code> standalone, nginx como proxy reverso). Novos posts aparecem em até 30 segundos sem rebuild, via cache TTL de 30s em <code>fetchPosts()</code>. Foram também adicionadas as páginas <code>/busca</code> e feed RSS (<code>/rss.xml</code>), o componente <code>Newsletter.astro</code> extraído para reutilização, melhorias no parser Markdown e padronização de cor de texto em posts.</p>
 <p>O projeto está em estágio <strong>editorial funcional com infraestrutura de produção</strong>: CI robusto, deploy duplo com rollback, Lighthouse bloqueante, proteção DDoS e documentação completa.</p>
 
@@ -567,8 +568,8 @@ CI/CD
 <h3>Performance</h3>
 <p>Positivos: Astro estático, cache Nginx longo para assets com hash, lazy loading em imagens. Riscos: canvas contínuo (BlackHole/StarBackground), scripts inline extensos, PNGs de hero com ~2 MB.</p>
 
-<h2 id="seguranca-e-infraestrutura">15. Segurança e infraestrutura <span class="new">★ novo</span></h2>
-<p>Configurações implementadas em 13/05/2026. Documentação detalhada em <a href="security.md"><code>docs/security.md</code></a>.</p>
+<h2 id="seguranca-e-infraestrutura">15. Segurança e infraestrutura <span class="new">★ atualizado</span></h2>
+<p>Configurações de rede implementadas em 13/05/2026. Hardening de CSP implementado em 28/05/2026. Documentação detalhada em <a href="security.md"><code>docs/security.md</code></a>.</p>
 
 <h3>Arquitetura de proteção</h3>
 <pre><code>Visitante → Cloudflare (proxy + WAF + DDoS) → VPS (UFW + Caddy + Fail2ban)</code></pre>
@@ -598,6 +599,12 @@ CI/CD
 <p><strong>Fail2ban:</strong> proteção SSH — 3 tentativas falhas em 10 min → ban de 48h. Configurado em <code>/etc/fail2ban/jail.local</code>.</p>
 <p><strong>Caddy:</strong> reverse proxy com SSL automático via Let's Encrypt. Certificados ativos para <code>devsaderiva.com.br</code>, <code>www.devsaderiva.com.br</code> e <code>dashboard.devsaderiva.com.br</code>.</p>
 
+<h3>Content Security Policy (CSP)</h3>
+<p>A CSP enforced em <code>nginx.conf</code> e <code>vercel.json</code> usa <code>script-src</code> <strong>hash-based, sem <code>'unsafe-inline'</code></strong> desde 28/05/2026.</p>
+<p><strong>Hashes gerenciados automaticamente:</strong> o script <code>scripts/update-csp-hashes.mjs</code> (executado pelo <code>postbuild</code>) varre <code>dist/client/**/*.html</code> após cada build, extrai todos os hashes SHA-256 dos scripts inline e reescreve o <code>script-src</code> em ambos os arquivos de configuração.</p>
+<p><strong>Refatoração <code>define:vars</code>:</strong> três scripts que usavam <code>define:vars</code> foram migrados para o padrão <code>&lt;script type="application/json" id="..."&gt;</code> (dados) + <code>&lt;script&gt;</code> bundled normal: <code>index.astro</code> (load more de posts), <code>busca.astro</code> (índice de busca) e <code>CategoriaPage.astro</code> (load more de categoria).</p>
+<p>Para páginas SSR, scripts são emitidos como arquivos externos (<code>/_astro/*.js</code>), cobertos por <code>'self'</code> — sem necessidade de hashes. A CSP <code>Report-Only</code> continua ativa com <code>script-src 'self'</code> para monitorar violações residuais.</p>
+
 <h2 id="riscos-e-oportunidades">16. Riscos e oportunidades</h2>
 <table>
 <thead><tr><th>Prioridade</th><th>Item</th><th>Status</th><th>Recomendação</th></tr></thead>
@@ -610,6 +617,7 @@ CI/CD
 <tr><td>Média</td><td>E2E tests excluídos do CI</td><td>Parcial</td><td>Adicionar ao CI contra preview estático quando estabilizar.</td></tr>
 <tr><td>Baixa</td><td>Gitleaks — possíveis falsos positivos</td><td>Novo</td><td>Criar <code>.gitleaks.toml</code> com allowlist se necessário.</td></tr>
 <tr><td>Baixa</td><td>Releases versionadas com symlink</td><td>Futuro</td><td>Estrutura <code>/releases/{sha}</code> + symlink <code>current</code> para rollback zero-downtime.</td></tr>
+<tr><td>Resolvido</td><td>CSP <code>'unsafe-inline'</code> no <code>script-src</code></td><td>✓ Implementado</td><td>Substituído por hash-based + <code>postbuild</code> de atualização automática.</td></tr>
 <tr><td>Resolvido</td><td>SEO — canonical, sitemap, OG, JSON-LD</td><td>✓ Implementado</td><td>—</td></tr>
 <tr><td>Resolvido</td><td>Ausência de testes unitários</td><td>✓ Implementado</td><td>—</td></tr>
 <tr><td>Resolvido</td><td>Ausência de CI/CD estruturado</td><td>✓ Implementado</td><td>—</td></tr>

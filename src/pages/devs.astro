@@ -1,14 +1,14 @@
 ---
 export const prerender = false;
 
-import Base from '../layouts/Base.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import BlackHole from '../components/BlackHole.astro';
 import { fetchDevs, githubAvatarUrl } from '../lib/devs';
 
 const devs = await fetchDevs();
 ---
 
-<Base title="Devs · Devs à Deriva" hideFooter>
+<PageLayout title="Devs · Devs à Deriva" hideFooter>
   <main id="main-content" class="devs-page">
     <BlackHole bhX={0.5} bhY={0.5} bhScale={0.35} />
 
@@ -38,7 +38,7 @@ const devs = await fetchDevs();
       <p class="dev-popup__bio"></p>
     </div>
   </main>
-</Base>
+</PageLayout>
 
 <style>
   .devs-page {

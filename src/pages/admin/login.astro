@@ -1,11 +1,8 @@
 ---
-import Base from '../../layouts/Base.astro';
-import StarBackground from '../../components/StarBackground.astro';
+import PageLayout from '../../layouts/PageLayout.astro';
 ---
 
-<Base title="Admin Login · Devs à Deriva">
-  <StarBackground />
-
+<PageLayout title="Admin Login · Devs à Deriva" starBackground>
   <main id="main-content" class="admin-login-shell">
     <section class="admin-login-card">
       <p class="admin-login-kicker">&gt;_ acesso restrito</p>
@@ -17,7 +14,7 @@ import StarBackground from '../../components/StarBackground.astro';
       <a href="/" class="admin-login-cta">Voltar para o blog</a>
     </section>
   </main>
-</Base>
+</PageLayout>
 
 <style>
   .admin-login-shell {
