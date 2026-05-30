@@ -499,12 +499,13 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     display: flex;
     align-items: center;
     justify-content: center;
+    aspect-ratio: 16 / 10;
   }
 
   .post-hero-image {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
     object-fit: contain;
     object-position: center;
   }
@@ -717,8 +718,8 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
       max-width: 100%;
     }
 
-    .post-hero-image {
-      height: auto;
+    .post-hero {
+      aspect-ratio: 16 / 9;
     }
   }
 
