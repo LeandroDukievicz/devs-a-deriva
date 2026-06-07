@@ -4,10 +4,13 @@ export const prerender = false;
 import PageLayout from '../layouts/PageLayout.astro';
 import BlackHole from '../components/BlackHole.astro';
 import PostCard from '../components/PostCard.astro';
-import { fetchPosts, isApiOffline, paginatePosts } from '../lib/posts';
+import { fetchPosts, isApiOffline } from '../lib/posts';
 
 const allPosts = await fetchPosts();
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
+
+const PAGE_SIZE = 5;
+const SITE = 'https://devsaderiva.com.br';
 
 const categoryImages: Record<string, string> = {
   aleatoriedades: '/aleatoriedades-astronaut-body.webp',
@@ -18,37 +21,32 @@ const categoryImages: Record<string, string> = {
   tech: '/tech-astronaut.webp',
 };
 
-const homePosts = allPosts.map((post, index) => ({
+const total = allPosts.length;
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+const hasMore = total > PAGE_SIZE;
+
+const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
   ...post,
   sectionId: `section-${index + 1}`,
   href: `/posts/${post.slug}?from=home`,
   authorBio: post.author.role,
   imageSrc: post.thumbUrl ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp',
 }));
-const firstPage = paginatePosts(homePosts, 1, 10);
-const visibleHomePosts = firstPage.items;
-const clientHomePosts = homePosts.map((post) => ({
-  slug: post.slug,
-  title: post.title,
-  category: post.category,
-  categorySlug: post.categorySlug,
-  excerpt: post.excerpt,
-  author: post.author,
-  sectionId: post.sectionId,
-  href: post.href,
-  authorBio: post.authorBio,
-  imageSrc: post.imageSrc,
-}));
-
-function safeJson(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
-}
 ---
 
 <PageLayout title="Devs à Deriva">
+  <Fragment slot="head">
+    {hasMore && <link rel="next" href={`${SITE}/page/2/`} />}
+  </Fragment>
   <BlackHole />
     <main id="main-content" class="page-overlay">
-      <div id="sections-container" class="sections-container" data-dashboard-url={DASHBOARD_URL}>
+      <div
+        id="sections-container"
+        class="sections-container"
+        data-dashboard-url={DASHBOARD_URL}
+        data-total-pages={String(totalPages)}
+        data-has-more={String(hasMore)}
+      >
         {visibleHomePosts.length === 0 && (
           <div class="empty-state">
             <p>{isApiOffline()
@@ -71,12 +69,31 @@ function safeJson(data: unknown): string {
           />
         ))}
 
+        <div id="scroll-sentinel" aria-hidden="true" style="height:1px"></div>
+
         <div class="load-more-wrap">
-          <button class="load-more-cta" type="button" hidden={!firstPage.hasMore} aria-label="Carregar mais posts"><span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></button>
+          <div id="posts-loading" class="posts-loading-dots" hidden aria-label="Carregando posts">
+            <span class="dot" style="animation-delay:0s">.</span>
+            <span class="dot" style="animation-delay:0.2s">.</span>
+            <span class="dot" style="animation-delay:0.4s">.</span>
+          </div>
+          <button
+            id="load-more-btn"
+            class="load-more-cta"
+            type="button"
+            hidden={!hasMore}
+            aria-label="Carregar mais posts"
+          >
+            CARREGAR MAIS TRANSMISSÕES
+          </button>
+          <p id="end-of-feed" class="end-of-feed" hidden>Você chegou ao fundo do mar.</p>
+          <p id="load-error" class="load-error" hidden>
+            Falha ao carregar. <button class="retry-btn" type="button">Tentar novamente</button>
+          </p>
         </div>
       </div>
+      <div id="posts-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
     </main>
-    <script id="home-data" type="application/json" set:html={safeJson(clientHomePosts)} />
 </PageLayout>
 
 <style>
@@ -137,22 +154,95 @@ function safeJson(data: unknown): string {
       align-items: center;
       justify-content: center;
       gap: 2px;
-      padding: 8px 16px;
+      padding: 14px 32px;
       background: transparent;
-      border: none;
+      border: 1px dashed var(--color-accent);
+      border-radius: 6px;
       cursor: pointer;
-      color: var(--color-star);
+      color: var(--color-accent);
       text-decoration: none;
+      font-size: 0.72rem;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      transition: box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+    .load-more-cta:hover,
+    .load-more-cta:focus-visible {
+      box-shadow: 0 0 18px var(--color-accent-20);
+      background: transparent;
+      outline: none;
+    }
+
+    .load-more-cta:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 3px;
+    }
+
+    .posts-loading-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--color-star);
       font-size: 1.4rem;
       font-family: monospace;
       letter-spacing: 0.1em;
-      transition: color 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
     }
 
-    .load-more-cta:hover {
+    .end-of-feed {
+      font-family: monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--color-star);
+      opacity: 0.4;
+      text-align: center;
+      padding: 16px;
+      margin: 0;
+    }
+
+    .load-error {
+      font-family: monospace;
+      font-size: 0.72rem;
+      text-align: center;
+      color: var(--color-star);
+      opacity: 0.7;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .retry-btn {
+      background: none;
+      border: none;
       color: var(--color-accent);
-      text-shadow: 0 0 12px var(--color-accent-60);
-      transform: translateY(-2px);
+      font-family: monospace;
+      font-size: 0.72rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .retry-btn:hover {
+      opacity: 0.8;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .limbo-overlay {
@@ -262,18 +352,23 @@ function safeJson(data: unknown): string {
   </style>
 
   <script>
-    const clientHomePosts: Array<{
+    type HomePost = {
       slug: string; title: string; category: string; categorySlug: string;
       excerpt: string; author: { name: string; photo: string; role: string };
       sectionId: string; href: string; authorBio: string; imageSrc: string;
-    }> = JSON.parse(document.getElementById('home-data')!.textContent!);
-    const pageSize = 10;
-    let renderedPosts = pageSize;
-    const loadMoreButton = document.querySelector('.load-more-cta');
-    const sectionsContainer = document.getElementById('sections-container');
-    const loadMoreWrap = document.querySelector('.load-more-wrap');
+    };
 
-    type HomePost = typeof clientHomePosts[number];
+    const container = document.getElementById('sections-container');
+    let hasMore = container?.dataset.hasMore === 'true';
+    let currentPage = 1;
+    let isLoading = false;
+
+    const sentinel = document.getElementById('scroll-sentinel');
+    const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement | null;
+    const loadingEl = document.getElementById('posts-loading');
+    const endOfFeedEl = document.getElementById('end-of-feed');
+    const loadErrorEl = document.getElementById('load-error');
+    const statusEl = document.getElementById('posts-status');
 
     function escapeHtml(value: unknown): string {
       return String(value ?? '')
@@ -308,16 +403,92 @@ function safeJson(data: unknown): string {
       `;
     }
 
-    loadMoreButton?.addEventListener('click', () => {
-      const nextPosts = clientHomePosts.slice(renderedPosts, renderedPosts + pageSize);
-      if (!nextPosts.length || !sectionsContainer || !loadMoreWrap) return;
-
-      loadMoreWrap.insertAdjacentHTML('beforebegin', nextPosts.map(renderPostSection).join(''));
-      renderedPosts += nextPosts.length;
-
-      if (renderedPosts >= clientHomePosts.length) {
-        (loadMoreButton as HTMLButtonElement).hidden = true;
+    function setLoadingState(loading: boolean) {
+      if (loading) {
+        loadMoreBtn?.setAttribute('hidden', '');
+        loadingEl?.removeAttribute('hidden');
+      } else {
+        loadingEl?.setAttribute('hidden', '');
+        if (hasMore) loadMoreBtn?.removeAttribute('hidden');
       }
+    }
+
+    function showEndOfFeed() {
+      endOfFeedEl?.removeAttribute('hidden');
+      loadMoreBtn?.setAttribute('hidden', '');
+      loadingEl?.setAttribute('hidden', '');
+      if (sentinel) observer.unobserve(sentinel);
+    }
+
+    async function loadNextPage() {
+      if (isLoading || !hasMore) return;
+      isLoading = true;
+      loadErrorEl?.setAttribute('hidden', '');
+      setLoadingState(true);
+
+      try {
+        const res = await fetch(`/api/posts.json?page=${currentPage + 1}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json() as {
+          posts: HomePost[];
+          currentPage: number;
+          hasNextPage: boolean;
+        };
+
+        const newPosts = data.posts;
+
+        if (newPosts.length > 0 && sentinel && container) {
+          sentinel.insertAdjacentHTML('beforebegin', newPosts.map(renderPostSection).join(''));
+          currentPage = data.currentPage;
+
+          const newSections = Array.from(
+            container.querySelectorAll<HTMLElement>('.content-section[data-post-slug]:not([data-progress-init])')
+          );
+          newSections.forEach(s => s.setAttribute('data-progress-init', ''));
+          document.dispatchEvent(new CustomEvent('home-posts-added', { detail: { sections: newSections } }));
+
+          if (statusEl) {
+            statusEl.textContent = `${newPosts.length} posts carregados.`;
+            setTimeout(() => { statusEl.textContent = ''; }, 2000);
+          }
+        }
+
+        hasMore = data.hasNextPage;
+        setLoadingState(false);
+
+        if (!hasMore) showEndOfFeed();
+      } catch {
+        isLoading = false;
+        setLoadingState(false);
+        loadErrorEl?.removeAttribute('hidden');
+        return;
+      }
+
+      isLoading = false;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) loadNextPage();
+        }
+      },
+      { rootMargin: '0px 0px 300px 0px' },
+    );
+
+    if (sentinel && hasMore) observer.observe(sentinel);
+
+    loadMoreBtn?.addEventListener('click', loadNextPage);
+
+    loadErrorEl?.querySelector<HTMLButtonElement>('.retry-btn')?.addEventListener('click', () => {
+      loadErrorEl?.setAttribute('hidden', '');
+      loadNextPage();
+    });
+
+    // Mark initial server-rendered posts so new ones can be detected
+    document.querySelectorAll<HTMLElement>('.content-section[data-post-slug]').forEach(s => {
+      s.setAttribute('data-progress-init', '');
     });
   </script>
 
@@ -371,6 +542,16 @@ function safeJson(data: unknown): string {
 
     progressContainer?.addEventListener('click', (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
+
+      // Limbo-cta: prevent navigation, trigger vanish animation
+      const cta = target?.closest<HTMLElement>('.limbo-cta');
+      if (cta) {
+        event.preventDefault();
+        const section = cta.closest<HTMLElement>('.content-section');
+        if (section) vanishSectionSequential(section);
+        return;
+      }
+
       const link = target?.closest<HTMLAnchorElement>('.content-section a[href*="/posts/"]');
       if (link) {
         sessionStorage.setItem('post-nav-origin', 'home');
@@ -528,14 +709,27 @@ function safeJson(data: unknown): string {
       await collapseShell(section, bhX, bhY);
     }
 
-    document.querySelectorAll('.limbo-cta').forEach((cta) => {
-      cta.addEventListener('click', (event) => {
-        event.preventDefault();
-        const section = (cta as HTMLElement).closest('.content-section') as HTMLElement | null;
-        if (!section) return;
-        vanishSectionSequential(section);
-      });
-    });
+    // Limbo-cta handling moved to delegated click handler on progressContainer above
+
+    // Apply reading progress to posts loaded via infinite scroll
+    document.addEventListener('home-posts-added', ((e: Event) => {
+      const { sections } = (e as CustomEvent<{ sections: HTMLElement[] }>).detail;
+      for (const section of sections) {
+        const postSlug = section.dataset.postSlug;
+        if (postSlug) renderReadingProgress(section, postSlug);
+      }
+      if (dashboardUrl) {
+        const newSlugs = sections
+          .map(s => s.dataset.postSlug)
+          .filter((slug): slug is string => Boolean(slug));
+        void syncReadingProgress(dashboardUrl, newSlugs).then(() => {
+          for (const section of sections) {
+            const postSlug = section.dataset.postSlug;
+            if (postSlug) renderReadingProgress(section, postSlug);
+          }
+        });
+      }
+    }) as EventListener);
 
     const PROGRESS_CIRCUMFERENCE = 43.98;
 

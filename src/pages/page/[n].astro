@@ -1,0 +1,310 @@
+---
+export const prerender = false;
+
+import PageLayout from '../../layouts/PageLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { fetchPosts, paginatePosts } from '../../lib/posts';
+
+const { n } = Astro.params;
+if (!n || n === '1') return Astro.redirect('/');
+
+const page = parseInt(n, 10);
+if (isNaN(page) || page < 2) return Astro.redirect('/');
+
+const PAGE_SIZE = 5;
+const SITE = 'https://devsaderiva.com.br';
+
+const allPosts = await fetchPosts();
+const total = allPosts.length;
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+if (page > totalPages) return Astro.redirect(`/page/${totalPages}/`);
+
+const { items: posts, hasMore } = paginatePosts(allPosts, page, PAGE_SIZE);
+
+const categoryImages: Record<string, string> = {
+  aleatoriedades: '/aleatoriedades-astronaut-body.webp',
+  carreira: '/carreira-profissional-astronaut-body.webp',
+  livros: '/livros-astronaut.webp',
+  musica: '/musica-astronaut.webp',
+  noticias: '/noticias-astronaut.webp',
+  tech: '/tech-astronaut.webp',
+};
+
+const start = (page - 1) * PAGE_SIZE;
+const pagePosts = posts.map((post, i) => ({
+  ...post,
+  sectionId: `section-${start + i + 1}`,
+  href: `/posts/${post.slug}?from=home`,
+  authorBio: post.author.role,
+  imageSrc: post.thumbUrl ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp',
+}));
+
+const prevUrl = page === 2 ? '/' : `/page/${page - 1}/`;
+const nextUrl = hasMore ? `/page/${page + 1}/` : null;
+const title = `Devs à Deriva — Página ${page}`;
+const description = `Arquivo de posts do Devs à Deriva — página ${page}.`;
+const canonicalUrl = `${SITE}/page/${page}/`;
+---
+
+<PageLayout title={title} description={description}>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="prev" href={`${SITE}${prevUrl}`} />
+    {nextUrl && <link rel="next" href={`${SITE}${nextUrl}`} />}
+  </Fragment>
+
+  <main id="main-content" class="paged-overlay">
+    <div class="paged-container">
+      <header class="paged-header">
+        <p class="paged-label">
+          <span class="prefix">&gt;_</span>arquivo · página {page} de {totalPages}
+        </p>
+        <a href="/" class="back-home">← início</a>
+      </header>
+
+      <div class="posts-list">
+        {pagePosts.map((post) => (
+          <PostCard
+            slug={post.slug}
+            sectionId={post.sectionId}
+            href={post.href}
+            title={post.title}
+            category={post.category}
+            excerpt={post.excerpt}
+            imageSrc={post.imageSrc}
+            author={post.author}
+            authorBio={post.authorBio}
+          />
+        ))}
+      </div>
+
+      <nav class="pagination" aria-label="Paginação entre páginas">
+        <a href={prevUrl} class="page-btn" rel="prev" aria-label="Página anterior">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Anterior
+        </a>
+
+        <div class="page-numbers">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <a
+              href={p === 1 ? '/' : `/page/${p}/`}
+              class={`page-num${p === page ? ' active' : ''}`}
+              aria-current={p === page ? 'page' : undefined}
+            >
+              {p}
+            </a>
+          ))}
+        </div>
+
+        {nextUrl ? (
+          <a href={nextUrl} class="page-btn" rel="next" aria-label="Próxima página">
+            Próxima
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        ) : (
+          <span class="page-btn disabled" aria-disabled="true">
+            Próxima
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        )}
+      </nav>
+    </div>
+  </main>
+</PageLayout>
+
+<style>
+  .paged-overlay {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    padding: clamp(100px, 9vw, 120px) 24px 60px;
+  }
+
+  .paged-container {
+    width: min(70%, 1100px);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .paged-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .paged-label {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    opacity: 0.7;
+  }
+
+  .prefix {
+    color: var(--color-accent);
+    margin-right: 4px;
+  }
+
+  .back-home {
+    font-family: monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-star);
+    text-decoration: none;
+    opacity: 0.6;
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .back-home:hover,
+  .back-home:focus-visible {
+    color: var(--color-accent);
+    opacity: 1;
+    outline: none;
+  }
+
+  .back-home:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+  }
+
+  /* ── Pagination ────────────────────────────────────────────── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px dashed var(--color-accent);
+    border-radius: 6px;
+    transition: box-shadow 0.22s ease, background 0.22s ease;
+  }
+
+  .page-btn:hover,
+  .page-btn:focus-visible {
+    box-shadow: 0 0 14px var(--color-accent-20);
+    background: transparent;
+    outline: none;
+  }
+
+  .page-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .page-btn.disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .page-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    color: var(--color-star);
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: border-color 0.22s ease, color 0.22s ease;
+  }
+
+  .page-num:hover {
+    border-color: var(--color-star);
+  }
+
+  .page-num.active {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent-20);
+  }
+
+  @media (max-width: 1024px) {
+    .paged-container {
+      width: min(90%, 1100px);
+    }
+
+    .posts-list {
+      gap: 32px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .paged-overlay {
+      padding: 100px 16px 48px;
+    }
+
+    .paged-container {
+      width: 95%;
+      gap: 24px;
+    }
+
+    .posts-list {
+      gap: 24px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .paged-overlay {
+      padding-top: 88px;
+    }
+
+    .posts-list {
+      gap: 18px;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('.content-section a[href*="/posts/"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      sessionStorage.setItem('post-nav-origin', 'home');
+    });
+  });
+</script>

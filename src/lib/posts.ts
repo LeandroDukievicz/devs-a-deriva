@@ -255,6 +255,11 @@ export async function fetchPosts(): Promise<Post[]> {
     const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
     _apiOffline = false;
     _cache = items.filter(hasValidSlug).map(mapPost);
+    _cache.sort((a, b) => {
+      const ta = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const tb = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return tb - ta;
+    });
     _cacheTime = now;
     return _cache;
   } catch {
