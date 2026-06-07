@@ -139,8 +139,13 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
 
     <div class="load-more-wrap">
       <div id="category-posts-sentinel" aria-hidden="true"></div>
-      <div id="category-posts-loading" class="category-loading" hidden aria-label="Carregando posts">carregando...</div>
-      <button class="load-more-btn" type="button" hidden={!firstPage.hasMore}>
+      <div id="category-posts-loading" class="category-loading" hidden aria-label="Carregando mais posts">
+        Carregando mais posts
+        <span class="cat-dot" style="animation-delay:0s">.</span>
+        <span class="cat-dot" style="animation-delay:0.2s">.</span>
+        <span class="cat-dot" style="animation-delay:0.4s">.</span>
+      </div>
+      <button class="load-more-btn" type="button" hidden={!firstPage.hasMore} aria-label="Carregar mais posts">
         CARREGAR MAIS POSTS
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -148,7 +153,10 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
       </button>
       {nextPageHref && <a id="category-next-page-link" class="category-next-page-link" href={nextPageHref} rel="next">abrir página 2</a>}
       <p id="category-load-error" class="category-load-error" hidden>
-        Falha ao carregar. <button class="category-retry-btn" type="button">Tentar novamente</button>
+        Erro ao carregar posts. <button class="category-retry-btn" type="button">Tentar novamente</button>
+      </p>
+      <p id="category-end-of-feed" class="category-end-of-feed" hidden>
+        Você chegou aos confins do blog !! sem mais posts !!
       </p>
     </div>
     <div id="category-posts-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -275,13 +283,20 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
 
   function setLoadingState(loadingState: boolean) {
     if (loadingState) {
-      loadMoreButton?.setAttribute('hidden', '');
+      if (loadMoreButton) {
+        loadMoreButton.disabled = true;
+        loadMoreButton.setAttribute('aria-busy', 'true');
+      }
       loading?.removeAttribute('hidden');
       return;
     }
 
     loading?.setAttribute('hidden', '');
-    if (hasMore) loadMoreButton?.removeAttribute('hidden');
+    if (loadMoreButton) {
+      loadMoreButton.disabled = false;
+      loadMoreButton.removeAttribute('aria-busy');
+      if (hasMore) loadMoreButton.removeAttribute('hidden');
+    }
   }
 
   function updateNextPageLink() {
@@ -297,11 +312,19 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     nextPageLink.removeAttribute('hidden');
   }
 
+  const endOfFeedEl = document.getElementById('category-end-of-feed');
+
   function showEndOfFeed() {
     hasMore = false;
-    loadMoreButton?.setAttribute('hidden', '');
+    if (loadMoreButton) {
+      loadMoreButton.disabled = false;
+      loadMoreButton.removeAttribute('aria-busy');
+      loadMoreButton.setAttribute('hidden', '');
+    }
     nextPageLink?.setAttribute('hidden', '');
     loading?.setAttribute('hidden', '');
+    endOfFeedEl?.removeAttribute('hidden');
+    if (status) status.textContent = 'Sem mais posts para carregar.';
     if (sentinel) observer?.unobserve(sentinel);
   }
 
@@ -867,9 +890,15 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     box-shadow: 0 0 0 2px var(--color-accent), 0 0 18px var(--color-accent-20);
   }
 
+  .load-more-btn:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+
   .category-next-page-link,
   .category-loading,
-  .category-load-error {
+  .category-load-error,
+  .category-end-of-feed {
     font-family: monospace;
     font-size: 0.66rem;
     letter-spacing: 0.1em;
@@ -892,8 +921,30 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     outline-offset: 3px;
   }
 
-  .category-load-error {
+  .category-load-error,
+  .category-end-of-feed {
     margin: 0;
+  }
+
+  .category-end-of-feed {
+    letter-spacing: 0.08em;
+  }
+
+  .category-loading {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    justify-content: center;
+  }
+
+  .cat-dot {
+    display: inline-block;
+    animation: cat-wave 1.2s ease-in-out infinite;
+  }
+
+  @keyframes cat-wave {
+    0%, 100% { transform: translateY(0);    opacity: 1; }
+    50%       { transform: translateY(-4px); opacity: 0.4; }
   }
 
   .category-retry-btn {
