@@ -178,6 +178,8 @@ Estados previstos:
 
 O script mantém `isLoading`, `currentPage`, `hasMore` e um `Set` de slugs já carregados para evitar requisições concorrentes e posts duplicados.
 
+O carregamento por `IntersectionObserver` também mantém a última posição de scroll que iniciou um lote. Se o sentinel continuar visível após inserir cards, a próxima página só é buscada depois de novo avanço real de scroll. Isso evita carregamento em cascata de todos os posts.
+
 ## Testes
 
 O baseline atual inclui:

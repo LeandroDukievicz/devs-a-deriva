@@ -70,6 +70,8 @@ A home usa um modelo híbrido: HTML server-rendered para os primeiros posts + ca
 5. Ao esgotar os posts, exibe **"Você chegou aos confins do blog !! sem mais posts !!"** e remove botão/link de próxima página.
 6. Páginas `/page/2`, `/page/3` etc. existem como HTML real com `canonical`, `rel=prev/next` e meta tags — indexáveis sem JavaScript.
 
+O carregamento automático exige avanço real de scroll desde o último lote. Isso evita que um sentinel ainda visível dispare páginas em cascata e carregue todos os posts de uma vez.
+
 ### Endpoint de API
 ```
 GET /api/posts.json?page=N&limit=5

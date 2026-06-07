@@ -51,6 +51,7 @@ A home não deve renderizar a coleção inteira de posts escondida no DOM. O con
 - SSR inicial com apenas `HOME_POSTS_PER_PAGE = 5` cards;
 - lotes sob demanda via `/api/posts.json?page=N&limit=5`;
 - `IntersectionObserver` para scroll progressivo sem scroll-jacking;
+- guarda por avanço real de scroll para evitar cascata de requisições quando o sentinel permanece visível;
 - botão fallback acessível para carregar o próximo lote;
 - prevenção de duplicados com `Set` de slugs no cliente;
 - imagens dos cards com `loading="lazy"`, dimensões declaradas e `decoding="async"`.

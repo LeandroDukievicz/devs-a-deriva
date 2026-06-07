@@ -221,6 +221,9 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
   let hasMore = initialHasMore;
   let isLoading = false;
   let observer: IntersectionObserver | null = null;
+  const minScrollDeltaForAutoLoad = 24;
+  let lastAutoLoadScrollY = window.scrollY;
+  let userScrolledAfterLastAutoLoad = false;
 
   const loadMoreButton = document.querySelector<HTMLButtonElement>('.load-more-btn');
   const nextPageLink = document.getElementById('category-next-page-link') as HTMLAnchorElement | null;
@@ -302,9 +305,23 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     if (sentinel) observer?.unobserve(sentinel);
   }
 
-  async function loadNextPage() {
+  function noteUserScroll() {
+    if (window.scrollY > lastAutoLoadScrollY + minScrollDeltaForAutoLoad) {
+      userScrolledAfterLastAutoLoad = true;
+    }
+  }
+
+  function canAutoLoadNextPage() {
+    return userScrolledAfterLastAutoLoad && window.scrollY > lastAutoLoadScrollY + minScrollDeltaForAutoLoad;
+  }
+
+  async function loadNextPage(source: 'auto' | 'manual' = 'manual') {
     if (isLoading || !hasMore) return;
+    if (source === 'auto' && !canAutoLoadNextPage()) return;
+
     isLoading = true;
+    userScrolledAfterLastAutoLoad = false;
+    lastAutoLoadScrollY = window.scrollY;
     error?.setAttribute('hidden', '');
     setLoadingState(true);
 
@@ -348,7 +365,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) loadNextPage();
+          if (entry.isIntersecting) void loadNextPage('auto');
         }
       },
       { rootMargin: '0px 0px 300px 0px' },
@@ -357,10 +374,14 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     if (sentinel && hasMore) observer.observe(sentinel);
   }
 
-  loadMoreButton?.addEventListener('click', loadNextPage);
+  window.addEventListener('scroll', noteUserScroll, { passive: true });
+
+  loadMoreButton?.addEventListener('click', () => {
+    void loadNextPage('manual');
+  });
   error?.querySelector<HTMLButtonElement>('.category-retry-btn')?.addEventListener('click', () => {
     error.setAttribute('hidden', '');
-    loadNextPage();
+    void loadNextPage('manual');
   });
 </script>
 
