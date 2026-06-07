@@ -86,7 +86,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
           >
             CARREGAR MAIS TRANSMISSÕES
           </button>
-          <p id="end-of-feed" class="end-of-feed" hidden>Você chegou ao fundo do mar.</p>
           <p id="load-error" class="load-error" hidden>
             Falha ao carregar. <button class="retry-btn" type="button">Tentar novamente</button>
           </p>
@@ -191,17 +190,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       font-size: 1.4rem;
       font-family: monospace;
       letter-spacing: 0.1em;
-    }
-
-    .end-of-feed {
-      font-family: monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      color: var(--color-star);
-      opacity: 0.4;
-      text-align: center;
-      padding: 16px;
-      margin: 0;
     }
 
     .load-error {
@@ -366,7 +354,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     const sentinel = document.getElementById('scroll-sentinel');
     const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement | null;
     const loadingEl = document.getElementById('posts-loading');
-    const endOfFeedEl = document.getElementById('end-of-feed');
     const loadErrorEl = document.getElementById('load-error');
     const statusEl = document.getElementById('posts-status');
 
@@ -414,7 +401,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     }
 
     function showEndOfFeed() {
-      endOfFeedEl?.removeAttribute('hidden');
       loadMoreBtn?.setAttribute('hidden', '');
       loadingEl?.setAttribute('hidden', '');
       if (sentinel) observer.unobserve(sentinel);
