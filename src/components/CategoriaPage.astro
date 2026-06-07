@@ -19,15 +19,10 @@ const {
 
 const featuredPosts = await getFeaturedByCategory(categorySlug);
 const allPosts = await getPostsByCategory(categorySlug);
-const firstPage = paginatePosts(allPosts, 1, 10);
+const PAGE_SIZE = 10;
+const firstPage = paginatePosts(allPosts, 1, PAGE_SIZE);
 const visiblePosts = firstPage.items;
-const clientPosts = allPosts.map((post) => ({
-  slug: post.slug,
-  title: post.title,
-  excerpt: post.excerpt,
-  readTime: post.readTime,
-  hashtag: post.hashtag,
-}));
+const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/` : null;
 ---
 
 <main id="main-content" class="categoria-page">
@@ -142,17 +137,28 @@ const clientPosts = allPosts.map((post) => ({
     </div>
 
     <div class="load-more-wrap">
+      <div id="category-posts-sentinel" aria-hidden="true"></div>
+      <div id="category-posts-loading" class="category-loading" hidden aria-label="Carregando posts">carregando...</div>
       <button class="load-more-btn" type="button" hidden={!firstPage.hasMore}>
         CARREGAR MAIS POSTS
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
         </svg>
       </button>
+      {nextPageHref && <a id="category-next-page-link" class="category-next-page-link" href={nextPageHref} rel="next">abrir página 2</a>}
+      <p id="category-load-error" class="category-load-error" hidden>
+        Falha ao carregar. <button class="category-retry-btn" type="button">Tentar novamente</button>
+      </p>
+      <p id="category-end-of-feed" class="category-end-of-feed" hidden={allPosts.length === 0 || firstPage.hasMore}>
+        Você chegou ao fundo do mar.
+      </p>
     </div>
+    <div id="category-posts-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   </section>
+  <noscript><style>.load-more-btn{display:none}</style></noscript>
 </main>
 
-<script id="categoria-data" type="application/json" set:html={JSON.stringify({ clientPosts, category }).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')} />
+<script is:inline id="categoria-data" type="application/json" set:html={JSON.stringify({ category, categorySlug, pageSize: PAGE_SIZE, hasMore: firstPage.hasMore }).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')} />
 
 <style is:global>
   #nav-logo-link {
@@ -202,23 +208,40 @@ const clientPosts = allPosts.map((post) => ({
 </style>
 
 <script>
-  document.querySelectorAll<HTMLAnchorElement>('.feat-card[href*="/posts/"], .post-card[href*="/posts/"]').forEach((link) => {
-    link.addEventListener('click', () => {
-      sessionStorage.setItem('post-nav-origin', 'category');
-    });
+  document.querySelector<HTMLElement>('.categoria-page')?.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const postLink = target?.closest<HTMLAnchorElement>('.feat-card[href*="/posts/"], .post-card[href*="/posts/"]');
+    if (postLink) sessionStorage.setItem('post-nav-origin', 'category');
   });
 </script>
 
 <script>
-  const { clientPosts, category } = JSON.parse(
+  const { category, categorySlug, pageSize, hasMore: initialHasMore } = JSON.parse(
     (document.getElementById('categoria-data') as HTMLScriptElement).text
-  ) as { clientPosts: Array<{ slug: string; title: string; excerpt: string; readTime: string; hashtag: string }>; category: string };
-  const pageSize = 10;
-  let renderedPosts = pageSize;
-  const loadMoreButton = document.querySelector('.load-more-btn');
-  const postsGrid = document.querySelector('.posts-grid');
+  ) as { category: string; categorySlug: string; pageSize: number; hasMore: boolean };
+  let currentPage = 1;
+  let hasMore = initialHasMore;
+  let isLoading = false;
+  let observer: IntersectionObserver | null = null;
 
-  type CatPost = typeof clientPosts[number];
+  const loadMoreButton = document.querySelector<HTMLButtonElement>('.load-more-btn');
+  const nextPageLink = document.getElementById('category-next-page-link') as HTMLAnchorElement | null;
+  const postsGrid = document.querySelector('.posts-grid');
+  const sentinel = document.getElementById('category-posts-sentinel');
+  const loading = document.getElementById('category-posts-loading');
+  const error = document.getElementById('category-load-error');
+  const endOfFeed = document.getElementById('category-end-of-feed');
+  const status = document.getElementById('category-posts-status');
+  const loadedSlugs = new Set(
+    Array.from(document.querySelectorAll<HTMLAnchorElement>('.posts-grid .post-card[href*="/posts/"]'))
+      .map((link) => {
+        const parts = link.pathname.split('/').filter(Boolean);
+        return parts[parts.length - 1];
+      })
+      .filter((slug): slug is string => Boolean(slug))
+  );
+
+  type CatPost = { slug: string; title: string; excerpt: string; readTime: string; hashtag: string };
 
   function escapeHtml(value: unknown): string {
     return String(value ?? '')
@@ -250,16 +273,99 @@ const clientPosts = allPosts.map((post) => ({
     `;
   }
 
-  loadMoreButton?.addEventListener('click', () => {
-    const nextPosts = clientPosts.slice(renderedPosts, renderedPosts + pageSize);
-    if (!nextPosts.length || !postsGrid) return;
-
-    postsGrid.insertAdjacentHTML('beforeend', nextPosts.map(renderPostCard).join(''));
-    renderedPosts += nextPosts.length;
-
-    if (renderedPosts >= clientPosts.length) {
-      (loadMoreButton as HTMLButtonElement).hidden = true;
+  function setLoadingState(loadingState: boolean) {
+    if (loadingState) {
+      loadMoreButton?.setAttribute('hidden', '');
+      loading?.removeAttribute('hidden');
+      return;
     }
+
+    loading?.setAttribute('hidden', '');
+    if (hasMore) loadMoreButton?.removeAttribute('hidden');
+  }
+
+  function updateNextPageLink() {
+    if (!nextPageLink) return;
+    if (!hasMore) {
+      nextPageLink.setAttribute('hidden', '');
+      return;
+    }
+
+    const nextPage = currentPage + 1;
+    nextPageLink.href = `/categorias/${encodeURIComponent(categorySlug)}/pagina/${nextPage}/`;
+    nextPageLink.textContent = `abrir página ${nextPage}`;
+    nextPageLink.removeAttribute('hidden');
+  }
+
+  function showEndOfFeed() {
+    hasMore = false;
+    loadMoreButton?.setAttribute('hidden', '');
+    nextPageLink?.setAttribute('hidden', '');
+    loading?.setAttribute('hidden', '');
+    endOfFeed?.removeAttribute('hidden');
+    if (status) status.textContent = 'Você chegou ao fundo do mar.';
+    if (sentinel) observer?.unobserve(sentinel);
+  }
+
+  async function loadNextPage() {
+    if (isLoading || !hasMore) return;
+    isLoading = true;
+    error?.setAttribute('hidden', '');
+    setLoadingState(true);
+
+    try {
+      const response = await fetch(`/api/posts.json?category=${encodeURIComponent(categorySlug)}&page=${currentPage + 1}&limit=${pageSize}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json() as {
+        posts: CatPost[];
+        currentPage: number;
+        hasNextPage: boolean;
+      };
+
+      const nextPosts = data.posts.filter((post) => !loadedSlugs.has(post.slug));
+      if (nextPosts.length > 0 && postsGrid) {
+        postsGrid.insertAdjacentHTML('beforeend', nextPosts.map(renderPostCard).join(''));
+        nextPosts.forEach((post) => loadedSlugs.add(post.slug));
+        if (status) {
+          status.textContent = `${nextPosts.length} posts carregados.`;
+          setTimeout(() => { status.textContent = ''; }, 2000);
+        }
+      }
+
+      currentPage = data.currentPage;
+      hasMore = data.hasNextPage;
+      setLoadingState(false);
+      updateNextPageLink();
+
+      if (!hasMore) showEndOfFeed();
+    } catch {
+      setLoadingState(false);
+      error?.removeAttribute('hidden');
+      isLoading = false;
+      return;
+    }
+
+    isLoading = false;
+  }
+
+  if ('IntersectionObserver' in window) {
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) loadNextPage();
+        }
+      },
+      { rootMargin: '0px 0px 300px 0px' },
+    );
+
+    if (sentinel && hasMore) observer.observe(sentinel);
+  }
+
+  loadMoreButton?.addEventListener('click', loadNextPage);
+  error?.querySelector<HTMLButtonElement>('.category-retry-btn')?.addEventListener('click', () => {
+    error.setAttribute('hidden', '');
+    loadNextPage();
   });
 </script>
 
@@ -707,7 +813,10 @@ const clientPosts = allPosts.map((post) => ({
   /* ── Load More ─────────────────────────────────────────────── */
   .load-more-wrap {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 12px;
     margin-top: 36px;
   }
 
@@ -740,6 +849,58 @@ const clientPosts = allPosts.map((post) => ({
   .load-more-btn:focus-visible {
     border-style: solid;
     box-shadow: 0 0 0 2px var(--color-accent), 0 0 18px var(--color-accent-20);
+  }
+
+  .category-next-page-link,
+  .category-loading,
+  .category-load-error,
+  .category-end-of-feed {
+    font-family: monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: var(--color-star);
+    opacity: 0.65;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .category-next-page-link {
+    text-decoration: none;
+    transition: color 0.22s ease, opacity 0.22s ease;
+  }
+
+  .category-next-page-link:hover,
+  .category-next-page-link:focus-visible {
+    color: var(--color-accent);
+    opacity: 1;
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  .category-load-error {
+    margin: 0;
+  }
+
+  .category-retry-btn {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   /* ── Mobile ────────────────────────────────────────────────── */

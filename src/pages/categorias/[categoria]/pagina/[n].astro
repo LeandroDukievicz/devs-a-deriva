@@ -17,11 +17,14 @@ const PAGE_SIZE = 10;
 
 const allPosts = await getPostsByCategory(categoria);
 const { items: posts, hasMore, total } = paginatePosts(allPosts, page, PAGE_SIZE);
-const totalPages = Math.ceil(total / PAGE_SIZE);
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+if (page > totalPages) return Astro.redirect(`${totalPages === 1 ? `/categorias/${categoria}/` : `/categorias/${categoria}/pagina/${totalPages}/`}`);
 
 const base = `/categorias/${categoria}`;
 const prevUrl = page === 2 ? `${base}/` : `${base}/pagina/${page - 1}/`;
 const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
+const canonicalUrl = `https://devsaderiva.com.br${base}/pagina/${page}/`;
 ---
 
 <CategoryLayout
@@ -30,6 +33,7 @@ const nextUrl = hasMore ? `${base}/pagina/${page + 1}/` : null;
   description={cat.description}
 >
   <Fragment slot="head">
+    <link rel="canonical" href={canonicalUrl} />
     <link rel="prev" href={`https://devsaderiva.com.br${prevUrl}`} />
     {nextUrl && <link rel="next" href={`https://devsaderiva.com.br${nextUrl}`} />}
   </Fragment>

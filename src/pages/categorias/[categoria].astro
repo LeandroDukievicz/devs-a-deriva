@@ -4,6 +4,7 @@ export const prerender = false;
 import CategoryLayout from '../../layouts/CategoryLayout.astro';
 import CategoriaPage from '../../components/CategoriaPage.astro';
 import { getCategoryBySlug } from '../../lib/categories';
+import { getPostsByCategory } from '../../lib/posts';
 
 const { categoria } = Astro.params;
 if (!categoria) return Astro.redirect('/404');
@@ -11,10 +12,16 @@ if (!categoria) return Astro.redirect('/404');
 const cat = getCategoryBySlug(categoria);
 if (!cat) return Astro.redirect('/404');
 
+const PAGE_SIZE = 10;
+const totalPosts = (await getPostsByCategory(cat.slug)).length;
+const hasNextPage = totalPosts > PAGE_SIZE;
 const ogImage = `https://devsaderiva.com.br${cat.illustration}`;
 ---
 
 <CategoryLayout category={cat} ogImage={ogImage}>
+  <Fragment slot="head">
+    {hasNextPage && <link rel="next" href={`https://devsaderiva.com.br/categorias/${cat.slug}/pagina/2/`} />}
+  </Fragment>
   <CategoriaPage
     category={cat.label}
     categorySlug={cat.slug}

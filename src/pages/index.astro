@@ -86,12 +86,19 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
           >
             CARREGAR MAIS TRANSMISSÕES
           </button>
+          <a id="next-page-link" class="next-page-link" href="/page/2/" rel="next" hidden={!hasMore}>
+            abrir página 2
+          </a>
           <p id="load-error" class="load-error" hidden>
             Falha ao carregar. <button class="retry-btn" type="button">Tentar novamente</button>
+          </p>
+          <p id="end-of-feed" class="end-of-feed" hidden={visibleHomePosts.length === 0 || hasMore}>
+            Você chegou ao fundo do mar.
           </p>
         </div>
       </div>
       <div id="posts-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+      <noscript><style>#load-more-btn{display:none}</style></noscript>
     </main>
 </PageLayout>
 
@@ -143,7 +150,10 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
 
     .load-more-wrap {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
+      gap: 12px;
       margin-top: 100px;
       padding-bottom: 24px;
     }
@@ -169,15 +179,35 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     }
 
     .load-more-cta:hover,
-    .load-more-cta:focus-visible {
+    .load-more-cta:focus-visible,
+    .next-page-link:hover,
+    .next-page-link:focus-visible {
       box-shadow: 0 0 18px var(--color-accent-20);
       background: transparent;
       outline: none;
     }
 
-    .load-more-cta:focus-visible {
+    .load-more-cta:focus-visible,
+    .next-page-link:focus-visible {
       outline: 2px solid var(--color-accent);
       outline-offset: 3px;
+    }
+
+    .next-page-link {
+      color: var(--color-star);
+      font-family: monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      opacity: 0.55;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .next-page-link:hover,
+    .next-page-link:focus-visible {
+      color: var(--color-accent);
+      opacity: 1;
     }
 
     .posts-loading-dots {
@@ -192,7 +222,8 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       letter-spacing: 0.1em;
     }
 
-    .load-error {
+    .load-error,
+    .end-of-feed {
       font-family: monospace;
       font-size: 0.72rem;
       text-align: center;
@@ -204,6 +235,10 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
+    }
+
+    .end-of-feed {
+      letter-spacing: 0.08em;
     }
 
     .retry-btn {
@@ -350,12 +385,20 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     let hasMore = container?.dataset.hasMore === 'true';
     let currentPage = 1;
     let isLoading = false;
+    let observer: IntersectionObserver | null = null;
 
     const sentinel = document.getElementById('scroll-sentinel');
     const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement | null;
+    const nextPageLink = document.getElementById('next-page-link') as HTMLAnchorElement | null;
     const loadingEl = document.getElementById('posts-loading');
     const loadErrorEl = document.getElementById('load-error');
+    const endOfFeedEl = document.getElementById('end-of-feed');
     const statusEl = document.getElementById('posts-status');
+    const loadedSlugs = new Set(
+      Array.from(document.querySelectorAll<HTMLElement>('.content-section[data-post-slug]'))
+        .map(section => section.dataset.postSlug)
+        .filter((slug): slug is string => Boolean(slug))
+    );
 
     function escapeHtml(value: unknown): string {
       return String(value ?? '')
@@ -369,7 +412,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     function renderPostSection(post: HomePost): string {
       return `
         <div class="content-section" data-section-id="${escapeHtml(post.sectionId)}" data-post-slug="${escapeHtml(post.slug)}" data-post-href="${escapeHtml(post.href)}" role="link" tabindex="0">
-          <div class="section-image"><img src="${escapeHtml(post.imageSrc)}" alt="${escapeHtml(post.category)}" class="section-img" loading="lazy" decoding="async" /></div>
+          <div class="section-image"><img src="${escapeHtml(post.imageSrc)}" alt="${escapeHtml(post.category)}" class="section-img" width="400" height="266" loading="lazy" decoding="async" /></div>
           <div class="section-content">
             <a href="${escapeHtml(post.href)}" class="limbo-cta">Lançar ao limbo</a>
             <h2><a href="${escapeHtml(post.href)}" class="title-link">${escapeHtml(post.title)}</a></h2>
@@ -377,7 +420,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
             <a href="${escapeHtml(post.href)}" class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
             <div class="card-footer">
               <div class="post-meta">
-                <img class="post-author-photo" src="${escapeHtml(post.author.photo)}" alt="Foto de ${escapeHtml(post.author.name)}" loading="lazy" decoding="async" />
+                <img class="post-author-photo" src="${escapeHtml(post.author.photo)}" alt="Foto de ${escapeHtml(post.author.name)}" width="34" height="34" loading="lazy" decoding="async" />
                 <div class="post-author-copy">
                   <span class="post-author-name">${escapeHtml(post.author.name)}</span>
                   <span class="post-author-bio">${escapeHtml(post.authorBio)}</span>
@@ -402,8 +445,23 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
 
     function showEndOfFeed() {
       loadMoreBtn?.setAttribute('hidden', '');
+      nextPageLink?.setAttribute('hidden', '');
       loadingEl?.setAttribute('hidden', '');
-      if (sentinel) observer.unobserve(sentinel);
+      endOfFeedEl?.removeAttribute('hidden');
+      if (statusEl) statusEl.textContent = 'Você chegou ao fundo do mar.';
+      if (sentinel) observer?.unobserve(sentinel);
+    }
+
+    function updateNextPageLink() {
+      if (!nextPageLink) return;
+      if (!hasMore) {
+        nextPageLink.setAttribute('hidden', '');
+        return;
+      }
+      const nextPage = currentPage + 1;
+      nextPageLink.href = `/page/${nextPage}/`;
+      nextPageLink.textContent = `abrir página ${nextPage}`;
+      nextPageLink.removeAttribute('hidden');
     }
 
     async function loadNextPage() {
@@ -422,11 +480,11 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
           hasNextPage: boolean;
         };
 
-        const newPosts = data.posts;
+        const newPosts = data.posts.filter((post) => !loadedSlugs.has(post.slug));
 
         if (newPosts.length > 0 && sentinel && container) {
           sentinel.insertAdjacentHTML('beforebegin', newPosts.map(renderPostSection).join(''));
-          currentPage = data.currentPage;
+          newPosts.forEach(post => loadedSlugs.add(post.slug));
 
           const newSections = Array.from(
             container.querySelectorAll<HTMLElement>('.content-section[data-post-slug]:not([data-progress-init])')
@@ -440,8 +498,10 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
           }
         }
 
+        currentPage = data.currentPage;
         hasMore = data.hasNextPage;
         setLoadingState(false);
+        updateNextPageLink();
 
         if (!hasMore) showEndOfFeed();
       } catch {
@@ -454,16 +514,20 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       isLoading = false;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) loadNextPage();
-        }
-      },
-      { rootMargin: '0px 0px 300px 0px' },
-    );
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) loadNextPage();
+          }
+        },
+        { rootMargin: '0px 0px 300px 0px' },
+      );
 
-    if (sentinel && hasMore) observer.observe(sentinel);
+      if (sentinel && hasMore) observer.observe(sentinel);
+    }
+
+    updateNextPageLink();
 
     loadMoreBtn?.addEventListener('click', loadNextPage);
 
