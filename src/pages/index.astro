@@ -92,9 +92,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
           <p id="load-error" class="load-error" hidden>
             Falha ao carregar. <button class="retry-btn" type="button">Tentar novamente</button>
           </p>
-          <p id="end-of-feed" class="end-of-feed" hidden={visibleHomePosts.length === 0 || hasMore}>
-            Você chegou ao fundo do mar.
-          </p>
         </div>
       </div>
       <div id="posts-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
@@ -222,8 +219,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       letter-spacing: 0.1em;
     }
 
-    .load-error,
-    .end-of-feed {
+    .load-error {
       font-family: monospace;
       font-size: 0.72rem;
       text-align: center;
@@ -235,10 +231,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-    }
-
-    .end-of-feed {
-      letter-spacing: 0.08em;
     }
 
     .retry-btn {
@@ -392,7 +384,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     const nextPageLink = document.getElementById('next-page-link') as HTMLAnchorElement | null;
     const loadingEl = document.getElementById('posts-loading');
     const loadErrorEl = document.getElementById('load-error');
-    const endOfFeedEl = document.getElementById('end-of-feed');
     const statusEl = document.getElementById('posts-status');
     const loadedSlugs = new Set(
       Array.from(document.querySelectorAll<HTMLElement>('.content-section[data-post-slug]'))
@@ -447,8 +438,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       loadMoreBtn?.setAttribute('hidden', '');
       nextPageLink?.setAttribute('hidden', '');
       loadingEl?.setAttribute('hidden', '');
-      endOfFeedEl?.removeAttribute('hidden');
-      if (statusEl) statusEl.textContent = 'Você chegou ao fundo do mar.';
       if (sentinel) observer?.unobserve(sentinel);
     }
 

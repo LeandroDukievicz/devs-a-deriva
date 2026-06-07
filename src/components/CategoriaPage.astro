@@ -149,9 +149,6 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
       <p id="category-load-error" class="category-load-error" hidden>
         Falha ao carregar. <button class="category-retry-btn" type="button">Tentar novamente</button>
       </p>
-      <p id="category-end-of-feed" class="category-end-of-feed" hidden={allPosts.length === 0 || firstPage.hasMore}>
-        Você chegou ao fundo do mar.
-      </p>
     </div>
     <div id="category-posts-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   </section>
@@ -230,7 +227,6 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
   const sentinel = document.getElementById('category-posts-sentinel');
   const loading = document.getElementById('category-posts-loading');
   const error = document.getElementById('category-load-error');
-  const endOfFeed = document.getElementById('category-end-of-feed');
   const status = document.getElementById('category-posts-status');
   const loadedSlugs = new Set(
     Array.from(document.querySelectorAll<HTMLAnchorElement>('.posts-grid .post-card[href*="/posts/"]'))
@@ -302,8 +298,6 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     loadMoreButton?.setAttribute('hidden', '');
     nextPageLink?.setAttribute('hidden', '');
     loading?.setAttribute('hidden', '');
-    endOfFeed?.removeAttribute('hidden');
-    if (status) status.textContent = 'Você chegou ao fundo do mar.';
     if (sentinel) observer?.unobserve(sentinel);
   }
 
@@ -853,8 +847,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
 
   .category-next-page-link,
   .category-loading,
-  .category-load-error,
-  .category-end-of-feed {
+  .category-load-error {
     font-family: monospace;
     font-size: 0.66rem;
     letter-spacing: 0.1em;
