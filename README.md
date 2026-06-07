@@ -25,10 +25,10 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 
 ### Implementado
 
-- Home com experiência visual imersiva (BlackHole canvas) e cards abastecidos pelo dashboard via SSR
+- Home com experiência visual imersiva (BlackHole canvas), render inicial de 5 posts e carregamento progressivo real via `/api/posts.json?page=N&limit=5`
 - Páginas individuais de post com hero, metadados, imagem de capa e navegação contextual
 - Seis categorias editoriais (tech, carreira, livros, música, aleatoriedades, notícias)
-- Paginação estática por URL em `/categorias/{slug}/pagina/{n}` para SEO
+- Paginação rastreável por URL em `/page/{n}` e `/categorias/{slug}/pagina/{n}` para SEO, sem depender apenas de JavaScript
 - Cards de posts com progresso de leitura em tempo real e estado de conclusão
 - Excerpt extraído do primeiro parágrafo real do post (ignora imagens e headings em markdown)
 - Busca client-side em `/busca` com índice embutido no build e suporte ao parâmetro `?q=`

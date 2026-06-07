@@ -45,6 +45,8 @@ O blog usa **modo híbrido** — a distinção é feita por página via `export 
 | Página | Modo | Por quê |
 |---|---|---|
 | `index.astro` | SSR | Lista de posts sempre atualizada |
+| `page/[n].astro` | SSR | Paginação real da home para SEO |
+| `api/posts.json.ts` | SSR | Lotes JSON para infinite scroll e categorias |
 | `posts/[slug].astro` | SSR | Novo post aparece sem rebuild |
 | `categorias/[categoria]/pagina/[n].astro` | SSR | Paginação em tempo real |
 | `busca.astro` | SSR | Índice de busca sempre fresco |
@@ -85,6 +87,19 @@ Cache em memória TTL 30s — evita chamadas desnecessárias
         ↓
 Blog renderiza e serve ao visitante
 ```
+
+## Listagem de Posts
+
+A home usa um modelo híbrido:
+
+- `/` renderiza somente os 5 posts publicados mais recentes no HTML inicial;
+- o cliente usa `IntersectionObserver` sobre um sentinel no fim da lista;
+- cada interseção busca `/api/posts.json?page=N&limit=5` e anexa mais 5 cards;
+- o botão fallback `CARREGAR MAIS POSTS` chama a mesma função, fica `disabled` durante o carregamento e funciona por teclado;
+- quando acaba, o botão e o link de próxima página somem e a mensagem final é exibida;
+- `/page/2`, `/page/3` etc. continuam existindo como HTML real com `canonical`, `rel=prev/next` e navegação tradicional.
+
+A montagem de cards/payloads é compartilhada em `src/lib/post-listing.ts`, que centraliza `HOME_POSTS_PER_PAGE`, `CATEGORY_POSTS_PER_PAGE`, fallback de imagens, `sectionId`, `href` e serialização JSON.
 
 Interações públicas (comentários, progresso, newsletter) seguem o fluxo inverso:
 

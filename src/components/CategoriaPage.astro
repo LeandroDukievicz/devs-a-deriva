@@ -1,5 +1,6 @@
 ---
 import { getFeaturedByCategory, getPostsByCategory, isApiOffline, paginatePosts } from '../lib/posts';
+import { CATEGORY_POSTS_PER_PAGE } from '../lib/post-listing';
 
 interface Props {
   category: string;
@@ -19,7 +20,7 @@ const {
 
 const featuredPosts = await getFeaturedByCategory(categorySlug);
 const allPosts = await getPostsByCategory(categorySlug);
-const PAGE_SIZE = 10;
+const PAGE_SIZE = CATEGORY_POSTS_PER_PAGE;
 const firstPage = paginatePosts(allPosts, 1, PAGE_SIZE);
 const visiblePosts = firstPage.items;
 const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/` : null;

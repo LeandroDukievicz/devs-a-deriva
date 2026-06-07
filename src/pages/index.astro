@@ -4,34 +4,20 @@ export const prerender = false;
 import PageLayout from '../layouts/PageLayout.astro';
 import BlackHole from '../components/BlackHole.astro';
 import PostCard from '../components/PostCard.astro';
+import { HOME_POSTS_PER_PAGE, toHomePostCard } from '../lib/post-listing';
 import { fetchPosts, isApiOffline } from '../lib/posts';
 
 const allPosts = await fetchPosts();
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = HOME_POSTS_PER_PAGE;
 const SITE = 'https://devsaderiva.com.br';
-
-const categoryImages: Record<string, string> = {
-  aleatoriedades: '/aleatoriedades-astronaut-body.webp',
-  carreira: '/carreira-profissional-astronaut-body.webp',
-  livros: '/livros-astronaut.webp',
-  musica: '/musica-astronaut.webp',
-  noticias: '/noticias-astronaut.webp',
-  tech: '/tech-astronaut.webp',
-};
 
 const total = allPosts.length;
 const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 const hasMore = total > PAGE_SIZE;
 
-const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
-  ...post,
-  sectionId: `section-${index + 1}`,
-  href: `/posts/${post.slug}?from=home`,
-  authorBio: post.author.role,
-  imageSrc: post.thumbUrl ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp',
-}));
+const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => toHomePostCard(post, index));
 ---
 
 <PageLayout title="Devs à Deriva">
@@ -46,6 +32,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
         data-dashboard-url={DASHBOARD_URL}
         data-total-pages={String(totalPages)}
         data-has-more={String(hasMore)}
+        data-page-size={String(PAGE_SIZE)}
       >
         {visibleHomePosts.length === 0 && (
           <div class="empty-state">
@@ -72,7 +59,8 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
         <div id="scroll-sentinel" aria-hidden="true" style="height:1px"></div>
 
         <div class="load-more-wrap">
-          <div id="posts-loading" class="posts-loading-dots" hidden aria-label="Carregando posts">
+          <div id="posts-loading" class="posts-loading" hidden aria-label="Carregando mais posts">
+            <span class="loading-label">Carregando mais posts</span>
             <span class="dot" style="animation-delay:0s">.</span>
             <span class="dot" style="animation-delay:0.2s">.</span>
             <span class="dot" style="animation-delay:0.4s">.</span>
@@ -84,13 +72,16 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
             hidden={!hasMore}
             aria-label="Carregar mais posts"
           >
-            CARREGAR MAIS TRANSMISSÕES
+            CARREGAR MAIS POSTS
           </button>
           <a id="next-page-link" class="next-page-link" href="/page/2/" rel="next" hidden={!hasMore}>
             abrir página 2
           </a>
           <p id="load-error" class="load-error" hidden>
-            Falha ao carregar. <button class="retry-btn" type="button">Tentar novamente</button>
+            Erro ao carregar posts. <button class="retry-btn" type="button">Tentar novamente</button>
+          </p>
+          <p id="end-of-feed" class="end-of-feed" hidden>
+            Você chegou aos confins do blog !! sem mais posts !!
           </p>
         </div>
       </div>
@@ -175,7 +166,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       transition: box-shadow 0.25s ease, background 0.25s ease;
     }
 
-    .load-more-cta:hover,
+    .load-more-cta:not(:disabled):hover,
     .load-more-cta:focus-visible,
     .next-page-link:hover,
     .next-page-link:focus-visible {
@@ -188,6 +179,11 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     .next-page-link:focus-visible {
       outline: 2px solid var(--color-accent);
       outline-offset: 3px;
+    }
+
+    .load-more-cta:disabled {
+      cursor: wait;
+      opacity: 0.55;
     }
 
     .next-page-link {
@@ -207,19 +203,25 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       opacity: 1;
     }
 
-    .posts-loading-dots {
+    .posts-loading {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 2px;
       padding: 8px 16px;
       color: var(--color-star);
-      font-size: 1.4rem;
+      font-size: 0.72rem;
       font-family: monospace;
       letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
-    .load-error {
+    .loading-label {
+      margin-right: 2px;
+    }
+
+    .load-error,
+    .end-of-feed {
       font-family: monospace;
       font-size: 0.72rem;
       text-align: center;
@@ -231,6 +233,11 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
+    }
+
+    .end-of-feed {
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .retry-btn {
@@ -378,12 +385,14 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
     let currentPage = 1;
     let isLoading = false;
     let observer: IntersectionObserver | null = null;
+    const pageSize = Number(container?.dataset.pageSize ?? '5') || 5;
 
     const sentinel = document.getElementById('scroll-sentinel');
     const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement | null;
     const nextPageLink = document.getElementById('next-page-link') as HTMLAnchorElement | null;
     const loadingEl = document.getElementById('posts-loading');
     const loadErrorEl = document.getElementById('load-error');
+    const endOfFeedEl = document.getElementById('end-of-feed');
     const statusEl = document.getElementById('posts-status');
     const loadedSlugs = new Set(
       Array.from(document.querySelectorAll<HTMLElement>('.content-section[data-post-slug]'))
@@ -426,18 +435,31 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
 
     function setLoadingState(loading: boolean) {
       if (loading) {
-        loadMoreBtn?.setAttribute('hidden', '');
+        if (loadMoreBtn) {
+          loadMoreBtn.disabled = true;
+          loadMoreBtn.setAttribute('aria-busy', 'true');
+        }
         loadingEl?.removeAttribute('hidden');
       } else {
         loadingEl?.setAttribute('hidden', '');
-        if (hasMore) loadMoreBtn?.removeAttribute('hidden');
+        if (loadMoreBtn) {
+          loadMoreBtn.disabled = false;
+          loadMoreBtn.removeAttribute('aria-busy');
+          if (hasMore) loadMoreBtn.removeAttribute('hidden');
+        }
       }
     }
 
     function showEndOfFeed() {
-      loadMoreBtn?.setAttribute('hidden', '');
+      if (loadMoreBtn) {
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.removeAttribute('aria-busy');
+        loadMoreBtn.setAttribute('hidden', '');
+      }
       nextPageLink?.setAttribute('hidden', '');
       loadingEl?.setAttribute('hidden', '');
+      endOfFeedEl?.removeAttribute('hidden');
+      if (statusEl) statusEl.textContent = 'Sem mais posts para carregar.';
       if (sentinel) observer?.unobserve(sentinel);
     }
 
@@ -460,7 +482,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => ({
       setLoadingState(true);
 
       try {
-        const res = await fetch(`/api/posts.json?page=${currentPage + 1}`);
+        const res = await fetch(`/api/posts.json?page=${currentPage + 1}&limit=${pageSize}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json() as {

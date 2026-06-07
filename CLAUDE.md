@@ -56,7 +56,7 @@ if (_cache && import.meta.env.PROD && now - _cacheTime < CACHE_TTL_MS) return _c
 
 Em desenvolvimento (`PROD = false`) o cache é desabilitado — dados sempre frescos.
 
-O cache retorna posts **ordenados por `publishedAt` decrescente** (mais recente primeiro). Posts sem `publishedAt` vão para o final.
+O cache retorna posts **ordenados por `publishedAt` decrescente** (mais recente primeiro). Posts sem `publishedAt` vão para o final. Posts com `publishedAt` futuro são filtrados defensivamente pelo blog, além do filtro `status=PUBLISHED` aplicado na API do dashboard.
 
 ## Paginação e infinite scroll da home
 
@@ -64,14 +64,15 @@ A home usa um modelo híbrido: HTML server-rendered para os primeiros posts + ca
 
 ### Fluxo
 1. `/` renderiza os **5 posts mais recentes** no HTML inicial (sem JSON blob de todos os posts).
-2. Um `IntersectionObserver` observa um sentinel no final da lista; ao entrar na viewport (com `rootMargin: 300px`), busca `/api/posts.json?page=N`.
-3. Botão fallback **"CARREGAR MAIS TRANSMISSÕES"** para acessibilidade e casos sem IntersectionObserver.
-4. Ao esgotar os posts, exibe **"Você chegou ao fundo do mar."**
-5. Páginas `/page/2`, `/page/3` etc. existem como HTML real com `canonical`, `rel=prev/next` e meta tags — indexáveis sem JavaScript.
+2. Um `IntersectionObserver` observa um sentinel no final da lista; ao entrar na viewport (com `rootMargin: 300px`), busca `/api/posts.json?page=N&limit=5`.
+3. Botão fallback **"CARREGAR MAIS POSTS"** para acessibilidade e casos sem IntersectionObserver.
+4. Durante a requisição, o botão fica `disabled`/`aria-busy` e o texto **"Carregando mais posts..."** é exibido.
+5. Ao esgotar os posts, exibe **"Você chegou aos confins do blog !! sem mais posts !!"** e remove botão/link de próxima página.
+6. Páginas `/page/2`, `/page/3` etc. existem como HTML real com `canonical`, `rel=prev/next` e meta tags — indexáveis sem JavaScript.
 
 ### Endpoint de API
 ```
-GET /api/posts.json?page=N
+GET /api/posts.json?page=N&limit=5
 ```
 Resposta:
 ```json
@@ -83,10 +84,18 @@ Resposta:
   "nextPage": 3
 }
 ```
-Cada post inclui: `slug`, `title`, `category`, `categorySlug`, `excerpt`, `author`, `sectionId`, `href`, `authorBio`, `imageSrc`.
+Parâmetros aceitos:
+
+- `page`: página 1-indexada; valores inválidos caem para `1`.
+- `limit`: tamanho do lote; padrão `5`, mínimo `1`, máximo `20`.
+- `category`: opcional; filtra por `categorySlug` para listagens de categoria.
+
+Cada post inclui: `slug`, `title`, `category`, `categorySlug`, `excerpt`, `author`, `sectionId`, `href`, `authorBio`, `imageSrc`, `publishedAt`, `readingTime`, `readTime`, `hashtag` e `cover`.
 
 ### Tamanho de página
-`PAGE_SIZE = 5` — definido tanto em `index.astro` quanto em `api/posts.json.ts` e `page/[n].astro`. Se precisar mudar, altere nos três lugares.
+O tamanho da home é centralizado em `HOME_POSTS_PER_PAGE = 5` em `src/lib/post-listing.ts`. Categorias usam `CATEGORY_POSTS_PER_PAGE = 10` no mesmo arquivo.
+
+`src/lib/post-listing.ts` também centraliza fallback de imagem, `sectionId`, `href` e serialização JSON dos cards para evitar divergência entre `index.astro`, `page/[n].astro` e `api/posts.json.ts`.
 
 ### Comunicação entre scripts
 Quando novos posts são injetados no DOM, o script de carregamento dispara um CustomEvent `home-posts-added` com as seções novas. O script de reading-progress escuta esse evento para aplicar progresso de leitura nos cards recém-chegados.

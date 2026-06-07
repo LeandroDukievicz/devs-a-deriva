@@ -236,6 +236,12 @@ function mapPost(raw: any): Post {
   };
 }
 
+function isPublishableNow(post: Post): boolean {
+  if (!post.publishedAt) return true;
+  const publishedAt = new Date(post.publishedAt).getTime();
+  return isNaN(publishedAt) || publishedAt <= Date.now();
+}
+
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 
 let _cache: Post[] | null = null;
@@ -254,7 +260,7 @@ export async function fetchPosts(): Promise<Post[]> {
     const json = await res.json();
     const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
     _apiOffline = false;
-    _cache = items.filter(hasValidSlug).map(mapPost);
+    _cache = items.filter(hasValidSlug).map(mapPost).filter(isPublishableNow);
     _cache.sort((a, b) => {
       const ta = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
       const tb = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;

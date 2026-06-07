@@ -3,6 +3,7 @@ export const prerender = false;
 
 import PageLayout from '../../layouts/PageLayout.astro';
 import PostCard from '../../components/PostCard.astro';
+import { HOME_POSTS_PER_PAGE, toHomePostCard } from '../../lib/post-listing';
 import { fetchPosts, paginatePosts } from '../../lib/posts';
 
 const { n } = Astro.params;
@@ -11,7 +12,7 @@ if (!n || n === '1') return Astro.redirect('/');
 const page = parseInt(n, 10);
 if (isNaN(page) || page < 2) return Astro.redirect('/');
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = HOME_POSTS_PER_PAGE;
 const SITE = 'https://devsaderiva.com.br';
 
 const allPosts = await fetchPosts();
@@ -22,23 +23,8 @@ if (page > totalPages) return Astro.redirect(`/page/${totalPages}/`);
 
 const { items: posts, hasMore } = paginatePosts(allPosts, page, PAGE_SIZE);
 
-const categoryImages: Record<string, string> = {
-  aleatoriedades: '/aleatoriedades-astronaut-body.webp',
-  carreira: '/carreira-profissional-astronaut-body.webp',
-  livros: '/livros-astronaut.webp',
-  musica: '/musica-astronaut.webp',
-  noticias: '/noticias-astronaut.webp',
-  tech: '/tech-astronaut.webp',
-};
-
 const start = (page - 1) * PAGE_SIZE;
-const pagePosts = posts.map((post, i) => ({
-  ...post,
-  sectionId: `section-${start + i + 1}`,
-  href: `/posts/${post.slug}?from=home`,
-  authorBio: post.author.role,
-  imageSrc: post.thumbUrl ?? categoryImages[post.categorySlug] ?? '/logo-high-color.webp',
-}));
+const pagePosts = posts.map((post, i) => toHomePostCard(post, start + i));
 
 const prevUrl = page === 2 ? '/' : `/page/${page - 1}/`;
 const nextUrl = hasMore ? `/page/${page + 1}/` : null;

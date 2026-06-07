@@ -107,7 +107,7 @@ Checklist:
 Checklist:
 
 - [x] Home exibe posts PUBLISHED buscados do dashboard com cache.
-- [x] Paginação na home: `paginatePosts()` renderiza 10 posts no build; botão "Load More" com script client-side que insere os próximos via `define:vars`.
+- [x] Paginação na home: SSR inicial renderiza 5 posts; `/page/{n}` mantém HTML rastreável; `/api/posts.json?page=N&limit=5` entrega lotes sob demanda para infinite scroll e botão fallback.
 - [x] Páginas de categoria listam posts filtrados por categoria com paginação igual à home.
 - [x] Página de post individual (`/posts/[slug]`) com conteúdo real, author, meta e Schema.org.
 - [x] Página `/devs` com cards de colaboradores buscados do dashboard.
@@ -115,7 +115,7 @@ Checklist:
 - [x] Seção de comentários com OAuth (Google, GitHub, Discord) via dashboard.
 - [x] Newsletter subscribe integrada ao dashboard.
 - [x] Reading progress tracked via API do dashboard.
-- [x] [P1] "Carregar mais" na home: botão já usa `hidden={!firstPage.hasMore}` no SSR e oculta via JS após carregar todos os posts — comportamento correto verificado.
+- [x] [P1] "Carregar mais" na home: botão real com estado `disabled`/`aria-busy`, loading textual, retry em erro, prevenção de duplicados e mensagem final ao esgotar posts.
 - [x] **Busca pública** — página `/busca` com busca client-side sobre todos os posts publicados; índice embutido no build com apenas campos públicos; suporte a `?q=` na URL; `searchPosts()` exportado e coberto por testes em `tests/search.test.ts`; URL limpa ao resetar busca; null safety no DOM.
 - [ ] [P2] SEO de posts antigos: considerar geração de páginas estáticas `/categorias/[slug]/pagina/[n]` via `getStaticPaths()` para garantir indexação sem depender de JavaScript.
 - [ ] [P2] Webhook de rebuild: ao publicar post no dashboard, disparar rebuild automático do blog com popup de progresso no dashboard mostrando status do CI/CD.

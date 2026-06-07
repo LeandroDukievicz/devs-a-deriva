@@ -124,7 +124,7 @@ SSG com Astro: o servidor de build executa frontmatter de páginas e componentes
 2. `src/lib/posts.ts` chama o dashboard via `PUBLIC_DASHBOARD_URL`.
 3. `fetchPosts()` retorna posts publicados; o payload é normalizado e convertido para HTML.
 4. `src/pages/posts/[slug].astro` gera uma rota estática por post via `getStaticPaths()`.
-5. A home exibe os cinco posts mais recentes; categorias filtram por `categorySlug`; paginação via `[n].astro`.
+5. A home exibe os cinco posts mais recentes; `/api/posts.json?page=N&limit=5` entrega lotes sob demanda; categorias filtram por `categorySlug`; paginação real via `[n].astro` mantém URLs rastreáveis.
 6. `/health.json`, `/sitemap.xml` e `/ai-index.json` são gerados como arquivos estáticos no build.
 7. O browser ativa animações canvas, comentários, newsletter e progresso de leitura via APIs do dashboard.
 
@@ -356,11 +356,11 @@ Componente visual para 404/500: separa dígitos do código, renderiza textos SVG
 
 | Faixa | Explicação |
 | --- | --- |
-| 1–23 | Busca posts, define dashboard URL, imagens por categoria e prepara até cinco cards. |
-| 26–107 | Composição visual da home com BlackHole, cards, autor, redes sociais e CTAs. |
-| 111–657 | CSS de overlay, cards, ações, responsividade e progresso. |
-| 661–699 | Revela conteúdo após intro e sincroniza progresso. |
-| 725–1050 | Efeito limbo por slices, clique no card inteiro e progresso legado. |
+| 1–21 | Busca posts publicados, aplica `HOME_POSTS_PER_PAGE = 5` e prepara os cards via `src/lib/post-listing.ts`. |
+| 23–91 | Composição visual da home com BlackHole, cinco cards iniciais, sentinel, botão fallback, link SEO e estados de loading/erro/fim. |
+| 93–374 | CSS de overlay, ações, loading, responsividade e progresso. |
+| 376–531 | Infinite scroll com `IntersectionObserver`, `/api/posts.json?page=N&limit=5`, controle de concorrência, retry e prevenção de duplicados. |
+| 533–fim | Revela conteúdo após intro, sincroniza progresso, efeito limbo e clique no card inteiro. |
 
 ### `src/pages/posts/[slug].astro`
 
@@ -575,7 +575,7 @@ A CSP enforced em `nginx.conf` e `vercel.json` usa `script-src` **hash-based, se
 - `Base.astro` — script `is:inline` de inicialização do Google tag/gtag (conteúdo fixo)
 - Scripts bundled pelo Astro para páginas estáticas — módulos pequenos otimizados pelo Vite (Vercel Analytics, cookie consent, scripts de página)
 
-**Refatoração `define:vars`:** três scripts que usavam `define:vars` (passagem inline de dados do server para o browser) foram migrados para o padrão `<script type="application/json" id="...">` + `<script>` bundled normal. Esse padrão elimina o inline dinâmico sem perda de funcionalidade: `index.astro` (lista de posts para load more), `busca.astro` (índice de busca) e `CategoriaPage.astro` (posts de categoria para load more).
+**Refatoração `define:vars`:** scripts que usavam `define:vars` (passagem inline de dados do server para o browser) foram migrados para JSON mínimo ou carregamento sob demanda. A home não embute mais todos os posts: busca lotes reais via `/api/posts.json`. `busca.astro` mantém índice público em `<script type="application/json" id="...">`; `CategoriaPage.astro` mantém apenas configuração mínima (`categorySlug`, `pageSize`, `hasMore`) e busca próximos lotes pelo endpoint JSON.
 
 **Páginas SSR:** scripts das páginas SSR são emitidos como arquivos externos (`/_astro/*.js`) pelo Astro, cobertos por `'self'` — não requerem hashes.
 

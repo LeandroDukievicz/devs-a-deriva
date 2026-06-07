@@ -159,7 +159,24 @@ Estilos de componentes Astro têm escopo automático — classes definidas em `C
 
 Posts vêm do dashboard via `src/lib/posts.ts`, que consulta `PUBLIC_DASHBOARD_URL/api/posts?status=PUBLISHED` em runtime. O markdown do post é convertido para HTML sanitizado por `markdownToHtml()` antes de ser servido.
 
+Além do `status=PUBLISHED`, `fetchPosts()` filtra posts com `publishedAt` futuro para evitar exposição de posts agendados caso a API retorne algum item indevidamente.
+
 `src/lib/posts.ts` é o adapter do blog para a API pública. Normaliza autor, categoria, HTML renderizado e fornece helpers como `getPost()`, `getPostsByCategory()`, `paginatePosts()` e `searchPosts()`.
+
+`src/lib/post-listing.ts` concentra helpers específicos de listagem: tamanho de página da home (`HOME_POSTS_PER_PAGE = 5`), tamanho de categorias (`CATEGORY_POSTS_PER_PAGE = 10`), fallback de capa, `sectionId`, links de card e payload de `/api/posts.json`.
+
+## Carregamento Progressivo
+
+A home renderiza apenas 5 cards no SSR. O script da própria página usa `IntersectionObserver` com `rootMargin: 300px` para carregar os próximos lotes sob demanda via `/api/posts.json?page=N&limit=5`.
+
+Estados previstos:
+
+- carregando: exibe `Carregando mais posts...` e mantém o botão `disabled` com `aria-busy`;
+- erro: exibe `Erro ao carregar posts. Tentar novamente.`;
+- fim da lista: exibe `Você chegou aos confins do blog !! sem mais posts !!`;
+- sem JavaScript: o botão é escondido por `noscript`, mas o link de próxima página permanece rastreável.
+
+O script mantém `isLoading`, `currentPage`, `hasMore` e um `Set` de slugs já carregados para evitar requisições concorrentes e posts duplicados.
 
 ## Testes
 

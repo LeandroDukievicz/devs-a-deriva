@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import CategoryLayout from '../../../../layouts/CategoryLayout.astro';
+import { CATEGORY_POSTS_PER_PAGE } from '../../../../lib/post-listing';
 import { getPostsByCategory, paginatePosts } from '../../../../lib/posts';
 import { getCategoryBySlug } from '../../../../lib/categories';
 
@@ -13,7 +14,7 @@ if (isNaN(page) || page < 2) return Astro.redirect(`/categorias/${categoria}/`);
 
 const cat = getCategoryBySlug(categoria);
 if (!cat) return Astro.redirect('/404');
-const PAGE_SIZE = 10;
+const PAGE_SIZE = CATEGORY_POSTS_PER_PAGE;
 
 const allPosts = await getPostsByCategory(categoria);
 const { items: posts, hasMore, total } = paginatePosts(allPosts, page, PAGE_SIZE);
