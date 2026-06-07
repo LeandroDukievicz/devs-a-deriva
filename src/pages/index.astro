@@ -386,9 +386,6 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => toHom
     let isLoading = false;
     let observer: IntersectionObserver | null = null;
     const pageSize = Number(container?.dataset.pageSize ?? '5') || 5;
-    const minScrollDeltaForAutoLoad = 24;
-    let lastAutoLoadScrollY = window.scrollY;
-    let userScrolledAfterLastAutoLoad = false;
 
     const sentinel = document.getElementById('scroll-sentinel');
     const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement | null;
@@ -478,23 +475,10 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => toHom
       nextPageLink.removeAttribute('hidden');
     }
 
-    function noteUserScroll() {
-      if (window.scrollY > lastAutoLoadScrollY + minScrollDeltaForAutoLoad) {
-        userScrolledAfterLastAutoLoad = true;
-      }
-    }
-
-    function canAutoLoadNextPage() {
-      return userScrolledAfterLastAutoLoad && window.scrollY > lastAutoLoadScrollY + minScrollDeltaForAutoLoad;
-    }
-
-    async function loadNextPage(source: 'auto' | 'manual' = 'manual') {
+    async function loadNextPage() {
       if (isLoading || !hasMore) return;
-      if (source === 'auto' && !canAutoLoadNextPage()) return;
 
       isLoading = true;
-      userScrolledAfterLastAutoLoad = false;
-      lastAutoLoadScrollY = window.scrollY;
       loadErrorEl?.setAttribute('hidden', '');
       setLoadingState(true);
 
@@ -546,7 +530,7 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => toHom
       observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
-            if (entry.isIntersecting) void loadNextPage('auto');
+            if (entry.isIntersecting) void loadNextPage();
           }
         },
         { rootMargin: '0px 0px 300px 0px' },
@@ -555,17 +539,13 @@ const visibleHomePosts = allPosts.slice(0, PAGE_SIZE).map((post, index) => toHom
       if (sentinel && hasMore) observer.observe(sentinel);
     }
 
-    window.addEventListener('scroll', noteUserScroll, { passive: true });
-
     updateNextPageLink();
 
-    loadMoreBtn?.addEventListener('click', () => {
-      void loadNextPage('manual');
-    });
+    loadMoreBtn?.addEventListener('click', () => void loadNextPage());
 
     loadErrorEl?.querySelector<HTMLButtonElement>('.retry-btn')?.addEventListener('click', () => {
       loadErrorEl?.setAttribute('hidden', '');
-      void loadNextPage('manual');
+      void loadNextPage();
     });
 
     // Mark initial server-rendered posts so new ones can be detected
