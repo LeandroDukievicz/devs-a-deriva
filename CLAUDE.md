@@ -31,6 +31,8 @@ O blog usa **modo híbrido** (estático + SSR seletivo). A distinção é feita 
 | Página | Modo | Por quê |
 |---|---|---|
 | `index.astro` | SSR (`prerender = false`) | Lista de posts sempre atualizada |
+| `page/[n].astro` | SSR | Páginas paginadas reais para SEO (`/page/2`, `/page/3`…) |
+| `api/posts.json.ts` | SSR | Endpoint JSON para infinite scroll AJAX |
 | `posts/[slug].astro` | SSR | Novo post aparece sem rebuild |
 | `categorias/[categoria]/pagina/[n].astro` | SSR | Paginação em tempo real |
 | `busca.astro` | SSR | Index de busca sempre fresco |
@@ -53,6 +55,41 @@ if (_cache && import.meta.env.PROD && now - _cacheTime < CACHE_TTL_MS) return _c
 ```
 
 Em desenvolvimento (`PROD = false`) o cache é desabilitado — dados sempre frescos.
+
+O cache retorna posts **ordenados por `publishedAt` decrescente** (mais recente primeiro). Posts sem `publishedAt` vão para o final.
+
+## Paginação e infinite scroll da home
+
+A home usa um modelo híbrido: HTML server-rendered para os primeiros posts + carregamento progressivo via AJAX.
+
+### Fluxo
+1. `/` renderiza os **5 posts mais recentes** no HTML inicial (sem JSON blob de todos os posts).
+2. Um `IntersectionObserver` observa um sentinel no final da lista; ao entrar na viewport (com `rootMargin: 300px`), busca `/api/posts.json?page=N`.
+3. Botão fallback **"CARREGAR MAIS TRANSMISSÕES"** para acessibilidade e casos sem IntersectionObserver.
+4. Ao esgotar os posts, exibe **"Você chegou ao fundo do mar."**
+5. Páginas `/page/2`, `/page/3` etc. existem como HTML real com `canonical`, `rel=prev/next` e meta tags — indexáveis sem JavaScript.
+
+### Endpoint de API
+```
+GET /api/posts.json?page=N
+```
+Resposta:
+```json
+{
+  "posts": [...],
+  "currentPage": 2,
+  "totalPages": 5,
+  "hasNextPage": true,
+  "nextPage": 3
+}
+```
+Cada post inclui: `slug`, `title`, `category`, `categorySlug`, `excerpt`, `author`, `sectionId`, `href`, `authorBio`, `imageSrc`.
+
+### Tamanho de página
+`PAGE_SIZE = 5` — definido tanto em `index.astro` quanto em `api/posts.json.ts` e `page/[n].astro`. Se precisar mudar, altere nos três lugares.
+
+### Comunicação entre scripts
+Quando novos posts são injetados no DOM, o script de carregamento dispara um CustomEvent `home-posts-added` com as seções novas. O script de reading-progress escuta esse evento para aplicar progresso de leitura nos cards recém-chegados.
 
 ## Arquitetura de deploy — VPS
 
