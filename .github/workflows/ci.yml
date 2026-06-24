@@ -164,15 +164,6 @@ jobs:
             --exclude='.env.production.local' \
             -czf /tmp/devs-a-deriva-release.tgz .
 
-      - name: Build Docker image
-        env:
-          DOCKER_BUILDKIT: '1'
-          PUBLIC_COMMIT_SHA: ${{ github.sha }}
-        run: docker build --build-arg PUBLIC_COMMIT_SHA="$PUBLIC_COMMIT_SHA" -t devs-a-deriva-blog:latest .
-
-      - name: Save Docker image
-        run: docker save devs-a-deriva-blog:latest | gzip > /tmp/devs-a-deriva-blog.tar.gz
-
       - name: Upload release to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -210,14 +201,6 @@ jobs:
             /tmp/devs-a-deriva-release.tgz \
             "$VPS_USER@$VPS_HOST:/tmp/devs-a-deriva-release.tgz"
 
-          split -b 50m /tmp/devs-a-deriva-blog.tar.gz /tmp/devs-a-deriva-blog.tar.gz.part-
-          ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" 'rm -f /tmp/devs-a-deriva-blog.tar.gz /tmp/devs-a-deriva-blog.tar.gz.part-*'
-          for part in /tmp/devs-a-deriva-blog.tar.gz.part-*; do
-            retry 5 scp "${SSH_OPTS[@]}" "$part" "$VPS_USER@$VPS_HOST:/tmp/$(basename "$part")"
-          done
-          ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" \
-            'cat /tmp/devs-a-deriva-blog.tar.gz.part-* > /tmp/devs-a-deriva-blog.tar.gz && rm -f /tmp/devs-a-deriva-blog.tar.gz.part-*'
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:
@@ -249,7 +232,7 @@ jobs:
             else
               tar -xzf /tmp/devs-a-deriva-release.tgz -C "$APP_DIR"
             fi
-            SKIP_REMOTE_GIT=1 PREBUILT_IMAGE_TAR=/tmp/devs-a-deriva-blog.tar.gz bash "$APP_DIR/scripts/deploy.sh"
+            SKIP_REMOTE_GIT=1 bash "$APP_DIR/scripts/deploy.sh"
 
   smoke:
     name: Post-deploy smoke and healthcheck
