@@ -12,7 +12,7 @@ if (!categoria || !n) return Astro.redirect('/404');
 const page = parseInt(n, 10);
 if (isNaN(page) || page < 2) return Astro.redirect(`/categorias/${categoria}/`);
 
-const cat = getCategoryBySlug(categoria);
+const cat = await getCategoryBySlug(categoria);
 if (!cat) return Astro.redirect('/404');
 const PAGE_SIZE = CATEGORY_POSTS_PER_PAGE;
 

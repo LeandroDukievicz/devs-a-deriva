@@ -1,7 +1,7 @@
 export type { Author, Post } from '../types/blog';
 import type { Author, Post } from '../types/blog';
 import { escapeHtml, slugText } from './utils/string';
-import { CATEGORIES } from './categories';
+import { fetchCategories, type CategoryMeta } from './categories';
 import { fetchWithRetry } from './api';
 
 export { escapeHtml, slugText };
@@ -21,8 +21,8 @@ export function formatDate(dateStr: string): string {
   return `${day} ${month} ${year}`;
 }
 
-function getCatInfo(slug: string): { label: string; hashtag: string } {
-  const cat = CATEGORIES.find((c) => c.slug === slug);
+function getCatInfo(categories: readonly CategoryMeta[], slug: string): { label: string; hashtag: string } {
+  const cat = categories.find((c) => c.slug === slug);
   return cat ? { label: cat.label, hashtag: cat.hashtag } : { label: slug, hashtag: `#${slug}` };
 }
 
@@ -183,7 +183,7 @@ function markdownToHtml(markdown: string): string {
   return blocks.join('\n');
 }
 
-function hasValidSlug(raw: unknown): raw is { slug: string } {
+function hasValidSlug(raw: unknown): raw is Record<string, unknown> & { slug: string } {
   return (
     typeof raw === 'object' &&
     raw !== null &&
@@ -192,24 +192,50 @@ function hasValidSlug(raw: unknown): raw is { slug: string } {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapPost(raw: any): Post {
-  const categorySlug = raw.category?.slug ?? raw.category ?? '';
-  const cat = getCatInfo(categorySlug);
-  const title = raw.title ?? 'Post sem titulo';
-  const content = stripTitleHeading(raw.content ?? '', title);
-  const excerptRaw = (firstTextParagraph(content) || firstTextParagraph(raw.excerpt ?? '') || markdownToText(raw.excerpt ?? content)).slice(0, 360);
+function mapPost(raw: Record<string, unknown>, categories: readonly CategoryMeta[]): Post {
+  const rawCategory = raw.category;
+  const nestedCategorySlug = typeof rawCategory === 'object' && rawCategory !== null
+    ? (rawCategory as { readonly slug?: unknown }).slug
+    : undefined;
+  const normalizedCategorySlug = typeof nestedCategorySlug === 'string'
+    ? nestedCategorySlug
+    : typeof rawCategory === 'string'
+      ? rawCategory
+      : '';
+  const cat = getCatInfo(categories, normalizedCategorySlug);
+  const title = typeof raw.title === 'string' ? raw.title : 'Post sem titulo';
+  const rawContent = typeof raw.content === 'string' ? raw.content : '';
+  const rawExcerpt = typeof raw.excerpt === 'string' ? raw.excerpt : '';
+  const content = stripTitleHeading(rawContent, title);
+  const excerptRaw = (firstTextParagraph(content) || firstTextParagraph(rawExcerpt) || markdownToText(rawExcerpt || content)).slice(0, 360);
   const excerpt = excerptRaw.length === 360 ? excerptRaw.trimEnd() + '…' : excerptRaw;
-  const author: Author = raw.author?.displayName
+  const rawAuthor = typeof raw.author === 'object' && raw.author !== null
+    ? raw.author as {
+        readonly displayName?: unknown;
+        readonly jobTitle?: unknown;
+        readonly photoUrl?: unknown;
+        readonly socialLinks?: {
+          readonly linkedin?: unknown;
+          readonly github?: unknown;
+          readonly instagram?: unknown;
+          readonly twitter?: unknown;
+        };
+        readonly linkedinUrl?: unknown;
+        readonly githubUrl?: unknown;
+        readonly instagramUrl?: unknown;
+        readonly twitterUrl?: unknown;
+      }
+    : null;
+  const author: Author = typeof rawAuthor?.displayName === 'string' && rawAuthor.displayName.length > 0
     ? {
-        name: raw.author.displayName,
-        role: raw.author.jobTitle ?? 'Membro',
-        photo: raw.author.photoUrl ?? '/logo-high-color.webp',
+        name: rawAuthor.displayName,
+        role: typeof rawAuthor.jobTitle === 'string' ? rawAuthor.jobTitle : 'Membro',
+        photo: typeof rawAuthor.photoUrl === 'string' ? rawAuthor.photoUrl : '/logo-high-color.webp',
         socialLinks: {
-          linkedin: raw.author.socialLinks?.linkedin ?? raw.author.linkedinUrl ?? null,
-          github: raw.author.socialLinks?.github ?? raw.author.githubUrl ?? null,
-          instagram: raw.author.socialLinks?.instagram ?? raw.author.instagramUrl ?? null,
-          twitter: raw.author.socialLinks?.twitter ?? raw.author.twitterUrl ?? null,
+          linkedin: typeof rawAuthor.socialLinks?.linkedin === 'string' ? rawAuthor.socialLinks.linkedin : typeof rawAuthor.linkedinUrl === 'string' ? rawAuthor.linkedinUrl : null,
+          github: typeof rawAuthor.socialLinks?.github === 'string' ? rawAuthor.socialLinks.github : typeof rawAuthor.githubUrl === 'string' ? rawAuthor.githubUrl : null,
+          instagram: typeof rawAuthor.socialLinks?.instagram === 'string' ? rawAuthor.socialLinks.instagram : typeof rawAuthor.instagramUrl === 'string' ? rawAuthor.instagramUrl : null,
+          twitter: typeof rawAuthor.socialLinks?.twitter === 'string' ? rawAuthor.socialLinks.twitter : typeof rawAuthor.twitterUrl === 'string' ? rawAuthor.twitterUrl : null,
         },
       }
     : {
@@ -220,19 +246,19 @@ function mapPost(raw: any): Post {
       };
 
   return {
-    slug: raw.slug,
+    slug: typeof raw.slug === 'string' ? raw.slug : '',
     title,
     category: cat.label,
-    categorySlug,
+    categorySlug: normalizedCategorySlug,
     excerpt,
     content,
     contentHtml: markdownToHtml(content),
     readTime: estimateReadTime(content),
     hashtag: cat.hashtag,
     author,
-    thumbUrl: raw.thumbUrl ?? null,
+    thumbUrl: typeof raw.thumbUrl === 'string' ? raw.thumbUrl : null,
     featured: true,
-    publishedAt: raw.publishedAt ?? raw.createdAt ?? null,
+    publishedAt: typeof raw.publishedAt === 'string' ? raw.publishedAt : typeof raw.createdAt === 'string' ? raw.createdAt : null,
   };
 }
 
@@ -259,8 +285,9 @@ export async function fetchPosts(): Promise<Post[]> {
     if (!res.ok) { _apiOffline = true; return _cache ?? []; }
     const json = await res.json();
     const items: unknown[] = Array.isArray(json?.data) ? json.data : [];
+    const categories = await fetchCategories();
     _apiOffline = false;
-    _cache = items.filter(hasValidSlug).map(mapPost).filter(isPublishableNow);
+    _cache = items.filter(hasValidSlug).map((post) => mapPost(post, categories)).filter(isPublishableNow);
     _cache.sort((a, b) => {
       const ta = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
       const tb = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;

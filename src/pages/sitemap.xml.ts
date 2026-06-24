@@ -1,18 +1,13 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
+import { fetchCategories } from '../lib/categories';
 import { fetchPosts } from '../lib/posts';
 
 const SITE = 'https://devsaderiva.com.br';
 
 const STATIC_PAGES = [
   { url: '/', priority: '1.0', changefreq: 'daily' },
-  { url: '/categorias/tech', priority: '0.8', changefreq: 'weekly' },
-  { url: '/categorias/carreira', priority: '0.8', changefreq: 'weekly' },
-  { url: '/categorias/livros', priority: '0.8', changefreq: 'weekly' },
-  { url: '/categorias/musica', priority: '0.8', changefreq: 'weekly' },
-  { url: '/categorias/aleatoriedades', priority: '0.8', changefreq: 'weekly' },
-  { url: '/categorias/noticias', priority: '0.8', changefreq: 'weekly' },
   { url: '/manifesto', priority: '0.6', changefreq: 'monthly' },
   { url: '/devs', priority: '0.6', changefreq: 'monthly' },
   { url: '/termos', priority: '0.3', changefreq: 'yearly' },
@@ -21,15 +16,20 @@ const STATIC_PAGES = [
 ];
 
 export const GET: APIRoute = async () => {
-  const posts = await fetchPosts();
+  const [posts, categories] = await Promise.all([fetchPosts(), fetchCategories()]);
 
   const postEntries = posts.map((post) => ({
     url: `/posts/${post.slug}`,
     priority: '0.9',
     changefreq: 'monthly',
   }));
+  const categoryEntries = categories.map((category) => ({
+    url: `/categorias/${category.slug}`,
+    priority: '0.8',
+    changefreq: 'weekly',
+  }));
 
-  const allEntries = [...STATIC_PAGES, ...postEntries];
+  const allEntries = [...STATIC_PAGES, ...categoryEntries, ...postEntries];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

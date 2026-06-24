@@ -10,7 +10,7 @@ import { getPostsByCategory } from '../../lib/posts';
 const { categoria } = Astro.params;
 if (!categoria) return Astro.redirect('/404');
 
-const cat = getCategoryBySlug(categoria);
+const cat = await getCategoryBySlug(categoria);
 if (!cat) return Astro.redirect('/404');
 
 const PAGE_SIZE = CATEGORY_POSTS_PER_PAGE;

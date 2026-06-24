@@ -2,12 +2,12 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { fetchPosts } from '../lib/posts';
-import { CATEGORIES } from '../lib/categories';
+import { fetchCategories } from '../lib/categories';
 
 const SITE = 'https://devsaderiva.com.br';
 
 export const GET: APIRoute = async () => {
-  const posts = await fetchPosts();
+  const [posts, categories] = await Promise.all([fetchPosts(), fetchCategories()]);
 
   const index = {
     site: SITE,
@@ -18,7 +18,7 @@ export const GET: APIRoute = async () => {
       { url: `${SITE}/`, type: 'home', title: 'Home' },
       { url: `${SITE}/manifesto`, type: 'page', title: 'Manifesto' },
       { url: `${SITE}/devs`, type: 'page', title: 'Devs' },
-      ...CATEGORIES.map(cat => ({
+      ...categories.map(cat => ({
         url: `${SITE}/categorias/${cat.slug}`,
         type: 'category',
         title: cat.label,
