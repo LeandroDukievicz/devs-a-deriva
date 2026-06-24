@@ -4,6 +4,7 @@ set -euo pipefail
 APP_DIR="/opt/devs-a-deriva"
 COMPOSE="docker compose -f $APP_DIR/docker-compose.yml -f $APP_DIR/docker-compose.prod.yml"
 BRANCH="${DEPLOY_BRANCH:-main}"
+git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
 PREVIOUS_REV="$(git -C "$APP_DIR" rev-parse --short HEAD)"
 TARGET_REV="${PUBLIC_COMMIT_SHA:-}"
 HEALTH_URL="http://127.0.0.1:4321/health.json"
