@@ -183,16 +183,40 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          scp \
-            -o StrictHostKeyChecking=accept-new \
-            -i ~/.ssh/deploy_key \
+
+          SSH_OPTS=(
+            -o StrictHostKeyChecking=accept-new
+            -o ServerAliveInterval=30
+            -o ServerAliveCountMax=10
+            -i ~/.ssh/deploy_key
+          )
+
+          retry() {
+            local attempts="$1"
+            shift
+
+            local attempt=1
+            until "$@"; do
+              if [ "$attempt" -ge "$attempts" ]; then
+                return 1
+              fi
+              echo "Upload failed; retrying $((attempt + 1))/$attempts in 10s..."
+              sleep 10
+              attempt=$((attempt + 1))
+            done
+          }
+
+          retry 5 scp "${SSH_OPTS[@]}" \
             /tmp/devs-a-deriva-release.tgz \
             "$VPS_USER@$VPS_HOST:/tmp/devs-a-deriva-release.tgz"
-          scp \
-            -o StrictHostKeyChecking=accept-new \
-            -i ~/.ssh/deploy_key \
-            /tmp/devs-a-deriva-blog.tar.gz \
-            "$VPS_USER@$VPS_HOST:/tmp/devs-a-deriva-blog.tar.gz"
+
+          split -b 50m /tmp/devs-a-deriva-blog.tar.gz /tmp/devs-a-deriva-blog.tar.gz.part-
+          ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" 'rm -f /tmp/devs-a-deriva-blog.tar.gz /tmp/devs-a-deriva-blog.tar.gz.part-*'
+          for part in /tmp/devs-a-deriva-blog.tar.gz.part-*; do
+            retry 5 scp "${SSH_OPTS[@]}" "$part" "$VPS_USER@$VPS_HOST:/tmp/$(basename "$part")"
+          done
+          ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" \
+            'cat /tmp/devs-a-deriva-blog.tar.gz.part-* > /tmp/devs-a-deriva-blog.tar.gz && rm -f /tmp/devs-a-deriva-blog.tar.gz.part-*'
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
