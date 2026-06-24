@@ -149,6 +149,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install runtime dependencies
+        run: npm ci --omit=dev --legacy-peer-deps
+
       - name: Package release
         run: |
           tar \
@@ -163,6 +177,9 @@ jobs:
             --exclude='.env.test.local' \
             --exclude='.env.production.local' \
             -czf /tmp/devs-a-deriva-release.tgz .
+
+      - name: Package runtime artifact
+        run: tar -czf /tmp/devs-a-deriva-runtime.tgz package.json package-lock.json node_modules dist public
 
       - name: Upload release to VPS
         env:
@@ -201,6 +218,14 @@ jobs:
             /tmp/devs-a-deriva-release.tgz \
             "$VPS_USER@$VPS_HOST:/tmp/devs-a-deriva-release.tgz"
 
+          split -b 50m /tmp/devs-a-deriva-runtime.tgz /tmp/devs-a-deriva-runtime.tgz.part-
+          ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" 'rm -f /tmp/devs-a-deriva-runtime.tgz /tmp/devs-a-deriva-runtime.tgz.part-*'
+          for part in /tmp/devs-a-deriva-runtime.tgz.part-*; do
+            retry 5 scp "${SSH_OPTS[@]}" "$part" "$VPS_USER@$VPS_HOST:/tmp/$(basename "$part")"
+          done
+          ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" \
+            'cat /tmp/devs-a-deriva-runtime.tgz.part-* > /tmp/devs-a-deriva-runtime.tgz && rm -f /tmp/devs-a-deriva-runtime.tgz.part-*'
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:
@@ -232,7 +257,7 @@ jobs:
             else
               tar -xzf /tmp/devs-a-deriva-release.tgz -C "$APP_DIR"
             fi
-            SKIP_REMOTE_GIT=1 bash "$APP_DIR/scripts/deploy.sh"
+            SKIP_REMOTE_GIT=1 RUNTIME_ARTIFACT_TAR=/tmp/devs-a-deriva-runtime.tgz bash "$APP_DIR/scripts/deploy.sh"
 
   smoke:
     name: Post-deploy smoke and healthcheck

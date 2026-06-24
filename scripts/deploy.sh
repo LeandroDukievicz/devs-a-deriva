@@ -99,6 +99,12 @@ export PUBLIC_COMMIT_SHA="$TARGET_REV"
 if [[ -n "${PREBUILT_IMAGE_TAR:-}" ]]; then
   echo "==> Carregando imagem Docker prebuildada..."
   docker load -i "$PREBUILT_IMAGE_TAR"
+elif [[ -n "${RUNTIME_ARTIFACT_TAR:-}" ]]; then
+  echo "==> Montando imagem Docker a partir do runtime prebuildado..."
+  rm -rf "$APP_DIR/.runtime-build"
+  mkdir -p "$APP_DIR/.runtime-build"
+  tar -xzf "$RUNTIME_ARTIFACT_TAR" -C "$APP_DIR/.runtime-build"
+  docker build -f "$APP_DIR/Dockerfile.runtime" -t devs-a-deriva-blog:latest "$APP_DIR/.runtime-build"
 else
   echo "==> Baixando imagem base Node com retry..."
   retry 5 docker pull "$NODE_IMAGE"

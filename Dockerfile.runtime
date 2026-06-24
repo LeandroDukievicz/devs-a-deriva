@@ -1,0 +1,16 @@
+FROM public.ecr.aws/docker/library/node:22-alpine
+
+WORKDIR /app
+
+ENV HOST=0.0.0.0
+ENV PORT=4321
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json ./
+COPY node_modules ./node_modules
+COPY dist ./dist
+COPY public ./public
+
+EXPOSE 4321
+
+CMD ["node", "dist/server/entry.mjs"]
