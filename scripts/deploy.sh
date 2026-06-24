@@ -96,11 +96,16 @@ fi
 
 export PUBLIC_COMMIT_SHA="$TARGET_REV"
 
-echo "==> Baixando imagem base Node com retry..."
-retry 5 docker pull "$NODE_IMAGE"
+if [[ -n "${PREBUILT_IMAGE_TAR:-}" ]]; then
+  echo "==> Carregando imagem Docker prebuildada..."
+  docker load -i "$PREBUILT_IMAGE_TAR"
+else
+  echo "==> Baixando imagem base Node com retry..."
+  retry 5 docker pull "$NODE_IMAGE"
 
-echo "==> Build da imagem (busca posts do dashboard no build)..."
-$COMPOSE build --no-cache blog
+  echo "==> Build da imagem (busca posts do dashboard no build)..."
+  $COMPOSE build --no-cache blog
+fi
 
 echo "==> Subindo serviço..."
 cleanup_compose_recreate_conflicts
