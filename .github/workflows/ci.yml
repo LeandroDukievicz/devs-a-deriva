@@ -147,6 +147,39 @@ jobs:
       )
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Package release
+        run: |
+          tar \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.astro' \
+            --exclude='.env' \
+            --exclude='.env.local' \
+            --exclude='.env.production' \
+            --exclude='.env.development.local' \
+            --exclude='.env.test.local' \
+            --exclude='.env.production.local' \
+            -czf /tmp/devs-a-deriva-release.tgz .
+
+      - name: Upload release to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          scp \
+            -o StrictHostKeyChecking=accept-new \
+            -i ~/.ssh/deploy_key \
+            /tmp/devs-a-deriva-release.tgz \
+            "$VPS_USER@$VPS_HOST:/tmp/devs-a-deriva-release.tgz"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:
@@ -160,15 +193,25 @@ jobs:
           envs: PUBLIC_COMMIT_SHA,DEPLOY_BRANCH
           script: |
             set -euo pipefail
-            cd /opt/devs-a-deriva
-            git remote set-url --push origin git@github.com:LeandroDukievicz/devs-a-deriva.git || true
-            if ! git fetch --prune origin main; then
-              echo "SSH git fetch failed; retrying via HTTPS..."
-              git fetch --prune https://github.com/LeandroDukievicz/devs-a-deriva.git main
+            APP_DIR="/opt/devs-a-deriva"
+            RELEASE_DIR="/tmp/devs-a-deriva-release"
+            rm -rf "$RELEASE_DIR"
+            mkdir -p "$RELEASE_DIR" "$APP_DIR"
+            tar -xzf /tmp/devs-a-deriva-release.tgz -C "$RELEASE_DIR"
+            if command -v rsync >/dev/null 2>&1; then
+              rsync -a --delete \
+                --exclude='.git/' \
+                --exclude='.env' \
+                --exclude='.env.local' \
+                --exclude='.env.production' \
+                --exclude='node_modules/' \
+                --exclude='dist/' \
+                --exclude='.astro/' \
+                "$RELEASE_DIR/" "$APP_DIR/"
+            else
+              tar -xzf /tmp/devs-a-deriva-release.tgz -C "$APP_DIR"
             fi
-            git checkout -q main
-            git merge --ff-only FETCH_HEAD
-            bash /opt/devs-a-deriva/scripts/deploy.sh
+            SKIP_REMOTE_GIT=1 bash "$APP_DIR/scripts/deploy.sh"
 
   smoke:
     name: Post-deploy smoke and healthcheck

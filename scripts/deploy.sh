@@ -75,17 +75,22 @@ wait_for_health() {
 trap rollback ERR
 
 echo "==> Atualizando código..."
-if ! git -C "$APP_DIR" fetch --prune origin "$BRANCH"; then
-  echo "[warn] git fetch via SSH falhou; tentando HTTPS..."
-  git -C "$APP_DIR" fetch --prune https://github.com/LeandroDukievicz/devs-a-deriva.git "$BRANCH"
-fi
-
-if [[ -n "$TARGET_REV" && "$TARGET_REV" != "local" ]]; then
-  git -C "$APP_DIR" checkout -q "$TARGET_REV"
+if [[ "${SKIP_REMOTE_GIT:-0}" == "1" ]]; then
+  echo "==> Código já sincronizado pelo workflow; pulando git fetch."
+  TARGET_REV="${TARGET_REV:-local}"
 else
-  git -C "$APP_DIR" checkout -q "$BRANCH"
-  git -C "$APP_DIR" pull --ff-only origin "$BRANCH"
-  TARGET_REV="$(git -C "$APP_DIR" rev-parse --short HEAD)"
+  if ! git -C "$APP_DIR" fetch --prune origin "$BRANCH"; then
+    echo "[warn] git fetch via SSH falhou; tentando HTTPS..."
+    git -C "$APP_DIR" fetch --prune https://github.com/LeandroDukievicz/devs-a-deriva.git "$BRANCH"
+  fi
+
+  if [[ -n "$TARGET_REV" && "$TARGET_REV" != "local" ]]; then
+    git -C "$APP_DIR" checkout -q "$TARGET_REV"
+  else
+    git -C "$APP_DIR" checkout -q "$BRANCH"
+    git -C "$APP_DIR" pull --ff-only origin "$BRANCH"
+    TARGET_REV="$(git -C "$APP_DIR" rev-parse --short HEAD)"
+  fi
 fi
 
 export PUBLIC_COMMIT_SHA="$TARGET_REV"
