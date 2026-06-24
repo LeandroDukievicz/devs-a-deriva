@@ -1,5 +1,5 @@
 # ── Build ────────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM public.ecr.aws/docker/library/node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN npm run build
 # @astrojs/node standalone outputs dist/server/entry.mjs + dist/client/.
 # The entry point imports external packages (piccolore, clsx, unstorage, etc.)
 # that Vite marks as external — they must be resolved from node_modules at runtime.
-FROM node:22-alpine
+FROM public.ecr.aws/docker/library/node:22-alpine
 
 WORKDIR /app
 

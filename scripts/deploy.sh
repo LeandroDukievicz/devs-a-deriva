@@ -7,6 +7,7 @@ BRANCH="${DEPLOY_BRANCH:-main}"
 PREVIOUS_REV="$(git -C "$APP_DIR" rev-parse --short HEAD)"
 TARGET_REV="${PUBLIC_COMMIT_SHA:-}"
 HEALTH_URL="http://127.0.0.1:4321/health.json"
+NODE_IMAGE="public.ecr.aws/docker/library/node:22-alpine"
 
 echo "$PREVIOUS_REV" > "$APP_DIR/.previous-rev"
 
@@ -23,6 +24,21 @@ cleanup_compose_recreate_conflicts() {
 
   echo "==> Removendo containers temporários órfãos do Docker Compose..."
   echo "$stale_containers" | xargs -r docker rm -f
+}
+
+retry() {
+  local attempts="$1"
+  shift
+
+  local attempt=1
+  until "$@"; do
+    if [ "$attempt" -ge "$attempts" ]; then
+      return 1
+    fi
+    echo "[warn] comando falhou; nova tentativa $((attempt + 1))/$attempts em 10s: $*"
+    sleep 10
+    attempt=$((attempt + 1))
+  done
 }
 
 rollback() {
@@ -59,7 +75,10 @@ wait_for_health() {
 trap rollback ERR
 
 echo "==> Atualizando código..."
-git -C "$APP_DIR" fetch --prune origin "$BRANCH"
+if ! git -C "$APP_DIR" fetch --prune origin "$BRANCH"; then
+  echo "[warn] git fetch via SSH falhou; tentando HTTPS..."
+  git -C "$APP_DIR" fetch --prune https://github.com/LeandroDukievicz/devs-a-deriva.git "$BRANCH"
+fi
 
 if [[ -n "$TARGET_REV" && "$TARGET_REV" != "local" ]]; then
   git -C "$APP_DIR" checkout -q "$TARGET_REV"
@@ -70,6 +89,9 @@ else
 fi
 
 export PUBLIC_COMMIT_SHA="$TARGET_REV"
+
+echo "==> Baixando imagem base Node com retry..."
+retry 5 docker pull "$NODE_IMAGE"
 
 echo "==> Build da imagem (busca posts do dashboard no build)..."
 $COMPOSE build --no-cache blog

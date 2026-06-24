@@ -156,8 +156,19 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 60m
           envs: PUBLIC_COMMIT_SHA,DEPLOY_BRANCH
-          script: bash /opt/devs-a-deriva/scripts/deploy.sh
+          script: |
+            set -euo pipefail
+            cd /opt/devs-a-deriva
+            git remote set-url --push origin git@github.com:LeandroDukievicz/devs-a-deriva.git || true
+            if ! git fetch --prune origin main; then
+              echo "SSH git fetch failed; retrying via HTTPS..."
+              git fetch --prune https://github.com/LeandroDukievicz/devs-a-deriva.git main
+            fi
+            git checkout -q main
+            git merge --ff-only FETCH_HEAD
+            bash /opt/devs-a-deriva/scripts/deploy.sh
 
   smoke:
     name: Post-deploy smoke and healthcheck
