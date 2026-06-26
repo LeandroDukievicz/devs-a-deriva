@@ -57,6 +57,7 @@ jobs:
       - name: Build static site
         env:
           PUBLIC_COMMIT_SHA: ${{ github.sha }}
+          PUBLIC_DASHBOARD_URL: https://dashboard.devsaderiva.com.br
         run: npm run build
 
       - name: Upload dist artifact

@@ -1,3 +1,8 @@
 services:
   blog:
     restart: always
+    # tini como PID 1 faz reap dos processos do healthcheck (evita zumbis)
+    init: true
+    environment:
+      # VPS é IPv4-only — força IPv4 no fetch SSR ao dashboard (evita ETIMEDOUT no IPv6)
+      NODE_OPTIONS: "--dns-result-order=ipv4first"
