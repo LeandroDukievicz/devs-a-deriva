@@ -53,6 +53,13 @@ export const CATEGORIES: CategoryMeta[] = [
     description: 'Notícias da bolha tech que achamos relevantes pra compartilhar ou dar nossa opinião sincera...',
     illustration: '/noticias-astronaut.webp',
   },
+  {
+    slug: 'curiosidades-tech',
+    label: 'Curiosidades Tech',
+    hashtag: '#curiosidades',
+    description: 'Algumas boas curiosidades desse mundo da programação',
+    illustration: '/aleatoriedades-astronaut-body.webp',
+  },
 ];
 
 const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
