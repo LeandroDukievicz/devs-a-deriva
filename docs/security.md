@@ -144,6 +144,19 @@ Checklist para promover report-only para enforced:
 - Restringir `img-src` para o domínio definitivo de assets R2 quando ele estiver fixado.
 - Trocar a policy restritiva para `Content-Security-Policy` apenas depois de páginas de home, posts, categorias, comentários, newsletter e busca abrirem sem violações inesperadas.
 
+### Validação de paginação e PHP shell
+
+O blog roda em Astro/Node, sem runtime PHP na aplicação. Parâmetros como `?page=` não são usados para montar caminhos de arquivo, incluir código, importar módulos ou executar templates; eles alimentam apenas a paginação de listas.
+
+Para evitar falso positivo de scanners e reduzir risco de configuração incorreta, a API `/api/posts.json` valida `page` e `limit` como inteiros positivos estritos. Valores ausentes usam fallback seguro, mas valores sintaticamente inválidos retornam `400`, incluindo payloads como `1.php`, `../../etc/passwd`, URL remota ou trechos `<?php ... ?>`.
+
+As rotas HTML paginadas (`/page/[n]` e `/categorias/[categoria]/pagina/[n]`) usam a mesma validação estrita antes de calcular a página. No Nginx, também há bloqueio explícito para `/node_modules/` e para extensões `.php`, `.phtml` e `.phar`, de modo que arquivos PHP não sejam expostos caso uma dependência traga esse tipo de artefato.
+
+Cobertura automatizada:
+- `tests/post-listing.test.ts` valida o parser estrito.
+- `tests/posts-api.test.ts` valida que payloads PHP/LFI/RFI em `page` retornam `400`.
+- `tests/security.test.ts` valida a presença dos bloqueios de Nginx.
+
 ---
 
 ## Checklist de manutenção

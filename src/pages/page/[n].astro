@@ -3,14 +3,14 @@ export const prerender = false;
 
 import PageLayout from '../../layouts/PageLayout.astro';
 import PostCard from '../../components/PostCard.astro';
-import { HOME_POSTS_PER_PAGE, toHomePostCard } from '../../lib/post-listing';
+import { HOME_POSTS_PER_PAGE, parsePositiveInteger, toHomePostCard } from '../../lib/post-listing';
 import { fetchPosts, paginatePosts } from '../../lib/posts';
 
 const { n } = Astro.params;
 if (!n || n === '1') return Astro.redirect('/');
 
-const page = parseInt(n, 10);
-if (isNaN(page) || page < 2) return Astro.redirect('/');
+const page = parsePositiveInteger(n, 0);
+if (page < 2) return Astro.redirect('/');
 
 const PAGE_SIZE = HOME_POSTS_PER_PAGE;
 const SITE = 'https://devsaderiva.com.br';

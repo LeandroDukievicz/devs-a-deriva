@@ -2,15 +2,15 @@
 export const prerender = false;
 
 import CategoryLayout from '../../../../layouts/CategoryLayout.astro';
-import { CATEGORY_POSTS_PER_PAGE } from '../../../../lib/post-listing';
+import { CATEGORY_POSTS_PER_PAGE, parsePositiveInteger } from '../../../../lib/post-listing';
 import { getPostsByCategory, paginatePosts } from '../../../../lib/posts';
 import { getCategoryBySlug } from '../../../../lib/categories';
 
 const { categoria, n } = Astro.params;
 if (!categoria || !n) return Astro.redirect('/404');
 
-const page = parseInt(n, 10);
-if (isNaN(page) || page < 2) return Astro.redirect(`/categorias/${categoria}/`);
+const page = parsePositiveInteger(n, 0);
+if (page < 2) return Astro.redirect(`/categorias/${categoria}/`);
 
 const cat = await getCategoryBySlug(categoria);
 if (!cat) return Astro.redirect('/404');

@@ -155,6 +155,13 @@ describe('CSP report-only', () => {
     expect(reportOnly).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 
+  it('bloqueia arquivos PHP e node_modules no nginx', () => {
+    const nginx = readFileSync(resolve('nginx.conf'), 'utf8');
+
+    expect(nginx).toContain('location ^~ /node_modules/');
+    expect(nginx).toContain('location ~* \\.(php|phtml|phar)$');
+  });
+
   it('recebe relatórios CSP sem cachear resposta', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const request = new Request('https://devsaderiva.com.br/api/csp-report', {

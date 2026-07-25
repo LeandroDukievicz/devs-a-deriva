@@ -88,7 +88,7 @@ Resposta:
 ```
 Parâmetros aceitos:
 
-- `page`: página 1-indexada; valores inválidos caem para `1`.
+- `page`: página 1-indexada; valores ausentes caem para `1`, valores inválidos retornam `400`.
 - `limit`: tamanho do lote; padrão `5`, mínimo `1`, máximo `20`.
 - `category`: opcional; filtra por `categorySlug` para listagens de categoria.
 

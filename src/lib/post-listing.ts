@@ -83,9 +83,16 @@ export function toPostJsonItem(post: Post, absoluteIndex: number): PostJsonItem 
   };
 }
 
+export function isPositiveIntegerString(value: string | null): boolean {
+  const normalized = value?.trim() ?? '';
+  if (!/^[1-9]\d*$/.test(normalized)) return false;
+
+  const parsed = Number.parseInt(normalized, 10);
+  return Number.isSafeInteger(parsed);
+}
+
 export function parsePositiveInteger(value: string | null, fallback: number): number {
-  const parsed = Number.parseInt(value ?? '', 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  return isPositiveIntegerString(value) ? Number.parseInt(value!.trim(), 10) : fallback;
 }
 
 export function clampPageSize(value: number, fallback: number, max = 20): number {
