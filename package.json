@@ -33,7 +33,7 @@
     "html-escaper": "3.0.3",
     "mrmime": "2.0.1",
     "piccolore": "0.1.3",
-    "send": "0.19.2",
+    "send": "1.2.1",
     "server-destroy": "1.0.1",
     "sharp": "0.34.5",
     "unstorage": "1.17.5",
