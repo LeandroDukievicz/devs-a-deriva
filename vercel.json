@@ -10,7 +10,7 @@
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-4iPTl5aVRdKQ5wE4OAoX2NC3EhrGaxnkS9f0BOw8zr0=' 'sha256-985X5cPdDDPGVU3TFrEri5IOSn5IzNljCKzxwWiBn5U=' 'sha256-SMCldObqEOEbsdrvl7YLnuqIpDkmhS9sPE2qcwYVzvI=' 'sha256-WZjN1H9CJPOd1Eu8VelOReBeYHaTP7HBfyKdCT0q4Go=' 'sha256-pq8Jic+PKe7Yc2hT4MZJpl/zFCNo/PEEHJholdFaTBk=' 'sha256-xBLRIEPyEi4wjnXKU0OdZPHuoVrkUo4zJHMQ/u4unzA=' https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com; frame-ancestors 'none';"
+          "value": "default-src 'self'; script-src 'self' 'sha256-6vsh+mj86ErnVQcG+9qVal/Rb5SlZwHhzTx4RANnqmo=' 'sha256-SMCldObqEOEbsdrvl7YLnuqIpDkmhS9sPE2qcwYVzvI=' 'sha256-V+ZzE5bLBORt8dVykQzQdW1IQhyt0DzYVyOSyGXItIA=' 'sha256-WZjN1H9CJPOd1Eu8VelOReBeYHaTP7HBfyKdCT0q4Go=' 'sha256-eP2wR8UkrDWSPd/MfgFTDB9pMF+RhP3R+H6z8GwxMXQ=' 'sha256-o38oXzO4c2iT5Ighpvg1bDI3xAdM0Dn5yw4sye/KDRk=' https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com; frame-ancestors 'none';"
         },
         {
           "key": "Content-Security-Policy-Report-Only",
