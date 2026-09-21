@@ -528,6 +528,17 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     opacity: 0.85;
   }
 
+  /* Em monitores o texto corrido fica em 65% da tela: linhas mais curtas, leitura menos cansativa.
+     Imagens, titulos e demais blocos seguem ocupando a largura cheia da coluna. */
+  @media (min-width: 1024px) {
+    .post-body :global(p),
+    .post-body :global(blockquote),
+    .post-body :global(ul),
+    .post-body :global(ol) {
+      max-width: 65vw;
+    }
+  }
+
   .post-body :global(h2),
   .post-body :global(h3),
   .post-body :global(h4) {
