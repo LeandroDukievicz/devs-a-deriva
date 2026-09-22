@@ -623,6 +623,10 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
      linhas mais curtas, leitura menos cansativa. Capa e imagens do corpo seguem como estavam.
      Precisa vir depois das regras base acima: elas zeram a margem lateral. */
   @media (min-width: 1024px) {
+    .post-page {
+      --reading-column: 60vw;
+    }
+
     .post-body :global(p),
     .post-body :global(blockquote),
     .post-body :global(ul),
@@ -630,7 +634,7 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     .post-body :global(h2),
     .post-body :global(h3),
     .post-body :global(h4) {
-      max-width: 60vw;
+      max-width: var(--reading-column);
       width: 100%;
       margin-inline: auto;
     }
@@ -639,6 +643,13 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     .post-body :global(li),
     .post-body :global(blockquote) {
       font-size: 1rem;
+    }
+
+    /* Comentarios e newsletter acompanham a mesma coluna do texto */
+    .post-page :global(.comments-section),
+    .post-page :global(.newsletter-block) {
+      max-width: var(--reading-column);
+      margin-inline: auto;
     }
   }
 
