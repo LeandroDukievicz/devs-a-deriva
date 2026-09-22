@@ -528,17 +528,6 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     opacity: 0.85;
   }
 
-  /* Em monitores o texto corrido fica em 65% da tela: linhas mais curtas, leitura menos cansativa.
-     Imagens, titulos e demais blocos seguem ocupando a largura cheia da coluna. */
-  @media (min-width: 1024px) {
-    .post-body :global(p),
-    .post-body :global(blockquote),
-    .post-body :global(ul),
-    .post-body :global(ol) {
-      max-width: 65vw;
-    }
-  }
-
   .post-body :global(h2),
   .post-body :global(h3),
   .post-body :global(h4) {
@@ -628,6 +617,29 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     border-radius: 4px;
     background: var(--color-star-05);
     color: var(--color-star);
+  }
+
+  /* Em monitores a coluna de leitura fica em 60% da tela, centralizada e com fonte maior:
+     linhas mais curtas, leitura menos cansativa. Capa e imagens do corpo seguem como estavam.
+     Precisa vir depois das regras base acima: elas zeram a margem lateral. */
+  @media (min-width: 1024px) {
+    .post-body :global(p),
+    .post-body :global(blockquote),
+    .post-body :global(ul),
+    .post-body :global(ol),
+    .post-body :global(h2),
+    .post-body :global(h3),
+    .post-body :global(h4) {
+      max-width: 60vw;
+      width: 100%;
+      margin-inline: auto;
+    }
+
+    .post-body :global(p),
+    .post-body :global(li),
+    .post-body :global(blockquote) {
+      font-size: 1rem;
+    }
   }
 
   .post-footer {
