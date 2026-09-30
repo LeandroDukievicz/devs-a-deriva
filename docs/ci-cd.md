@@ -61,7 +61,6 @@ O SEO check valida apenas páginas realmente geradas no `dist/`. Hoje cobre:
 
 - home
 - manifesto
-- devs
 - categorias públicas
 - termos
 - privacidade
@@ -80,7 +79,6 @@ Para adicionar exceções futuras, ajuste `isIgnored()` em `scripts/check-links.
 
 - `/`
 - `/categorias/tech/`
-- `/devs/`
 - `/manifesto/`
 - `/termos/`
 
@@ -151,7 +149,6 @@ O smoke valida:
 
 - `/`
 - `/manifesto/`
-- `/devs/`
 - `/categorias/tech/`
 - `/categorias/carreira/`
 - `/sitemap.xml`

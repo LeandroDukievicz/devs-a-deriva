@@ -50,7 +50,6 @@ Cobertura de eventos relevantes no mundo tech com contexto e análise crítica. 
 - `/categorias/musica` — Posts de Música
 - `/categorias/aleatoriedades` — Posts de Aleatoriedades
 - `/categorias/noticias` — Posts de Notícias
-- `/devs` — Perfis dos colaboradores e autores
 - `/manifesto` — Manifesto editorial do blog
 - `/posts/:slug` — Página individual de post
 

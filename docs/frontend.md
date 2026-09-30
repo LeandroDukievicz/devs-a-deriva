@@ -69,10 +69,6 @@ Suporta o parâmetro `?q=` para pré-preencher o campo de busca.
 
 Página editorial especial com texto em perspectiva e movimento controlado por scroll. Reforça a identidade do projeto.
 
-### Devs (`devs.astro`) — estático
-
-Página institucional sobre a equipe/autores.
-
 ### Newsletter (`newsletter.astro`) — estático
 
 Formulário de inscrição com honeypot e consentimento LGPD. O backend do dashboard é responsável por validação, deduplicação e double opt-in.

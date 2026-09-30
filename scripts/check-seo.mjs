@@ -7,7 +7,6 @@ const DIST = join(process.cwd(), 'dist/client');
 const REQUIRED_PAGES = [
   '/',
   '/manifesto/',
-  '/devs/',
   '/categorias/tech/',
   '/categorias/carreira/',
   '/categorias/livros/',

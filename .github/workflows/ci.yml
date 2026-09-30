@@ -296,7 +296,7 @@ jobs:
             set -euo pipefail
             BASE="http://127.0.0.1:4321"
             ERRORS=0
-            for path in "/" "/manifesto/" "/devs/" "/categorias/tech/" "/categorias/carreira/" "/sitemap.xml" "/robots.txt" "/health.json"; do
+            for path in "/" "/manifesto/" "/categorias/tech/" "/categorias/carreira/" "/sitemap.xml" "/robots.txt" "/health.json"; do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 "$BASE$path")
               if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
                 echo "OK  $path -> $STATUS"
@@ -305,6 +305,11 @@ jobs:
                 ERRORS=$((ERRORS + 1))
               fi
             done
+            REMOVED_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 "$BASE/devs/")
+            if [ "$REMOVED_STATUS" != "404" ]; then
+              echo "ERR /devs/ -> $REMOVED_STATUS (esperado 404)"
+              ERRORS=$((ERRORS + 1))
+            fi
             HEALTH=$(curl -sf --max-time 5 "$BASE/health.json" || echo "{}")
             if ! echo "$HEALTH" | grep -q '"status":"ok"' || ! echo "$HEALTH" | grep -q '"app":"devs-a-deriva"'; then
               echo "ERR /health.json: payload inválido — $HEALTH"

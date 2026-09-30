@@ -9,7 +9,6 @@ const SITE = 'https://devsaderiva.com.br';
 const STATIC_PAGES = [
   { url: '/', priority: '1.0', changefreq: 'daily' },
   { url: '/manifesto', priority: '0.6', changefreq: 'monthly' },
-  { url: '/devs', priority: '0.6', changefreq: 'monthly' },
   { url: '/termos', priority: '0.3', changefreq: 'yearly' },
   { url: '/privacidade', priority: '0.3', changefreq: 'yearly' },
   { url: '/exclusao-de-dados', priority: '0.3', changefreq: 'yearly' },

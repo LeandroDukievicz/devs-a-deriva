@@ -24,10 +24,6 @@ export default function () {
   check(manifesto, { 'manifesto 200': (r) => r.status === 200 })
   sleep(2)
 
-  const devs = http.get(`${BASE_URL}/devs/`)
-  check(devs, { 'devs 200': (r) => r.status === 200 })
-  sleep(2)
-
   const categorias = http.get(`${BASE_URL}/categorias/tech/`)
   check(categorias, { 'categorias 200 or 404': (r) => r.status === 200 || r.status === 404 })
   sleep(1)

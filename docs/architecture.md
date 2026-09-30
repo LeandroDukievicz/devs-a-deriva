@@ -13,7 +13,7 @@ Responsável pela experiência de leitura e navegação:
 - home (SSR — lista de posts sempre atualizada);
 - páginas de categorias (SSR — paginação em tempo real);
 - páginas de posts (SSR — novo post aparece sem rebuild);
-- manifesto, devs, termos, privacidade (estáticas);
+- manifesto, termos, privacidade (estáticas);
 - componentes visuais e interativos.
 
 Astro é a base ideal para essa camada por permitir modo híbrido — páginas que mudam com frequência rodam em SSR, o restante é estático puro — e por ter baixo JavaScript por padrão.

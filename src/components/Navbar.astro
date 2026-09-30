@@ -365,66 +365,6 @@ const isHomePage = Astro.url.pathname === '/';
     });
   })();
 
-  // ── Devs icon (matrix drip) ───────────────────────────────────────
-  (function() {
-    const link   = document.querySelector<HTMLElement>('.nav-link--devs');
-    const canvas = document.querySelector<HTMLCanvasElement>('.devs-canvas');
-    const ctx    = canvas?.getContext('2d')!;
-    if (!link || !canvas || !ctx) return;
-
-    const DPR  = Math.min(window.devicePixelRatio || 1, 2);
-    const SIZE = 22;
-    canvas.width  = SIZE * DPR;
-    canvas.height = SIZE * DPR;
-    ctx.scale(DPR, DPR);
-
-    let raf: number | null = null;
-
-    const FONT      = 6;
-    const ROWS      = Math.ceil(SIZE / FONT);
-    const TRAIL     = 3;
-    const randBit   = () => Math.random() > 0.5 ? '1' : '0';
-    const makeChars = () => Array.from({ length: ROWS }, randBit);
-
-    const columns = [
-      { x: 4,  drop: -1,          speed: 0.065 },
-      { x: 11, drop: -ROWS * 0.5, speed: 0.05  },
-      { x: 18, drop: -ROWS * 0.8, speed: 0.075 },
-    ].map(c => ({ ...c, chars: makeChars() }));
-
-    function draw() {
-      const color = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim() || '#e800d4';
-      ctx.clearRect(0, 0, SIZE, SIZE);
-      ctx.font = `bold ${FONT}px monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-
-      columns.forEach(col => {
-        const head = Math.floor(col.drop);
-        for (let r = Math.max(0, head - TRAIL + 1); r <= Math.min(head, ROWS - 1); r++) {
-          const dist = head - r;
-          ctx.fillStyle = color;
-          ctx.globalAlpha = dist === 0 ? 0.9 : (1 - dist / TRAIL) * 0.55;
-          ctx.fillText(col.chars[r], col.x, r * FONT + 1);
-        }
-        col.drop += col.speed;
-        if (col.drop > ROWS + TRAIL) {
-          col.drop = -TRAIL;
-          col.chars = makeChars();
-        }
-      });
-
-      ctx.globalAlpha = 1;
-      raf = requestAnimationFrame(draw);
-    }
-
-    link.addEventListener('mouseenter', () => { if (!raf) draw(); });
-    link.addEventListener('mouseleave', () => {
-      if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
-      ctx.clearRect(0, 0, SIZE, SIZE);
-    });
-  })();
-
   // ── Manifesto icon (scan cursor over text lines) ──────────────────
   (function() {
     const link   = document.querySelector<HTMLElement>('.nav-link--manifesto');

@@ -5,7 +5,6 @@ const TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS ?? 8000);
 const routes = [
   '/',
   '/manifesto/',
-  '/devs/',
   '/categorias/tech/',
   '/categorias/carreira/',
   '/sitemap.xml',
@@ -45,6 +44,13 @@ for (const route of routes) {
       errors.push('/health.json: payload invalido');
     }
   }
+}
+
+try {
+  const removedPage = await fetch(`${BASE_URL}/devs/`);
+  if (removedPage.status !== 404) errors.push(`/devs/: esperado HTTP 404, recebido ${removedPage.status}`);
+} catch (error) {
+  errors.push(`/devs/: ${error.message}`);
 }
 
 const home = await fetch(`${BASE_URL}/`).then((res) => res.text()).catch(() => '');

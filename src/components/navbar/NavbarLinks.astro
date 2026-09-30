@@ -30,14 +30,6 @@ const categories = await fetchCategories();
       </ul>
     </li>
     <li>
-      <a href="/devs" class="nav-link nav-link--devs">
-        <span class="nav-icon-wrap nav-devs-icon" aria-hidden="true">
-          <span class="nav-prefix nav-devs-prefix">&gt;_</span>
-          <canvas class="devs-canvas" aria-hidden="true"></canvas>
-        </span>Devs
-      </a>
-    </li>
-    <li>
       <a href="/manifesto" class="nav-link nav-link--manifesto">
         <span class="nav-icon-wrap nav-manifesto-icon" aria-hidden="true">
           <span class="nav-prefix nav-manifesto-prefix">&gt;_</span>
@@ -125,8 +117,6 @@ const categories = await fetchCategories();
   li:nth-child(1) .nav-link { animation-delay: 0s; }
   li:nth-child(2) .nav-link { animation-delay: 0.4s; }
   li:nth-child(3) .nav-link { animation-delay: 0.8s; }
-  li:nth-child(4) .nav-link { animation-delay: 1.2s; }
-  li:nth-child(5) .nav-link { animation-delay: 1.6s; }
 
   @keyframes nav-pulse {
     0%, 100% { text-shadow: 0 0 6px var(--color-star-40);  opacity: 1; }
@@ -236,7 +226,6 @@ const categories = await fetchCategories();
 
   .nav-home-prefix,
   .nav-categorias-prefix,
-  .nav-devs-prefix,
   .nav-manifesto-prefix {
     transition: opacity 0.2s ease;
     margin-right: 0;
@@ -244,7 +233,6 @@ const categories = await fetchCategories();
 
   .globe-canvas,
   .categorias-canvas,
-  .devs-canvas,
   .manifesto-canvas {
     position: absolute;
     top: 50%;
@@ -263,8 +251,6 @@ const categories = await fetchCategories();
   .nav-link--categorias:hover .nav-categorias-prefix { opacity: 0; }
   .nav-link--categorias:hover .categorias-canvas     { opacity: 1; }
 
-  .nav-link--devs:hover .nav-devs-prefix         { opacity: 0; }
-  .nav-link--devs:hover .devs-canvas             { opacity: 1; }
 
   .nav-link--manifesto:hover .nav-manifesto-prefix { opacity: 0; }
   .nav-link--manifesto:hover .manifesto-canvas     { opacity: 1; }
@@ -319,7 +305,6 @@ const categories = await fetchCategories();
 
     .globe-canvas,
     .categorias-canvas,
-    .devs-canvas,
     .manifesto-canvas {
       width: 18px;
       height: 18px;
@@ -388,7 +373,6 @@ const categories = await fetchCategories();
 
     .globe-canvas,
     .categorias-canvas,
-    .devs-canvas,
     .manifesto-canvas {
       width: 16px;
       height: 16px;

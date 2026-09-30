@@ -17,7 +17,6 @@ export const GET: APIRoute = async () => {
     pages: [
       { url: `${SITE}/`, type: 'home', title: 'Home' },
       { url: `${SITE}/manifesto`, type: 'page', title: 'Manifesto' },
-      { url: `${SITE}/devs`, type: 'page', title: 'Devs' },
       ...categories.map(cat => ({
         url: `${SITE}/categorias/${cat.slug}`,
         type: 'category',
