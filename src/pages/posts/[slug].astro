@@ -694,12 +694,17 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     color: var(--color-star);
   }
 
-  /* Em monitores a coluna de leitura fica em 60% da tela, centralizada e com fonte maior:
-     linhas mais curtas, leitura menos cansativa. Capa e imagens do corpo seguem como estavam.
+  /* Em monitores a coluna de leitura e centralizada e com fonte maior.
+     A largura e fixa em rem, nao em vw: medida de linha nao tem relacao com o
+     tamanho da tela. Com 60vw dava 147 caracteres por linha em 1920 e 196 em
+     2560, ou seja, quanto melhor o monitor pior a leitura. 36rem rende cerca de
+     74 caracteres, dentro da faixa classica de 45 a 75 e abaixo do teto de 80
+     do WCAG 1.4.8. Tem que ser rem e nao ch: ch e relativo a fonte do proprio
+     elemento, entao os titulos em monospace desalinhariam dos paragrafos.
      Precisa vir depois das regras base acima: elas zeram a margem lateral. */
   @media (min-width: 1024px) {
     .post-page {
-      --reading-column: 60vw;
+      --reading-column: 36rem;
     }
 
     .post-body :global(p),
