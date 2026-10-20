@@ -48,8 +48,10 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
 <PostLayout post={post} heroImageAbsolute={postHeroImageAbsolute}>
   <article id="main-content" class="post-page" data-post-slug={post.slug} data-post-url={postAbsoluteUrl} data-dashboard-url={DASHBOARD_URL}>
     <header class="post-header">
-      <div class="post-header-main">
-        <div class="post-header-copy">
+      <figure class="post-hero">
+        <img src={postHeroImage} alt={post.title} class="post-hero-image" width="1100" height="1375" loading="eager" decoding="async" />
+        <div class="post-hero-scrim" aria-hidden="true"></div>
+        <figcaption class="post-hero-copy">
           <a
             href={categoryBackHref}
             class="post-back"
@@ -65,6 +67,11 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
           </a>
 
           <h1 class="post-title">{post.title}</h1>
+          {post.excerpt && <p class="post-excerpt">{post.excerpt}</p>}
+        </figcaption>
+      </figure>
+
+      <div class="post-header-copy">
           <div class="post-tldr-row">
             <a class="post-tldr-cta" href={tldrUrl} target="_blank" rel="noopener noreferrer">
               <span>TL;DR</span>
@@ -138,11 +145,6 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
             </div>
           </div>
         </div>
-
-        <figure class="post-hero">
-          <img src={postHeroImage} alt={post.title} class="post-hero-image" width="720" height="450" loading="eager" decoding="async" />
-        </figure>
-      </div>
     </header>
 
     <div class="post-divider"></div>
@@ -202,11 +204,43 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     animation: fade-up 0.55s ease 0.1s forwards;
   }
 
-  .post-header-main {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
-    gap: 28px;
-    align-items: start;
+  .post-hero-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to top,
+        var(--color-bg) 0%,
+        var(--color-bg-95) 22%,
+        var(--color-bg-88) 42%,
+        var(--color-bg-70) 60%,
+        rgba(2, 11, 24, 0.40) 80%,
+        rgba(2, 11, 24, 0.55) 100%
+      ),
+      radial-gradient(90% 60% at 18% 100%, var(--color-accent-18), transparent 70%);
+  }
+
+  .post-hero-copy {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 clamp(20px, 4vw, 44px) clamp(24px, 4vw, 40px);
+  }
+
+  .post-excerpt {
+    margin: 0;
+    max-width: 58ch;
+    font-size: clamp(0.84rem, 2vw, 1rem);
+    line-height: 1.6;
+    color: #c3d2dd;
+    text-shadow: 0 1px 12px rgba(2, 11, 24, 0.9);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .post-header-copy {
@@ -214,6 +248,7 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     flex-direction: column;
     gap: 16px;
     min-width: 0;
+    margin-top: 22px;
   }
 
   @keyframes fade-up {
@@ -247,12 +282,13 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
   .post-title {
     margin: 0;
     font-family: monospace;
-    font-size: clamp(1.3rem, 4vw, 2rem);
+    font-size: clamp(1.6rem, 5.2vw, 3.1rem);
     font-weight: 700;
-    line-height: 1.25;
-    color: var(--color-star);
-    text-shadow: 0 0 30px var(--color-star-25);
-    letter-spacing: 0.02em;
+    line-height: 1.08;
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    text-shadow: 0 2px 18px rgba(2, 11, 24, 0.85);
   }
 
   .post-tldr-row {
@@ -489,25 +525,31 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
   }
 
   .post-hero {
+    position: relative;
     margin: 0;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--color-star-18);
-    background: linear-gradient(135deg, var(--color-star-08), transparent 60%);
     box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
     animation: fade-up 0.55s ease 0.25s both;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 16 / 10;
+    align-items: flex-end;
+    min-height: clamp(320px, 46vw, 520px);
+    /* fundo visivel caso a imagem falhe, pra capa nao virar retangulo quebrado */
+    background:
+      radial-gradient(90% 70% at 70% 20%, var(--color-accent-20), transparent 65%),
+      radial-gradient(80% 60% at 20% 90%, var(--color-star-12), transparent 65%),
+      #0a0410;
   }
 
   .post-hero-image {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    object-position: center;
+    object-fit: cover;
+    object-position: 50% 28%;
   }
 
   .post-body {
@@ -522,10 +564,15 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
   .post-body :global(li),
   .post-body :global(blockquote) {
     margin: 0;
-    font-family: monospace;
-    font-size: 0.88rem;
-    line-height: 1.9;
-    opacity: 0.85;
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
+  /* so a citacao leva a barra magenta; paragrafo e item de lista nao */
+  .post-body :global(blockquote) {
+    padding: 4px 0 4px 22px;
+    border-left: 3px solid var(--color-accent);
+    color: #c9bcd2;
   }
 
   .post-body :global(h2),
@@ -537,6 +584,34 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
     line-height: 1.35;
     color: var(--color-star);
     letter-spacing: 0.04em;
+  }
+
+  /* h2 marca inicio de secao com regua ciano -> magenta */
+  .post-body :global(h2) {
+    margin-top: 1.1em;
+    font-size: clamp(1.15rem, 3.2vw, 1.5rem);
+    color: var(--color-text);
+    letter-spacing: 0.01em;
+  }
+
+  .post-body :global(h2)::before {
+    content: '';
+    display: block;
+    width: 38px;
+    height: 2px;
+    margin-bottom: 0.7em;
+    background: linear-gradient(90deg, var(--color-star), var(--color-accent));
+  }
+
+  /* capitular so no primeiro paragrafo de nivel superior do post */
+  .post-body > :global(p:first-of-type)::first-letter {
+    float: left;
+    margin: 0.06em 0.12em 0 0;
+    font-family: monospace;
+    font-size: 3.1em;
+    line-height: 0.82;
+    font-weight: 700;
+    color: var(--color-accent);
   }
 
   .post-body :global(h2) {
@@ -743,17 +818,8 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
   }
 
   @media (max-width: 860px) {
-    .post-header-main {
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-
     .post-hero {
-      max-width: 100%;
-    }
-
-    .post-hero {
-      aspect-ratio: 16 / 9;
+      min-height: clamp(260px, 56vw, 380px);
     }
   }
 
