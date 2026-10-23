@@ -5,6 +5,7 @@ import PostLayout from '../../layouts/PostLayout.astro';
 import Comments from '../../components/Comments.astro';
 import Newsletter from '../../components/Newsletter.astro';
 import SocialIcon from '../../components/SocialIcon.astro';
+import PostPdfDownload from '../../components/PostPdfDownload.astro';
 import { fetchPosts, formatDate, isApiOffline } from '../../lib/posts';
 
 const { slug } = Astro.params;
@@ -81,6 +82,7 @@ const tldrUrl = `https://www.perplexity.ai/search?q=${encodeURIComponent(tldrPro
               <p class="post-published-date">Publicado em : {postPublishedDate}</p>
             )}
           </div>
+          <PostPdfDownload slug={post.slug} />
           <div class="post-theme-row" data-home-only="true">
             <p class="post-theme"><span class="post-theme-label">Tema</span>: {post.category}</p>
             <div class="post-reading-time post-reading-time-mobile">

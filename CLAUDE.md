@@ -58,49 +58,25 @@ Em desenvolvimento (`PROD = false`) o cache é desabilitado — dados sempre fre
 
 O cache retorna posts **ordenados por `publishedAt` decrescente** (mais recente primeiro). Posts sem `publishedAt` vão para o final. Posts com `publishedAt` futuro são filtrados defensivamente pelo blog, além do filtro `status=PUBLISHED` aplicado na API do dashboard.
 
-## Paginação e infinite scroll da home
+## Home, carrossel e paginação
 
-A home usa um modelo híbrido: HTML server-rendered para os primeiros posts + carregamento progressivo via AJAX.
+A home renderiza um carrossel com todos os posts publicados e, abaixo, uma grade com os seis posts mais recentes. O carrossel usa Fisher–Yates (`src/lib/shuffle.ts`) sem alterar a ordem cronológica da API, embaralha a cada volta e avança a cada seis segundos. Hover, foco, aba oculta e saída da viewport pausam a rotação; movimento reduzido começa pausado. Há setas, pausa e navegação por toque.
 
-### Fluxo
-1. `/` renderiza os **5 posts mais recentes** no HTML inicial (sem JSON blob de todos os posts).
-2. Um `IntersectionObserver` observa um sentinel no final da lista; ao entrar na viewport (com `rootMargin: 300px`), busca `/api/posts.json?page=N&limit=5`.
-3. Botão fallback **"CARREGAR MAIS POSTS"** para acessibilidade e casos sem IntersectionObserver.
-4. Durante a requisição, o botão fica `disabled`/`aria-busy` e o texto **"Carregando mais posts..."** é exibido.
-5. Ao esgotar os posts, exibe **"Você chegou aos confins do blog !! sem mais posts !!"** e remove botão/link de próxima página.
-6. Páginas `/page/2`, `/page/3` etc. existem como HTML real com `canonical`, `rel=prev/next` e meta tags — indexáveis sem JavaScript.
+`PostFeed.astro` compartilha a grade entre `/` e `/page/[n]/`: três colunas no desktop, duas no tablet e uma no celular. `PostPagination.astro` renderiza números, anterior/próxima, `aria-current`, links reais e estados desabilitados. Não há infinite scroll na home. A leitura, a paginação e o download de PDF têm fallback sem JavaScript.
 
-O carregamento automático exige avanço real de scroll desde o último lote. Isso evita que um sentinel ainda visível dispare páginas em cascata e carregue todos os posts de uma vez.
+O tamanho da página é `HOME_POSTS_PER_PAGE = 6`, em `src/lib/post-listing.ts`. Categorias mantêm `CATEGORY_POSTS_PER_PAGE = 10` e seu carregamento progressivo. `/api/posts.json` permanece disponível; seu limite padrão agora é seis, com máximo de vinte.
 
-### Endpoint de API
-```
-GET /api/posts.json?page=N&limit=5
-```
-Resposta:
-```json
-{
-  "posts": [...],
-  "currentPage": 2,
-  "totalPages": 5,
-  "hasNextPage": true,
-  "nextPage": 3
-}
-```
-Parâmetros aceitos:
+`PostCard.astro` mantém autor, data, progresso de leitura e a ação de lançar ao limbo. `SiteFooter.astro` usa categorias reais e contagens de posts publicados, além dos links institucionais.
 
-- `page`: página 1-indexada; valores ausentes caem para `1`, valores inválidos retornam `400`.
-- `limit`: tamanho do lote; padrão `5`, mínimo `1`, máximo `20`.
-- `category`: opcional; filtra por `categorySlug` para listagens de categoria.
+## Download de artigos em PDF
 
-Cada post inclui: `slug`, `title`, `category`, `categorySlug`, `excerpt`, `author`, `sectionId`, `href`, `authorBio`, `imageSrc`, `publishedAt`, `readingTime`, `readTime`, `hashtag` e `cover`.
+Cada post oferece `PostPdfDownload.astro`, com link nativo e feedback de geração/erro quando há JavaScript. A rota SSR `/posts/[slug]/pdf` consulta apenas posts publicados e entrega `application/pdf` como anexo, sem indexação. Posts inexistentes retornam 404; indisponibilidade retorna 503 sem cache.
 
-### Tamanho de página
-O tamanho da home é centralizado em `HOME_POSTS_PER_PAGE = 5` em `src/lib/post-listing.ts`. Categorias usam `CATEGORY_POSTS_PER_PAGE = 10` no mesmo arquivo.
+`src/lib/post-pdf.ts` usa pdfmake no servidor com fontes Unicode embutidas em memória. Preserva texto selecionável, títulos, ênfase, listas, links, imagens, autor, data e URL original. Imagens são convertidas com Sharp, com limite de tamanho, timeout, concorrência de quatro e lista de hosts permitidos. Falhas em imagens preservam o download do texto. Não há Chromium nem serviço externo para gerar PDFs em produção.
 
-`src/lib/post-listing.ts` também centraliza fallback de imagem, `sectionId`, `href` e serialização JSON dos cards para evitar divergência entre `index.astro`, `page/[n].astro` e `api/posts.json.ts`.
+## Testes de navegador
 
-### Comunicação entre scripts
-Quando novos posts são injetados no DOM, o script de carregamento dispara um CustomEvent `home-posts-added` com as seções novas. O script de reading-progress escuta esse evento para aplicar progresso de leitura nos cards recém-chegados.
+`npm run test:e2e` inicia um dashboard de fixtures na porta 3001 e o Astro na 4322. Os projetos Chromium desktop e mobile validam o fluxo completo sem gravar dados reais. `PLAYWRIGHT_BASE_URL` permite apontar explicitamente para outro ambiente; `PLAYWRIGHT_CHANNEL=chrome` usa o Chrome instalado localmente. O CI instala Chromium e exige os testes antes do deploy.
 
 ## Arquitetura de deploy — VPS
 

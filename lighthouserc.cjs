@@ -1,13 +1,14 @@
 module.exports = {
   ci: {
     collect: {
-      staticDistDir: './dist/client',
-      staticPort: 4321,
+      startServerCommand: 'node scripts/start-lighthouse.mjs',
+      startServerReadyPattern: 'Lighthouse server ready',
+      startServerReadyTimeout: 30000,
       numberOfRuns: 3,
       url: [
-        'http://localhost:4321/manifesto/',
-        'http://localhost:4321/termos/',
-        'http://localhost:4321/privacidade/',
+        'http://127.0.0.1:4324/',
+        'http://127.0.0.1:4324/page/2/',
+        'http://127.0.0.1:4324/categorias/tech/',
       ],
       settings: {
         preset: 'desktop',

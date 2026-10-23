@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const XSS_PAYLOADS = [
   '<script>alert(1)</script>',

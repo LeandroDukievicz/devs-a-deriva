@@ -1,6 +1,6 @@
 import type { Post } from '../types/blog';
 
-export const HOME_POSTS_PER_PAGE = 5;
+export const HOME_POSTS_PER_PAGE = 6;
 export const CATEGORY_POSTS_PER_PAGE = 10;
 
 const CATEGORY_IMAGES: Record<string, string> = {

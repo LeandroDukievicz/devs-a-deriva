@@ -11,6 +11,7 @@ const { default: adapter } = isVercel
 
 export default defineConfig({
   site: 'https://devsaderiva.com.br',
+  devToolbar: { enabled: !process.env.PLAYWRIGHT_TEST },
   adapter: isVercel ? adapter() : adapter({ mode: 'standalone' }),
   vite: {
     plugins: [tailwindcss()],

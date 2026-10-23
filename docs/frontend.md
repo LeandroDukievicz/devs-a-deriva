@@ -29,7 +29,7 @@ Responsabilidades:
 - buscar posts da API com cache TTL 30s via `fetchPosts()`;
 - renderizar cards com progresso de leitura em tempo real;
 - direcionar o usuário para o conteúdo completo;
-- carregar mais posts via JS client-side a partir do array já carregado;
+- exibir todos os posts em carrossel aleatório e seis artigos cronológicos por página;
 - preservar impacto visual sem comprometer navegação.
 
 ### Categorias
@@ -159,30 +159,27 @@ Além do `status=PUBLISHED`, `fetchPosts()` filtra posts com `publishedAt` futur
 
 `src/lib/posts.ts` é o adapter do blog para a API pública. Normaliza autor, categoria, HTML renderizado e fornece helpers como `getPost()`, `getPostsByCategory()`, `paginatePosts()` e `searchPosts()`.
 
-`src/lib/post-listing.ts` concentra helpers específicos de listagem: tamanho de página da home (`HOME_POSTS_PER_PAGE = 5`), tamanho de categorias (`CATEGORY_POSTS_PER_PAGE = 10`), fallback de capa, `sectionId`, links de card e payload de `/api/posts.json`.
+`src/lib/post-listing.ts` concentra helpers específicos de listagem: tamanho de página da home (`HOME_POSTS_PER_PAGE = 6`), tamanho de categorias (`CATEGORY_POSTS_PER_PAGE = 10`), fallback de capa, `sectionId`, links de card e payload de `/api/posts.json`.
 
-## Carregamento Progressivo
+## Home e arquivo paginado
 
-A home renderiza apenas 5 cards no SSR. O script da própria página usa `IntersectionObserver` com `rootMargin: 300px` para carregar os próximos lotes sob demanda via `/api/posts.json?page=N&limit=5`.
+`PostCarousel.astro` exibe todos os artigos publicados em ordem aleatória, com dois cards horizontais no desktop e um em telas menores. O primeiro embaralhamento ocorre no servidor e cada volta gera outra ordem; a coleção cronológica original permanece intacta. O avanço automático ocorre a cada seis segundos, com pausa por hover, foco, aba oculta ou saída da viewport. Movimento reduzido começa pausado. Há controles de anterior, próximo, pausa, teclado e gesto horizontal. Slides fora de exibição usam `inert` e `aria-hidden`; sem JavaScript a faixa continua rolável.
 
-Estados previstos:
+`PostFeed.astro` renderiza seis artigos do mais recente ao mais antigo, em três, duas ou uma coluna. `PostPagination.astro` oferece links reais, anterior/próxima, estado ativo e controles desabilitados nas extremidades. A home e `/page/[n]/` compartilham os mesmos componentes. Categorias mantêm seu carregamento progressivo e a API de posts permanece disponível.
 
-- carregando: exibe `Carregando mais posts...` e mantém o botão `disabled` com `aria-busy`;
-- erro: exibe `Erro ao carregar posts. Tentar novamente.`;
-- fim da lista: exibe `Você chegou aos confins do blog !! sem mais posts !!`;
-- sem JavaScript: o botão é escondido por `noscript`, mas o link de próxima página permanece rastreável.
+`PostCard.astro` mostra capa, categoria, título, resumo, autor, data e progresso de leitura. A ação de lançar ao limbo continua disponível. `SiteFooter.astro` apresenta Explore, categorias com contagens publicadas e links institucionais.
 
-O script mantém `isLoading`, `currentPage`, `hasMore` e um `Set` de slugs já carregados para evitar requisições concorrentes e posts duplicados.
+## PDF por artigo
 
-O carregamento por `IntersectionObserver` também mantém a última posição de scroll que iniciou um lote. Se o sentinel continuar visível após inserir cards, a próxima página só é buscada depois de novo avanço real de scroll. Isso evita carregamento em cascata de todos os posts.
+`PostPdfDownload.astro` oferece download com feedback de geração, sucesso e erro, preservando o artigo aberto. Sem JavaScript, seu link funciona diretamente. `/posts/[slug]/pdf` gera PDF no servidor com pdfmake e fontes Unicode em memória: texto selecionável, formatação, links, listas, capa e imagens, metadados e paginação. Recursos visuais do site, comentários e newsletter ficam fora do arquivo. A rota usa apenas posts publicados e retorna anexo com `X-Robots-Tag: noindex`.
+
+Imagens são carregadas apenas de hosts aprovados, sem redirects, com timeout e limite de bytes/pixels. Sharp converte formatos como WebP. A geração continua caso uma imagem falhe. A biblioteca de PDF não entra no JavaScript entregue ao leitor.
 
 ## Testes
 
-O baseline atual inclui:
+Vitest cobre os helpers existentes, embaralhamento sem mutação e geração/rota de PDFs. Playwright cobre desktop e mobile, carrossel completo, pausa automática, teclado, movimento reduzido, grade, paginação sem duplicados, rodapé e contagens, download e erro de PDF, além dos fluxos anteriores de posts, categorias, comentários e newsletter.
 
-- Vitest para helpers de posts (`paginatePosts()`, `getPost()`, `searchPosts()`);
-- Playwright para smoke tests de home e página de post;
-- CI executando `npm test` depois do build.
+Por padrão, os testes usam dashboard de fixtures (porta 3001) e Astro (4322), sem dados reais. A suíte é requisito de deploy no CI. `PLAYWRIGHT_BASE_URL` seleciona explicitamente outro ambiente.
 
 ## Fallback de API
 

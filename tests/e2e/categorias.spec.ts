@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const CATEGORIAS = [
   { slug: 'tech',           label: 'Tech' },
@@ -90,7 +90,8 @@ test('carousel avança ao clicar em próximo e habilita prev', async ({ page }) 
 
   if (await nextBtn.isDisabled()) test.skip();
 
-  await nextBtn.click();
+  if (page.viewportSize()!.width <= 600) await page.getByRole('button', { name: 'Ir para destaque 2', exact: true }).click();
+  else await nextBtn.click();
   await expect(prevBtn).not.toBeDisabled();
 });
 
@@ -103,8 +104,13 @@ test('carousel volta ao início ao clicar em anterior após avançar', async ({ 
 
   if (await nextBtn.isDisabled()) test.skip();
 
-  await nextBtn.click();
-  await prevBtn.click();
+  if (page.viewportSize()!.width <= 600) {
+    await page.getByRole('button', { name: 'Ir para destaque 2', exact: true }).click();
+    await page.getByRole('button', { name: 'Ir para destaque 1', exact: true }).click();
+  } else {
+    await nextBtn.click();
+    await prevBtn.click();
+  }
   await expect(prevBtn).toBeDisabled();
 });
 

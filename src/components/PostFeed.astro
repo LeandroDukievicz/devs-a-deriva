@@ -1,0 +1,69 @@
+---
+import type { Post } from '../types/blog';
+import PostCard from './PostCard.astro';
+import PostPagination from './PostPagination.astro';
+import { HOME_POSTS_PER_PAGE, toHomePostCard } from '../lib/post-listing';
+import { isApiOffline } from '../lib/posts';
+
+interface Props { posts: readonly Post[]; currentPage?: number; totalPages: number }
+const { posts, currentPage = 1, totalPages } = Astro.props;
+const start = (currentPage - 1) * HOME_POSTS_PER_PAGE;
+const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
+---
+
+<section id="posts" class="post-feed" aria-labelledby="feed-heading" data-dashboard-url={dashboardUrl}>
+  <header class="feed-header">
+    <h2 id="feed-heading">Todos os posts</h2>
+    {totalPages > 1 && <span>Página {currentPage} de {totalPages}</span>}
+  </header>
+  {posts.length === 0 && (
+    <div class="empty-state"><p>{isApiOffline() ? '> api indisponível no momento. tente novamente mais tarde.' : '> nenhum post publicado ainda. volte em breve.'}</p></div>
+  )}
+  <div id="sections-container" class="posts-grid">
+    {posts.map((post, index) => <PostCard {...toHomePostCard(post, start + index)} />)}
+  </div>
+  <PostPagination currentPage={currentPage} totalPages={totalPages} />
+</section>
+
+<style>
+  .post-feed { scroll-margin-top: 120px; }
+  .feed-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid var(--color-star-22); position: relative; }
+  .feed-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 108px; height: 1px; background: var(--color-star); }
+  h2 { margin: 0; color: var(--color-text); font: 600 clamp(1.15rem, 2vw, 1.5rem)/1.4 monospace; }
+  .feed-header > span { color: var(--color-star); opacity: .65; font: .65rem/1.5 monospace; }
+  .posts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+  .empty-state { padding: 60px 24px; text-align: center; color: var(--color-star); font: .8rem/1.7 monospace; }
+  @media (max-width: 1100px) { .posts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; } }
+  @media (max-width: 640px) { .posts-grid { grid-template-columns: minmax(0, 1fr); } .feed-header { gap: 8px; } }
+</style>
+
+<script>
+  import { renderReadingProgress, syncReadingProgress } from '../lib/reading-progress-client';
+
+  const feed = document.querySelector<HTMLElement>('.post-feed');
+  const cards = Array.from(feed?.querySelectorAll<HTMLElement>('.content-section') ?? []);
+  const renderProgress = () => cards.forEach(card => {
+    if (card.dataset.postSlug) renderReadingProgress(card, card.dataset.postSlug);
+  });
+  renderProgress();
+  if (feed?.dataset.dashboardUrl) {
+    const slugs = cards.map(card => card.dataset.postSlug).filter((slug): slug is string => Boolean(slug));
+    void syncReadingProgress(feed.dataset.dashboardUrl, slugs).then(renderProgress);
+  }
+
+  feed?.addEventListener('click', event => {
+    const target = event.target as Element;
+    if (target.closest('a[href*="/posts/"]')) sessionStorage.setItem('post-nav-origin', 'home');
+    const button = target.closest<HTMLButtonElement>('.limbo-cta');
+    const card = button?.closest<HTMLElement>('.content-section');
+    if (!button || !card || card.classList.contains('is-vanishing')) return;
+    card.classList.add('is-vanishing');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { card.remove(); return; }
+    const rect = card.getBoundingClientRect();
+    const animation = card.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${window.innerWidth - rect.right}px, ${-rect.bottom}px) scale(.02) rotate(12deg)`, opacity: 0 },
+    ], { duration: 850, easing: 'cubic-bezier(.55, .05, .9, .5)', fill: 'forwards' });
+    void animation.finished.then(() => card.remove());
+  });
+</script>

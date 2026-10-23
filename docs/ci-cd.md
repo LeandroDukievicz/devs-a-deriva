@@ -2,16 +2,17 @@
 
 ## Visão Geral
 
-O projeto é um site Astro estático servido por Nginx em Docker. O build pode consultar o dashboard via `PUBLIC_DASHBOARD_URL`, mas o CI aceita o estado sem posts quando o dashboard não está disponível. Conteúdo temporário, placeholders e drafts não bloqueiam o pipeline.
+O projeto é um blog Astro com SSR seletivo, servidor Node em Docker e Nginx como proxy. O build pode consultar o dashboard via `PUBLIC_DASHBOARD_URL`, mas o CI aceita o estado sem posts quando o dashboard não está disponível. Conteúdo temporário, placeholders e drafts não bloqueiam o pipeline.
 
 Fluxo atual:
 
 1. `quality`: instala dependências, roda lint leve, typecheck, validação de conteúdo, testes unitários e Gitleaks (scan de segredos no histórico git).
-2. `build`: gera `dist/` com Astro e publica o artefato para outros jobs.
-3. `audit`: roda scan básico de segurança, SEO técnico e links internos quebrados.
-4. `lighthouse`: executa Lighthouse CI contra o `dist/` estático com thresholds de bloqueio (`error`).
-5. `deploy`: em push na `main`, `repository_dispatch` ou execução manual, chama o deploy no VPS via SSH.
-6. `smoke`: espera o serviço ficar pronto (até 75s), valida rotas públicas e `/health.json`. Se falhar, aciona rollback automático no VPS.
+2. `browser`: executa Playwright em Chromium desktop e mobile com dashboard de fixtures e Astro locais. Testa carrossel, grade, paginação, rodapé, PDF e os fluxos existentes. O resultado bloqueia o deploy.
+3. `build`: gera `dist/` com Astro e publica o artefato para outros jobs.
+4. `audit`: roda scan básico de segurança, SEO técnico e links internos quebrados.
+5. `lighthouse`: executa Lighthouse CI contra o `dist/` estático com thresholds de bloqueio (`error`).
+6. `deploy`: em push na `main`, `repository_dispatch` ou execução manual, chama o deploy no VPS via SSH.
+7. `smoke`: espera o serviço ficar pronto (até 75s), valida rotas públicas e `/health.json`. Se falhar, aciona rollback automático no VPS.
 
 Pull requests rodam validações, build, auditorias e Lighthouse, mas nunca fazem deploy.
 
@@ -22,6 +23,8 @@ Use:
 ```bash
 npm ci --legacy-peer-deps
 npm run ci:check
+npx playwright install chromium
+npm run test:e2e
 npm run build
 npm run check:seo
 npm run check:links
@@ -75,12 +78,7 @@ Para adicionar exceções futuras, ajuste `isIgnored()` em `scripts/check-links.
 
 ## Lighthouse
 
-`lighthouserc.cjs` roda contra:
-
-- `/`
-- `/categorias/tech/`
-- `/manifesto/`
-- `/termos/`
+`lighthouserc.cjs` é a única configuração de Lighthouse e roda contra `/`, `/page/2/` e `/categorias/tech/` no servidor Node do build (porta 4324). A rota `/devs/` foi removida e não deve ser usada como página de auditoria.
 
 Thresholds usam `error` — o job falha e bloqueia o deploy se algum score cair abaixo:
 
@@ -213,3 +211,9 @@ Próximos passos quando o projeto crescer:
 - Dependency Review em pull requests, quando o Dependency Graph estiver habilitado no GitHub;
 - auditoria Lighthouse com budgets por página;
 - RSS quando o fluxo de posts estiver estável.
+
+## Suíte de navegador isolada
+
+`playwright.config.ts` inicia `tests/fixtures/dashboard.mjs` em 3001 e Astro em 4322, com `PUBLIC_DASHBOARD_URL` apontando para a fixture. São 14 artigos publicados e um agendado, suficientes para validar páginas completas e última página parcial sem depender do dashboard de produção. Os projetos desktop e mobile compartilham os fluxos; screenshots e traces são coletados em falhas, e o relatório é publicado como artefato do CI.
+
+Para usar Chrome já instalado: `PLAYWRIGHT_CHANNEL=chrome npm run test:e2e`. Para selecionar um ambiente externo explicitamente: `PLAYWRIGHT_BASE_URL=https://devsaderiva.com.br npm run test:e2e`.

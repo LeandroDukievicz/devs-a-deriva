@@ -3,6 +3,7 @@ import '../styles/tailwind.css';
 import '../styles/tokens.css';
 import ThemeProvider from '../components/ThemeProvider.astro';
 import Navbar from '../components/Navbar.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import Analytics from '@vercel/analytics/astro';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -55,9 +56,6 @@ const adminSvgInline = adminRaw
   .replace(/width="[^"]*"/, 'width="48"')
   .replace(/height="[^"]*"/, 'height="48"');
 
-function getCurrentYear() {
-  return new Date().getFullYear();
-}
 ---
 
 <html lang="pt-BR" data-theme="orbita-baixa" style="background-color: #020b18;">
@@ -117,19 +115,10 @@ function getCurrentYear() {
     {!hideNavbar && <Navbar />}
     <slot />
 
-    {!hideNavbar && !hideFooter && (
-      <footer class="site-footer" aria-label="Links institucionais">
-        <nav class="site-footer-nav" aria-label="Links legais">
-          <a href="/termos#main-content">Termos de Uso</a>
-          <a href="/privacidade#main-content">Política de Privacidade</a>
-          <a href="mailto:leandrodukievicz1718@gmail.com">Contato</a>
-        </nav>
-        <p class="site-footer-copy">© {getCurrentYear()} Devs à Deriva</p>
-      </footer>
-    )}
+    {!hideNavbar && !hideFooter && <SiteFooter />}
 
     <div id="admin-wrap">
-      <div id="admin-cta" aria-label="Acessar painel administrativo">
+      <div id="admin-cta" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           <rect x="9" y="11" width="6" height="5" rx="1"/>
@@ -196,59 +185,6 @@ function getCurrentYear() {
     top: 0;
     outline: 2px solid var(--color-star);
     outline-offset: 2px;
-  }
-
-  .site-footer {
-    position: relative;
-    z-index: 10;
-    width: min(1120px, calc(100% - 40px));
-    margin: 0 auto;
-    padding: 36px 0 44px;
-    border-top: 1px solid var(--color-star-12);
-    color: var(--color-text);
-  }
-
-  .site-footer-nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px 22px;
-  }
-
-  .site-footer-nav a {
-    font-family: monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    line-height: 1.5;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-star);
-    text-decoration: none;
-    transition: color 0.2s ease, text-shadow 0.2s ease;
-  }
-
-  .site-footer-nav a:hover,
-  .site-footer-nav a:focus-visible {
-    color: var(--color-accent);
-    text-shadow: 0 0 12px var(--color-accent-40);
-    outline: none;
-  }
-
-  .site-footer-nav a:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 4px;
-    border-radius: 4px;
-  }
-
-  .site-footer-copy {
-    margin: 14px 0 0;
-    font-family: monospace;
-    font-size: 0.68rem;
-    line-height: 1.5;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-text);
-    opacity: 0.5;
   }
 
   .cookie-consent {
@@ -499,15 +435,6 @@ function getCurrentYear() {
   }
 
   @media (max-width: 768px) {
-    :global(body),
-    :global(body *) {
-      color: #ffffff !important;
-    }
-
-    .site-footer {
-      padding-bottom: 82px;
-    }
-
     .cookie-consent {
       right: 16px;
       bottom: 16px;
@@ -523,18 +450,7 @@ function getCurrentYear() {
     }
   }
 
-  @media (max-width: 520px) {
-    .site-footer {
-      width: min(100% - 32px, 1120px);
-      padding-top: 28px;
-    }
 
-    .site-footer-nav {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-    }
-  }
 </style>
 
 <script>

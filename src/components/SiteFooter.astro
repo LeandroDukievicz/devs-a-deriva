@@ -1,0 +1,64 @@
+---
+import { fetchCategories } from '../lib/categories';
+import { fetchPosts } from '../lib/posts';
+
+const [categories, posts] = await Promise.all([fetchCategories(), fetchPosts()]);
+const counts = new Map<string, number>();
+for (const post of posts) counts.set(post.categorySlug, (counts.get(post.categorySlug) ?? 0) + 1);
+---
+
+<footer class="site-footer">
+  <div class="footer-explore">
+    <div class="explore-inner">
+      <h2>Explore <span aria-hidden="true">→</span></h2>
+      <nav class="explore-categories" aria-label="Explore as categorias do blog">
+        <a class="category-pill" href="/#posts">Todos os posts <span>({posts.length})</span></a>
+        {categories.map(category => (
+          <a class="category-pill" href={`/categorias/${category.slug}/`} data-category={category.slug}>
+            {category.label} <span>({counts.get(category.slug) ?? 0})</span>
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© {new Date().getFullYear()} Devs à Deriva</p>
+    <nav class="footer-legal" aria-label="Links institucionais">
+      <a href="/termos#main-content">Termos de Uso</a>
+      <a href="/privacidade#main-content">Privacidade</a>
+      <a href="/rss.xml">RSS</a>
+      <a href="mailto:leandrodukievicz1718@gmail.com">Contato</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer { position: relative; z-index: 10; border-top: 1px solid var(--color-star-22); background: var(--color-bg-95); }
+  .footer-explore {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(90deg, var(--color-bg-95), var(--color-transparent) 70%), repeating-linear-gradient(0deg, var(--color-transparent) 0 7px, var(--color-star-05) 7px 8px), repeating-linear-gradient(90deg, var(--color-transparent) 0 7px, var(--color-star-08) 7px 8px), radial-gradient(ellipse at 85% 50%, var(--color-accent-08), var(--color-transparent) 70%);
+  }
+  .explore-inner { display: grid; grid-template-columns: 28% minmax(0, 1fr); align-items: center; width: min(100% - 48px, 1440px); min-height: 280px; margin-inline: auto; }
+  h2 { display: flex; align-items: center; gap: 18px; height: 100%; margin: 0; padding-right: 24px; color: var(--color-text); font: 400 clamp(1.5rem, 3vw, 2.1rem)/1.4 monospace; }
+  h2 span { color: var(--color-star); }
+  .explore-categories { display: flex; justify-content: center; align-content: center; flex-wrap: wrap; gap: 12px; min-height: 180px; padding: 48px 0 48px 48px; border-left: 1px solid var(--color-star-12); }
+  .category-pill { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 5px 15px; border: 1px solid var(--color-star-22); border-radius: 999px; color: var(--color-text); background: var(--color-bg-90); font: .75rem/1.5 monospace; text-decoration: none; transition: color .2s, border-color .2s, background .2s; }
+  .category-pill span { color: var(--color-star); }
+  .category-pill:hover { color: var(--color-accent); border-color: var(--color-accent); background: var(--color-accent-06); }
+  a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+  .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; width: min(100% - 48px, 1440px); margin-inline: auto; padding: 24px 0 40px; border-top: 1px solid var(--color-star-12); }
+  .footer-bottom p { margin: 0; color: var(--color-reading-text); opacity: .65; font: .65rem/1.5 monospace; }
+  .footer-legal { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 22px; }
+  .footer-legal a { color: var(--color-star); font: .65rem/1.5 monospace; text-decoration: none; }
+  .footer-legal a:hover { color: var(--color-accent); }
+  @media (max-width: 768px) {
+    .explore-inner { grid-template-columns: minmax(0, 1fr); width: calc(100% - 32px); min-height: auto; padding-top: 32px; }
+    h2 { padding-right: 0; justify-content: center; }
+    .explore-categories { border-left: 0; min-height: auto; padding: 28px 0 36px; gap: 10px; }
+    .category-pill { font-size: .68rem; padding-inline: 12px; }
+    .footer-bottom { width: calc(100% - 32px); justify-content: center; text-align: center; padding-bottom: 88px; }
+    .footer-legal { justify-content: center; gap: 12px 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .category-pill { transition: none; } }
+</style>

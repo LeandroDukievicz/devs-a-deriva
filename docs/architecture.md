@@ -90,14 +90,7 @@ Blog renderiza e serve ao visitante
 
 ## Listagem de Posts
 
-A home usa um modelo híbrido:
-
-- `/` renderiza somente os 5 posts publicados mais recentes no HTML inicial;
-- o cliente usa `IntersectionObserver` sobre um sentinel no fim da lista;
-- cada interseção busca `/api/posts.json?page=N&limit=5` e anexa mais 5 cards;
-- o botão fallback `CARREGAR MAIS POSTS` chama a mesma função, fica `disabled` durante o carregamento e funciona por teclado;
-- quando acaba, o botão e o link de próxima página somem e a mensagem final é exibida;
-- `/page/2`, `/page/3` etc. continuam existindo como HTML real com `canonical`, `rel=prev/next` e navegação tradicional.
+A home combina um carrossel com todos os posts em ordem aleatória e uma grade cronológica de seis artigos. O carrossel não altera a ordem da coleção original. `/page/2/`, `/page/3/` etc. usam a mesma grade, com links reais, `canonical` único, `rel=prev/next` e navegação sem JavaScript. O carregamento progressivo continua restrito às listagens de categoria.
 
 A montagem de cards/payloads é compartilhada em `src/lib/post-listing.ts`, que centraliza `HOME_POSTS_PER_PAGE`, `CATEGORY_POSTS_PER_PAGE`, fallback de imagens, `sectionId`, `href` e serialização JSON.
 

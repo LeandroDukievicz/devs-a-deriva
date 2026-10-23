@@ -46,11 +46,7 @@ Evitar cores fixas em componentes que precisam respeitar temas.
 
 ## Temas
 
-Temas atuais:
-
-- Órbita Baixa;
-- Espaço Profundo;
-- Limbo.
+O tema ativo é **Órbita Baixa**, com espaço profundo, ciano e magenta. `ThemeProvider.astro` remove preferências legadas para manter a identidade consistente.
 
 Todo componente visual relevante deve responder aos tokens de tema, especialmente:
 

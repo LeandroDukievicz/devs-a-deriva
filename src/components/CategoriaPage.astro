@@ -63,12 +63,12 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
 
   <!-- ── Destaques ──────────────────────────────────────────────── -->
   <section class="destaques-section">
-    <div class="section-label">
+    <h2 class="section-label">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
       </svg>
       DESTAQUES DA CATEGORIA
-    </div>
+    </h2>
 
     <div class="carousel-wrapper">
       <button class="carousel-btn prev" id="carousel-prev" aria-label="Anterior">
@@ -108,13 +108,13 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
 
   <!-- ── Todos os Posts ─────────────────────────────────────────── -->
   <section class="posts-section">
-    <div class="section-label">
+    <h2 class="section-label">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
         <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
       </svg>
       TODOS OS POSTS
-    </div>
+    </h2>
 
     <div class="posts-grid">
       {visiblePosts.map(post => (
@@ -507,7 +507,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     font-size: 0.72rem;
     letter-spacing: 0.06em;
     color: var(--color-star);
-    opacity: 0.5;
+    opacity: 0.8;
     line-height: 1.6;
     max-width: 480px;
   }
@@ -518,7 +518,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     text-transform: uppercase;
     letter-spacing: 0.14em;
     color: var(--color-accent);
-    opacity: 0.7;
+    opacity: 1;
   }
 
   .categoria-divider {
@@ -535,6 +535,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
 
   /* ── Section label ─────────────────────────────────────────── */
   .section-label {
+    margin-top: 0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -570,7 +571,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     font-family: monospace;
     font-size: 0.62rem;
     color: var(--color-star);
-    opacity: 0.55;
+    opacity: 0.8;
   }
 
   /* ── Destaques / Carousel ──────────────────────────────────── */
@@ -716,29 +717,39 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     display: flex;
     justify-content: center;
     gap: 8px;
+    flex-wrap: wrap;
     margin-top: 20px;
     margin-bottom: 4px;
   }
 
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-star);
-    opacity: 0.35;
+  .carousel-dots :global(.dot) {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
     transition: background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
   }
 
-  .dot:focus-visible {
+  .carousel-dots :global(.dot::before) {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-star);
+    opacity: .5;
+  }
+
+  .carousel-dots :global(.dot:focus-visible) {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
     opacity: 1;
   }
 
-  .dot.active {
+  .carousel-dots :global(.dot.active::before) {
     background: var(--color-accent);
     box-shadow: 0 0 8px var(--color-accent);
     opacity: 1;
@@ -826,7 +837,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
     font-family: monospace;
     font-size: 0.6rem;
     color: var(--color-accent);
-    opacity: 0.8;
+    opacity: 1;
   }
 
   /* ── Load More ─────────────────────────────────────────────── */
@@ -1021,6 +1032,7 @@ const nextPageHref = firstPage.hasMore ? `/categorias/${categorySlug}/pagina/2/`
       dotsContainer.innerHTML = '';
       for (let i = 0; i < total; i++) {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'dot' + (i === current ? ' active' : '');
         btn.setAttribute('aria-label', `Ir para destaque ${i + 1}`);
         btn.addEventListener('click', () => {

@@ -1,5 +1,6 @@
 ---
 import type { Author } from '../types/blog';
+import { formatDate } from '../lib/posts';
 
 interface Props {
   slug: string;
@@ -11,360 +12,69 @@ interface Props {
   imageSrc: string;
   author: Author;
   authorBio: string;
+  publishedAt?: string | null;
 }
-
-const { slug, sectionId, href, title, category, excerpt, imageSrc, author, authorBio } = Astro.props;
+const { slug, sectionId, href, title, category, excerpt, imageSrc, author, publishedAt } = Astro.props;
 ---
 
-<div class="content-section" data-section-id={sectionId} data-post-slug={slug} data-post-href={href} role="link" tabindex="0">
-  <div class="section-image">
-    <img src={imageSrc} alt={category} class="section-img" width="400" height="266" loading="lazy" decoding="async" />
-  </div>
-  <div class="section-content">
-    <a href={href} class="limbo-cta">Lançar ao limbo</a>
-    <h2><a href={href} class="title-link">{title}</a></h2>
-    <p>{excerpt}</p>
-    <a href={href} class="cta-read">Continuar leitura <span class="dot" style="animation-delay:0s">.</span><span class="dot" style="animation-delay:0.2s">.</span><span class="dot" style="animation-delay:0.4s">.</span></a>
-    <div class="card-footer">
-      <div class="post-meta">
-        <img
-          class="post-author-photo"
-          src={author.photo}
-          alt={`Foto de ${author.name}`}
-          width="34"
-          height="34"
-          loading="lazy"
-          decoding="async"
-        />
+<article class="content-section" data-section-id={sectionId} data-post-slug={slug}>
+  <a href={href} class="post-card-link">
+    <div class="section-image">
+      <img src={imageSrc} alt="" class="section-img" width="640" height="400" loading="lazy" decoding="async" />
+    </div>
+    <div class="section-content">
+      <span class="category-badge">{category}</span>
+      <h3>{title}</h3>
+      <p class="post-excerpt">{excerpt}</p>
+      <div class="card-footer">
+        <img class="post-author-photo" src={author.photo} alt="" width="38" height="38" loading="lazy" decoding="async" />
         <div class="post-author-copy">
           <span class="post-author-name">{author.name}</span>
-          <span class="post-author-bio">{authorBio}</span>
+          {publishedAt && <time datetime={publishedAt}>{formatDate(publishedAt)}</time>}
         </div>
+        <span class="reading-progress" data-progress-label>0% lido</span>
       </div>
-      <span class="category-badge">{category}</span>
     </div>
-  </div>
-</div>
+  </a>
+  <button class="limbo-cta" type="button" aria-label={`Lançar ao limbo: ${title}`}>Lançar ao limbo</button>
+</article>
 
-<style is:global>
+<style>
   .content-section {
     position: relative;
-    z-index: 102;
-    display: flex;
-    flex-direction: row;
-    height: 220px;
-    min-height: 220px;
-    box-sizing: border-box;
-    border: 1px outset var(--color-star);
+    min-width: 0;
+    border: 1px solid var(--color-star-25);
     border-radius: 8px;
     overflow: hidden;
-    background: rgba(2, 11, 24, 0.55);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+    background: var(--color-bg-88);
+    transition: border-color .25s, box-shadow .25s;
   }
-
-  .content-section:hover {
+  .content-section:hover,
+  .content-section:focus-within {
     border-color: var(--color-accent);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
-    transform: translateY(-2px);
+    box-shadow: 0 0 24px var(--color-accent-08);
   }
-
-  .content-section[role="link"] {
-    cursor: pointer;
-  }
-
-  .content-section[role="link"]:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 4px;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px var(--color-accent-16), 0 14px 30px rgba(0, 0, 0, 0.24);
-  }
-
-  .content-section.is-vanishing {
-    pointer-events: none;
-  }
-
-  .content-section h2 {
-    margin: 0 0 6px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    font-family: monospace;
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .content-section p {
-    margin: 0 0 6px;
-    font-size: 0.8rem;
-    color: #a0c4cc;
-    font-family: monospace;
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .section-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center center;
-    border-radius: 4px;
-    display: block;
-    transition: transform 0.4s ease;
-  }
-
-  .section-image:hover .section-img {
-    transform: scale(1.04);
-  }
-
-  .section-image {
-    flex: 0 0 28%;
-    height: calc(100% - 28px);
-    min-height: 0;
-    margin: 14px;
-    padding: 4px;
-    border-radius: 6px;
-    background: transparent;
-    box-shadow: 0 6px 20px 4px rgba(0, 0, 0, 0.45);
-    box-sizing: border-box;
-    overflow: hidden;
-    cursor: pointer;
-  }
-
-  .section-content {
-    position: relative;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 18px 20px 16px 8px;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .limbo-cta {
-    position: absolute;
-    top: 14px;
-    right: 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    color: var(--color-star);
-    opacity: 0;
-    visibility: hidden;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.58rem;
-    font-family: monospace;
-    transform: translateY(-4px);
-    transition: color 0.3s ease, transform 0.35s ease, opacity 0.35s ease, visibility 0.35s ease;
-  }
-
-  .content-section:hover .limbo-cta {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-
-  .limbo-cta:hover {
-    color: var(--color-accent);
-    transform: translateY(-1px);
-  }
-
-  .title-link {
-    color: var(--color-text);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  .title-link:hover {
-    color: var(--color-accent);
-  }
-
-  .cta-read {
-    font-size: 0.7rem;
-    font-family: monospace;
-    color: var(--color-star);
-    text-decoration: none;
-    margin-bottom: 8px;
-    transition: color 0.2s;
-  }
-
-  .cta-read:hover {
-    color: var(--color-accent);
-  }
-
-  .dot {
-    display: inline-block;
-    animation: wave-dot 1.2s ease-in-out infinite;
-  }
-
-  @keyframes wave-dot {
-    0%, 100% { transform: translateY(0);    opacity: 1;   }
-    50%       { transform: translateY(-4px); opacity: 0.4; }
-  }
-
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: auto;
-    padding-top: 8px;
-    flex-shrink: 0;
-  }
-
-  .post-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    overflow: hidden;
-    flex: 1;
-  }
-
-  .post-author-photo {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid var(--color-star-25);
-    box-shadow: 0 0 12px var(--color-star-10);
-    flex-shrink: 0;
-  }
-
-  .post-author-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .post-author-name {
-    font-size: 0.7rem;
-    color: var(--color-star);
-    font-family: monospace;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .post-author-bio {
-    font-size: 0.6rem;
-    color: #5a8a94;
-    font-family: monospace;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .category-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border: 1px solid #ff00ff;
-    border-radius: 20px;
-    font-size: 0.62rem;
-    color: #ff00ff;
-    font-family: monospace;
-    background: rgba(255, 0, 255, 0.08);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 1024px) {
-    .content-section {
-      height: 240px;
-      min-height: 240px;
-    }
-
-    .section-image {
-      display: none;
-    }
-
-    .section-content {
-      padding: 20px 24px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .content-section {
-      height: 420px;
-      min-height: 420px;
-      border-radius: 10px;
-      flex-direction: column;
-    }
-
-    .section-image {
-      display: block;
-      flex: 0 0 auto;
-      width: calc(100% - 24px);
-      height: 152px;
-      min-height: 152px;
-      margin: 12px 12px 0;
-    }
-
-    .section-content {
-      padding: 16px;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .content-section h2 {
-      font-size: 1.05rem;
-    }
-
-    .content-section p {
-      font-size: 0.76rem;
-    }
-
-    .post-author-photo {
-      width: 30px;
-      height: 30px;
-    }
-
-    .limbo-cta {
-      top: 12px;
-      right: 12px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .content-section {
-      height: 380px;
-      min-height: 380px;
-    }
-
-    .section-image {
-      height: 120px;
-      min-height: 120px;
-    }
-
-    .section-content {
-      padding: 12px 14px;
-    }
-
-    .category-badge {
-      font-size: 0.58rem;
-      padding: 2px 8px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .content-section,
-    .content-section * {
-      animation: none !important;
-      transition: none !important;
-    }
-  }
+  .post-card-link { display: flex; flex-direction: column; height: 100%; color: var(--color-text); text-decoration: none; }
+  .post-card-link:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -4px; }
+  .section-image { aspect-ratio: 16 / 10; overflow: hidden; background: var(--color-star-05); }
+  .section-img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+  .post-card-link:hover .section-img { transform: scale(1.035); }
+  .section-content { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; flex: 1; min-height: 290px; padding: 24px; box-sizing: border-box; }
+  .category-badge { color: var(--color-accent); font: .65rem/1.4 monospace; text-transform: uppercase; letter-spacing: .08em; }
+  h3 { margin: 0; font: 600 clamp(1.05rem, 1.5vw, 1.3rem)/1.4 monospace; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .post-excerpt { margin: 0; color: var(--color-reading-text); opacity: .8; font: .82rem/1.75 monospace; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-footer { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: auto; padding-top: 20px; }
+  .post-author-photo { width: 38px; height: 38px; object-fit: cover; border: 1px solid var(--color-star-25); border-radius: 50%; flex-shrink: 0; }
+  .post-author-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .post-author-name { color: var(--color-star); font: .7rem/1.4 monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  time { color: var(--color-reading-text); opacity: .7; font: .65rem/1.4 monospace; }
+  .reading-progress { margin-left: auto; flex-shrink: 0; color: var(--color-star); font: .58rem/1.4 monospace; opacity: .65; }
+  .reading-progress.completed { color: var(--color-accent); opacity: 1; }
+  .limbo-cta { position: absolute; top: 12px; right: 12px; padding: 7px 10px; color: var(--color-star); background: var(--color-bg-90); border: 1px solid var(--color-star-25); border-radius: 4px; font: .58rem/1.4 monospace; text-transform: uppercase; cursor: pointer; opacity: 0; transition: opacity .2s; }
+  .content-section:hover .limbo-cta, .content-section:focus-within .limbo-cta { opacity: 1; }
+  .limbo-cta:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .is-vanishing { pointer-events: none; }
+  @media (hover: none) { .limbo-cta { opacity: 1; } }
+  @media (max-width: 640px) { .section-content { min-height: 270px; padding: 22px; } h3 { font-size: 1.15rem; } }
+  @media (prefers-reduced-motion: reduce) { .content-section, .section-img, .limbo-cta { transition: none; } }
 </style>

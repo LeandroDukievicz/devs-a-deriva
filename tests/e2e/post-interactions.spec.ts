@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 async function getFirstPostHref(page: import('@playwright/test').Page): Promise<string | null> {
   await page.goto('/');
@@ -86,6 +86,6 @@ test('checkbox de consentimento da newsletter existe e pode ser marcado', async 
   const checkbox = page.locator('#newsletter-consent');
   await expect(checkbox).toBeVisible();
 
-  await checkbox.check();
+  await page.locator('.newsletter-consent').click();
   await expect(checkbox).toBeChecked();
 });

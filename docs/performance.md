@@ -46,17 +46,11 @@ Evitar:
 
 ## Listagens de Posts
 
-A home não deve renderizar a coleção inteira de posts escondida no DOM. O contrato atual é:
+A home renderiza seis artigos na grade cronológica e mantém todos os publicados na faixa do carrossel. As capas fora de exibição usam lazy loading; apenas as duas primeiras do carrossel são prioritárias. A grade não cresce durante o scroll: `/page/[n]/` entrega o próximo conjunto de seis via SSR.
 
-- SSR inicial com apenas `HOME_POSTS_PER_PAGE = 5` cards;
-- lotes sob demanda via `/api/posts.json?page=N&limit=5`;
-- `IntersectionObserver` para scroll progressivo sem scroll-jacking;
-- guarda por avanço real de scroll para evitar cascata de requisições quando o sentinel permanece visível;
-- botão fallback acessível para carregar o próximo lote;
-- prevenção de duplicados com `Set` de slugs no cliente;
-- imagens dos cards com `loading="lazy"`, dimensões declaradas e `decoding="async"`.
+O carrossel anima apenas transform e opacity, pausa quando está fora da viewport ou em aba oculta e respeita movimento reduzido. Slides fora de exibição são inertes e ficam fora da navegação por teclado. Se o catálogo crescer muito, reavaliar a quantidade de elementos na faixa antes de introduzir virtualização.
 
-Se a quantidade de posts crescer muito, considerar virtualização ou descarte controlado de cards antigos, mas não implementar antes de necessidade real.
+A geração de PDF ocorre no servidor somente quando solicitada. Fontes e biblioteca não entram no bundle do navegador. As imagens têm limite de bytes e pixels, timeout e concorrência de quatro; respostas bem-sucedidas permitem cache por 30 segundos.
 
 ## Imagens
 

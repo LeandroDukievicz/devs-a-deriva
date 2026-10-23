@@ -25,7 +25,10 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 
 ### Implementado
 
-- Home com experiência visual imersiva (BlackHole canvas), render inicial de 5 posts e carregamento progressivo real via `/api/posts.json?page=N&limit=5`
+- Home com BlackHole canvas, carrossel aleatório de todos os posts e grade cronológica de seis artigos por página
+- Paginação numerada com links reais, layout responsivo e navegação sem JavaScript
+- Download de PDF por artigo, com texto selecionável, links, imagens e fontes Unicode
+- Rodapé Explore com categorias e contagens de artigos publicados
 - Páginas individuais de post com hero, metadados, imagem de capa e navegação contextual
 - Seis categorias editoriais (tech, carreira, livros, música, aleatoriedades, notícias)
 - Paginação rastreável por URL em `/page/{n}` e `/categorias/{slug}/pagina/{n}` para SEO, sem depender apenas de JavaScript

@@ -1,0 +1,239 @@
+---
+import type { Post } from '../types/blog';
+import { formatDate } from '../lib/posts';
+import { getHomePostHref, getPostImageSrc } from '../lib/post-listing';
+import { shuffle } from '../lib/shuffle';
+
+interface Props { posts: readonly Post[] }
+const posts = shuffle(Astro.props.posts);
+---
+
+{posts.length > 0 && (
+  <post-carousel role="region" aria-roledescription="carrossel" aria-labelledby="carousel-heading">
+    <header class="carousel-header">
+      <h1 id="carousel-heading">Em órbita</h1>
+      <div class="carousel-controls" hidden>
+        <button type="button" data-previous aria-label="Artigo anterior" aria-controls="carousel-track">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg>
+        </button>
+        <button type="button" data-toggle aria-label="Pausar carrossel" aria-controls="carousel-track">
+          <span data-pause-icon><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5v14M15 5v14" /></svg></span>
+          <span data-play-icon hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5 11 7-11 7Z" /></svg></span>
+        </button>
+        <button type="button" data-next aria-label="Próximo artigo" aria-controls="carousel-track">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg>
+        </button>
+      </div>
+    </header>
+    <div class="carousel-viewport">
+      <div id="carousel-track" class="carousel-track">
+        {posts.map((post, index) => (
+          <article class="carousel-card" data-carousel-slug={post.slug} role="group" aria-roledescription="slide" aria-label={`${index + 1} de ${posts.length}`}>
+            <a class="carousel-card-link" href={getHomePostHref(post)}>
+              <div class="carousel-image">
+                <img src={getPostImageSrc(post)} alt="" width="400" height="500" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" />
+              </div>
+              <div class="carousel-copy">
+                <span class="carousel-category">{post.category}</span>
+                <h2>{post.title}</h2>
+                <p class="carousel-excerpt">{post.excerpt}</p>
+                <div class="carousel-author">
+                  <img src={post.author.photo} alt="" width="38" height="38" loading="lazy" decoding="async" />
+                  <div>
+                    <span class="carousel-author-name">{post.author.name}</span>
+                    {post.publishedAt && <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>}
+                  </div>
+                  <svg class="carousel-read-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                </div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+    <p class="carousel-position" data-position aria-live="off" aria-atomic="true" hidden></p>
+  </post-carousel>
+)}
+
+<style>
+  post-carousel { display: block; min-width: 0; }
+  [hidden] { display: none !important; }
+  .carousel-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid var(--color-star-22); position: relative; }
+  .carousel-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 108px; height: 1px; background: var(--color-star); }
+  h1 { margin: 0; color: var(--color-text); font: 600 clamp(1.15rem, 2vw, 1.5rem)/1.3 monospace; }
+  .carousel-controls { display: flex; align-items: center; gap: 8px; }
+  button { display: grid; place-items: center; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--color-star-25); border-radius: 6px; color: var(--color-star); background: var(--color-bg-70); cursor: pointer; transition: border-color .2s, background .2s; }
+  button:hover { background: var(--color-star-10); border-color: var(--color-star); }
+  button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  button svg { width: 20px; height: 20px; }
+  .carousel-viewport { overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--color-star) transparent; }
+  post-carousel[data-ready] .carousel-viewport { overflow: hidden; }
+  .carousel-track { display: flex; gap: 28px; }
+  .carousel-card { flex: 0 0 calc((100% - 28px) / 2); min-width: 0; border: 1px solid var(--color-star-25); border-radius: 8px; background: var(--color-bg-88); overflow: hidden; box-sizing: border-box; transition: border-color .25s, box-shadow .25s; }
+  .carousel-card:hover, .carousel-card:focus-within { border-color: var(--color-accent); box-shadow: inset 0 0 24px var(--color-accent-06); }
+  .carousel-card-link { display: grid; grid-template-columns: 40% minmax(0, 1fr); height: 354px; color: var(--color-text); text-decoration: none; }
+  .carousel-card-link:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -4px; }
+  .carousel-image { min-width: 0; overflow: hidden; background: var(--color-star-05); }
+  .carousel-image img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+  .carousel-card-link:hover .carousel-image img { transform: scale(1.035); }
+  .carousel-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-width: 0; padding: clamp(20px, 2vw, 30px); }
+  .carousel-category { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-accent); font: 500 .65rem/1.3 monospace; letter-spacing: .08em; text-transform: uppercase; }
+  h2 { margin: 0; font: 600 clamp(1rem, 1.4vw, 1.25rem)/1.4 monospace; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .carousel-excerpt { margin: 0; color: var(--color-reading-text); opacity: .8; font: .8rem/1.7 monospace; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .carousel-author { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: auto; padding-top: 8px; min-width: 0; }
+  .carousel-author > img { flex-shrink: 0; width: 38px; height: 38px; border: 1px solid var(--color-star-25); border-radius: 50%; object-fit: cover; }
+  .carousel-author > div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .carousel-author-name { color: var(--color-star); font: .7rem/1.4 monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  time { color: var(--color-reading-text); opacity: .7; font: .65rem/1.4 monospace; }
+  .carousel-read-icon { margin-left: auto; flex-shrink: 0; width: 17px; height: 17px; color: var(--color-star); }
+  .carousel-position { margin: 16px 0 0; color: var(--color-star); opacity: .65; font: .65rem/1.5 monospace; letter-spacing: .06em; text-align: right; }
+  @media (max-width: 1100px) { .carousel-card { flex-basis: 100%; } .carousel-card-link { height: 330px; } .carousel-copy { padding: 28px; } h2 { font-size: 1.25rem; } .carousel-excerpt { -webkit-line-clamp: 4; } }
+  @media (max-width: 540px) { .carousel-header { margin-bottom: 18px; } .carousel-track { gap: 16px; } .carousel-card-link { grid-template-columns: 36% minmax(0, 1fr); height: 340px; } .carousel-copy { padding: 20px 16px; gap: 12px; } h2 { font-size: 1rem; -webkit-line-clamp: 4; } .carousel-excerpt { font-size: .72rem; -webkit-line-clamp: 3; } .carousel-author > img { width: 28px; height: 28px; } .carousel-author { gap: 7px; } .carousel-author-name { font-size: .62rem; } time { font-size: .58rem; } .carousel-read-icon { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .carousel-card, .carousel-image img, button { transition: none; } }
+</style>
+
+<script>
+  import { shuffle } from '../lib/shuffle';
+
+  class PostCarousel extends HTMLElement {
+    private controller?: AbortController;
+    private observer?: IntersectionObserver;
+    private resizeObserver?: ResizeObserver;
+    private timer?: ReturnType<typeof setTimeout>;
+    private animation?: Animation;
+
+    connectedCallback() {
+      this.controller = new AbortController();
+      const { signal } = this.controller;
+      const track = this.querySelector<HTMLElement>('.carousel-track')!;
+      const controls = this.querySelector<HTMLElement>('.carousel-controls')!;
+      const toggle = this.querySelector<HTMLButtonElement>('[data-toggle]')!;
+      const position = this.querySelector<HTMLElement>('[data-position]')!;
+      let cards = Array.from(track.querySelectorAll<HTMLElement>('.carousel-card'));
+      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let index = 0;
+      let visible = 1;
+      let paused = motion.matches;
+      let hovering = false;
+      let inView = false;
+      let startX: number | null = null;
+      let startY = 0;
+      let dragged = false;
+      let offset = 0;
+
+      const updateToggle = () => {
+        toggle.setAttribute('aria-label', paused ? 'Retomar carrossel' : 'Pausar carrossel');
+        this.querySelector('[data-play-icon]')?.toggleAttribute('hidden', !paused);
+        this.querySelector('[data-pause-icon]')?.toggleAttribute('hidden', paused);
+      };
+
+      const schedule = () => {
+        clearTimeout(this.timer);
+        if (paused || hovering || !inView || document.hidden || this.contains(document.activeElement) || cards.length <= visible) return;
+        this.timer = setTimeout(() => { void move(1, false); }, 6000);
+      };
+
+      const render = (manual = false, animate = false) => {
+        const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
+        const nextOffset = -index * (cards[0].getBoundingClientRect().width + gap);
+        this.animation?.cancel();
+        track.style.transform = `translate3d(${nextOffset}px, 0, 0)`;
+        if (animate && !motion.matches) {
+          this.animation = track.animate([
+            { transform: `translate3d(${offset}px, 0, 0)` },
+            { transform: `translate3d(${nextOffset}px, 0, 0)` },
+          ], { duration: 520, easing: 'cubic-bezier(.22, .61, .36, 1)' });
+        }
+        offset = nextOffset;
+        cards.forEach((card, cardIndex) => {
+          const hidden = cardIndex < index || cardIndex >= index + visible;
+          card.inert = hidden;
+          card.setAttribute('aria-hidden', String(hidden));
+          card.setAttribute('aria-label', `${cardIndex + 1} de ${cards.length}`);
+        });
+        position.setAttribute('aria-live', manual ? 'polite' : 'off');
+        position.textContent = `${String(index + 1).padStart(2, '0')}${visible > 1 ? `–${String(Math.min(index + visible, cards.length)).padStart(2, '0')}` : ''} / ${String(cards.length).padStart(2, '0')}`;
+        schedule();
+      };
+
+      const move = async (direction: number, manual = true) => {
+        clearTimeout(this.timer);
+        const lastIndex = Math.max(0, cards.length - visible);
+        const next = index + direction;
+        if (next > lastIndex) {
+          cards = shuffle(cards);
+          track.append(...cards);
+          index = 0;
+          render(manual);
+          if (!motion.matches) {
+            this.animation = track.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420 });
+          }
+        } else {
+          index = next < 0 ? lastIndex : next;
+          render(manual, next >= 0);
+        }
+      };
+
+      this.dataset.ready = '';
+      const resize = () => {
+        visible = Math.min(cards.length, window.matchMedia('(min-width: 1101px)').matches ? 2 : 1);
+        index = Math.min(index, Math.max(0, cards.length - visible));
+        controls.hidden = cards.length <= visible;
+        position.hidden = cards.length <= visible;
+        render();
+      };
+      updateToggle();
+      this.resizeObserver = new ResizeObserver(resize);
+      this.resizeObserver.observe(this);
+      resize();
+
+      this.querySelector('[data-previous]')?.addEventListener('click', () => void move(-1), { signal });
+      this.querySelector('[data-next]')?.addEventListener('click', () => void move(1), { signal });
+      toggle.addEventListener('click', () => { paused = !paused; updateToggle(); schedule(); }, { signal });
+      this.addEventListener('pointerenter', (event) => { if (event.pointerType === 'mouse') { hovering = true; schedule(); } }, { signal });
+      this.addEventListener('pointerleave', () => { hovering = false; schedule(); }, { signal });
+      this.addEventListener('focusin', schedule, { signal });
+      this.addEventListener('focusout', () => queueMicrotask(schedule), { signal });
+      document.addEventListener('visibilitychange', schedule, { signal });
+      motion.addEventListener('change', () => { paused = motion.matches; updateToggle(); render(); }, { signal });
+      this.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        void move(event.key === 'ArrowRight' ? 1 : -1);
+      }, { signal });
+      track.addEventListener('touchstart', (event) => {
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+        dragged = false;
+        clearTimeout(this.timer);
+      }, { signal, passive: true });
+      track.addEventListener('touchend', (event) => {
+        if (startX === null) return;
+        const dx = event.changedTouches[0].clientX - startX;
+        const dy = event.changedTouches[0].clientY - startY;
+        startX = null;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+          dragged = true;
+          void move(dx < 0 ? 1 : -1);
+        } else schedule();
+      }, { signal, passive: true });
+      track.addEventListener('touchcancel', () => { startX = null; schedule(); }, { signal });
+      track.addEventListener('click', (event) => {
+        if (dragged) { event.preventDefault(); dragged = false; return; }
+        if ((event.target as Element).closest('a')) sessionStorage.setItem('post-nav-origin', 'home');
+      }, { signal });
+      this.observer = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; schedule(); }, { threshold: .2 });
+      this.observer.observe(this);
+    }
+
+    disconnectedCallback() {
+      clearTimeout(this.timer);
+      this.animation?.cancel();
+      this.controller?.abort();
+      this.observer?.disconnect();
+      this.resizeObserver?.disconnect();
+    }
+  }
+
+  if (!customElements.get('post-carousel')) customElements.define('post-carousel', PostCarousel);
+</script>

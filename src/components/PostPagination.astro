@@ -1,0 +1,42 @@
+---
+interface Props { currentPage: number; totalPages: number }
+const { currentPage, totalPages } = Astro.props;
+const href = (page: number) => page === 1 ? '/' : `/page/${page}/`;
+---
+
+{totalPages > 1 && (
+  <nav class="pagination" aria-label="Páginas de publicações">
+    {currentPage > 1
+      ? <a href={href(currentPage - 1)} rel="prev" aria-label="Página anterior">« Anterior</a>
+      : <span class="disabled" aria-disabled="true">« Anterior</span>}
+    <div class="page-numbers">
+      {Array.from({ length: totalPages }, (_, index) => index + 1).map(page => (
+        <a href={href(page)} aria-label={`Página ${page}`} aria-current={page === currentPage ? 'page' : undefined}>{page}</a>
+      ))}
+    </div>
+    {currentPage < totalPages
+      ? <a href={href(currentPage + 1)} rel="next" aria-label="Próxima página">Próxima »</a>
+      : <span class="disabled" aria-disabled="true">Próxima »</span>}
+  </nav>
+)}
+
+<style>
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 44px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-star-22);
+    font: 600 .85rem/1.5 monospace;
+  }
+  .page-numbers { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; }
+  a, .disabled { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 44px; padding: 0 6px; color: var(--color-star); text-decoration: none; border-radius: 4px; }
+  a:hover { color: var(--color-accent); background: var(--color-star-05); }
+  a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  a[aria-current='page'] { color: var(--color-text); border-bottom: 2px solid var(--color-accent); }
+  .disabled { color: var(--color-reading-text); opacity: .4; }
+  @media (max-width: 540px) { .pagination { gap: 4px; font-size: .72rem; } a, .disabled { min-width: 30px; padding-inline: 4px; } }
+</style>
