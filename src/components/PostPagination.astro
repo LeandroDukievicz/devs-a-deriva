@@ -1,7 +1,9 @@
 ---
-interface Props { currentPage: number; totalPages: number }
-const { currentPage, totalPages } = Astro.props;
-const href = (page: number) => page === 1 ? '/' : `/page/${page}/`;
+interface Props { currentPage: number; totalPages: number; basePath?: string }
+const { currentPage, totalPages, basePath = '' } = Astro.props;
+const href = (page: number) => basePath
+  ? page === 1 ? `${basePath}/` : `${basePath}/pagina/${page}/`
+  : page === 1 ? '/' : `/page/${page}/`;
 ---
 
 {totalPages > 1 && (

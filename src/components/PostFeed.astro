@@ -5,24 +5,24 @@ import PostPagination from './PostPagination.astro';
 import { HOME_POSTS_PER_PAGE, toHomePostCard } from '../lib/post-listing';
 import { isApiOffline } from '../lib/posts';
 
-interface Props { posts: readonly Post[]; currentPage?: number; totalPages: number }
-const { posts, currentPage = 1, totalPages } = Astro.props;
+interface Props { posts: readonly Post[]; currentPage?: number; totalPages: number; basePath?: string; title?: string; origin?: 'home' | 'category' }
+const { posts, currentPage = 1, totalPages, basePath = '', title = 'Todos os posts', origin = 'home' } = Astro.props;
 const start = (currentPage - 1) * HOME_POSTS_PER_PAGE;
 const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3000';
 ---
 
-<section id="posts" class="post-feed" aria-labelledby="feed-heading" data-dashboard-url={dashboardUrl}>
+<section id="posts" class="post-feed" aria-labelledby="feed-heading" data-dashboard-url={dashboardUrl} data-origin={origin}>
   <header class="feed-header">
-    <h2 id="feed-heading">Todos os posts</h2>
+    <h2 id="feed-heading">{title}</h2>
     {totalPages > 1 && <span>Página {currentPage} de {totalPages}</span>}
   </header>
   {posts.length === 0 && (
     <div class="empty-state"><p>{isApiOffline() ? '> api indisponível no momento. tente novamente mais tarde.' : '> nenhum post publicado ainda. volte em breve.'}</p></div>
   )}
   <div id="sections-container" class="posts-grid">
-    {posts.map((post, index) => <PostCard {...toHomePostCard(post, start + index)} />)}
+    {posts.map((post, index) => <PostCard {...toHomePostCard(post, start + index)} href={`/posts/${post.slug}?from=${origin}`} />)}
   </div>
-  <PostPagination currentPage={currentPage} totalPages={totalPages} />
+  <PostPagination currentPage={currentPage} totalPages={totalPages} basePath={basePath} />
 </section>
 
 <style>
@@ -53,7 +53,7 @@ const dashboardUrl = import.meta.env.PUBLIC_DASHBOARD_URL ?? 'http://localhost:3
 
   feed?.addEventListener('click', event => {
     const target = event.target as Element;
-    if (target.closest('a[href*="/posts/"]')) sessionStorage.setItem('post-nav-origin', 'home');
+    if (target.closest('a[href*="/posts/"]')) sessionStorage.setItem('post-nav-origin', feed?.dataset.origin ?? 'home');
     const button = target.closest<HTMLButtonElement>('.limbo-cta');
     const card = button?.closest<HTMLElement>('.content-section');
     if (!button || !card || card.classList.contains('is-vanishing')) return;

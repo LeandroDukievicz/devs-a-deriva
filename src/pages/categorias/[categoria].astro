@@ -9,25 +9,15 @@ import { getPostsByCategory } from '../../lib/posts';
 
 const { categoria } = Astro.params;
 if (!categoria) return Astro.redirect('/404');
-
 const cat = await getCategoryBySlug(categoria);
 if (!cat) return Astro.redirect('/404');
-
-const PAGE_SIZE = CATEGORY_POSTS_PER_PAGE;
-const totalPosts = (await getPostsByCategory(cat.slug)).length;
-const hasNextPage = totalPosts > PAGE_SIZE;
-const ogImage = `https://devsaderiva.com.br${cat.illustration}`;
+const posts = await getPostsByCategory(cat.slug);
+const hasNextPage = posts.length > CATEGORY_POSTS_PER_PAGE;
 ---
 
-<CategoryLayout category={cat} ogImage={ogImage}>
+<CategoryLayout category={cat}>
   <Fragment slot="head">
     {hasNextPage && <link rel="next" href={`https://devsaderiva.com.br/categorias/${cat.slug}/pagina/2/`} />}
   </Fragment>
-  <CategoriaPage
-    category={cat.label}
-    categorySlug={cat.slug}
-    description={cat.description}
-    cornerIllustration={cat.illustration}
-    animateIllustration
-  />
+  <CategoriaPage category={cat} posts={posts} />
 </CategoryLayout>

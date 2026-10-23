@@ -1,151 +1,85 @@
 import { expect, test } from './fixtures';
 
-const CATEGORIAS = [
-  { slug: 'tech',           label: 'Tech' },
-  { slug: 'carreira',       label: 'Carreira' },
+const categories = [
+  { slug: 'tech', label: 'Tech' },
+  { slug: 'carreira', label: 'Carreira' },
   { slug: 'aleatoriedades', label: 'Aleatoriedades' },
-  { slug: 'livros',         label: 'Livros' },
-  { slug: 'musica',         label: 'Música' },
-  { slug: 'noticias',       label: 'Notícias' },
+  { slug: 'livros', label: 'Livros' },
+  { slug: 'musica', label: 'Música' },
+  { slug: 'noticias', label: 'Notícias' },
 ];
 
-// ── Por categoria ────────────────────────────────────────────────────
-
-for (const { slug, label } of CATEGORIAS) {
-  test(`[${label}] título da página inclui o nome da categoria`, async ({ page }) => {
+for (const { slug, label } of categories) {
+  test(`[${label}] usa o carrossel e a grade do novo layout`, async ({ page, request }) => {
+    const response = await request.get('/api/posts.json?limit=20');
+    const { posts } = await response.json();
+    const categoryPosts = posts.filter((post: { categorySlug: string }) => post.categorySlug === slug);
     await page.goto(`/categorias/${slug}/`);
+
     await expect(page).toHaveTitle(new RegExp(label, 'i'));
-  });
-
-  test(`[${label}] h1 renderiza com nome da categoria`, async ({ page }) => {
-    await page.goto(`/categorias/${slug}/`);
-    await expect(page.locator('h1.categoria-title')).toBeVisible();
     await expect(page.locator('h1.categoria-title')).toContainText(label);
-  });
-
-  test(`[${label}] contador de posts é visível e formatado`, async ({ page }) => {
-    await page.goto(`/categorias/${slug}/`);
-    const count = page.locator('.categoria-count');
-    await expect(count).toBeVisible();
-    await expect(count).toContainText(/\d+ posts?/);
-  });
-
-  test(`[${label}] seções destaques e posts estão presentes`, async ({ page }) => {
-    await page.goto(`/categorias/${slug}/`);
-    await expect(page.locator('.destaques-section')).toBeVisible();
-    await expect(page.locator('.posts-section')).toBeVisible();
-  });
-
-  test(`[${label}] exibe posts ou estado vazio`, async ({ page }) => {
-    await page.goto(`/categorias/${slug}/`);
-    const postCount = await page.locator('.post-card').count();
-    const emptyCount = await page.locator('.empty-state').count();
-    expect(postCount + emptyCount).toBeGreaterThan(0);
+    await expect(page.locator('.categoria-count')).toContainText(`${categoryPosts.length} ${categoryPosts.length === 1 ? 'post' : 'posts'}`);
+    await expect(page.locator('.post-feed')).toBeVisible();
+    await expect(page.locator('.post-feed h2')).toContainText('Posts de');
+    await expect(page.locator('.content-section')).toHaveCount(Math.min(6, categoryPosts.length));
+    expect(await page.locator('.content-section').evaluateAll(cards => cards.map(card => card.getAttribute('data-post-slug'))))
+      .toEqual(categoryPosts.slice(0, 6).map((post: { slug: string }) => post.slug));
+    expect(await page.locator('.carousel-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-carousel-slug')).sort()))
+      .toEqual(categoryPosts.map((post: { slug: string }) => post.slug).sort());
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`/categorias/${slug}/$`));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }
 
-// ── Estrutura dos post cards ─────────────────────────────────────────
-
-test('post cards têm tag, título e excerpt visíveis', async ({ page }) => {
+test('categoria com mais de seis posts mantém paginação e links de leitura', async ({ page }) => {
   await page.goto('/categorias/tech/');
-  const firstCard = page.locator('.post-card').first();
-  if (await firstCard.count() === 0) test.skip();
-
-  await expect(firstCard.locator('.card-tag')).toBeVisible();
-  await expect(firstCard.locator('.post-card-title')).toBeVisible();
-  await expect(firstCard.locator('.post-card-excerpt')).toBeVisible();
+  await expect(page.locator('.content-section')).toHaveCount(6);
+  const firstPage = await page.locator('.content-section').evaluateAll(cards => cards.map(card => card.getAttribute('data-post-slug')));
+  await expect(page.locator('.pagination [aria-current="page"]')).toHaveText('1');
+  await expect(page.locator('link[rel="next"]')).toHaveAttribute('href', /\/categorias\/tech\/pagina\/2\/$/);
+  await page.getByRole('link', { name: 'Próxima página' }).click();
+  await expect(page).toHaveURL(/\/categorias\/tech\/pagina\/2\/$/);
+  await expect(page.locator('.content-section')).toHaveCount(2);
+  await expect(page.locator('.pagination [aria-current="page"]')).toHaveText('2');
+  await expect(page.locator('post-carousel')).toHaveCount(0);
+  await expect(page.locator('link[rel="prev"]')).toHaveAttribute('href', /\/categorias\/tech\/$/);
+  const secondPage = await page.locator('.content-section').evaluateAll(cards => cards.map(card => card.getAttribute('data-post-slug')));
+  expect(secondPage.some(slug => firstPage.includes(slug))).toBe(false);
+  await expect(page.locator('.post-card-link').first()).toHaveAttribute('href', /\?from=category$/);
+  await page.getByRole('link', { name: 'Página anterior' }).click();
+  await expect(page).toHaveURL(/\/categorias\/tech\/$/);
 });
 
-test('post cards têm link com href para /posts/', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const firstCard = page.locator('.post-card[href^="/posts/"]').first();
-  if (await firstCard.count() === 0) test.skip();
-
-  const href = await firstCard.getAttribute('href');
-  expect(href).toMatch(/^\/posts\//);
+test('navegação principal e rodapé abrem categorias com o mesmo layout', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Categorias' }).click();
+  await page.locator('#cat-menu').getByRole('menuitem', { name: 'Tech' }).click();
+  await expect(page).toHaveURL(/\/categorias\/tech\/?$/);
+  await expect(page.locator('post-carousel')).toBeVisible();
+  await expect(page.locator('.posts-grid')).toBeVisible();
+  await page.locator('footer.site-footer [data-category="carreira"]').click();
+  await expect(page).toHaveURL(/\/categorias\/carreira\/$/);
+  await expect(page.locator('post-carousel')).toBeVisible();
+  await expect(page.locator('.posts-grid')).toBeVisible();
 });
 
-// ── Carousel ─────────────────────────────────────────────────────────
-
-test('carousel tem botões de navegação com aria-label', async ({ page }) => {
+test('carrossel da categoria navega entre todos os seus posts', async ({ page }) => {
   await page.goto('/categorias/tech/');
-  await expect(page.locator('#carousel-prev')).toHaveAttribute('aria-label', 'Anterior');
-  await expect(page.locator('#carousel-next')).toHaveAttribute('aria-label', 'Próximo');
+  await expect(page.locator('post-carousel')).toHaveAttribute('data-ready', '');
+  const first = await page.locator('.carousel-card[aria-hidden="false"]').first().getAttribute('data-carousel-slug');
+  await page.getByRole('button', { name: 'Próximo artigo', exact: true }).click();
+  await expect(page.locator('.carousel-card[aria-hidden="false"]').first()).not.toHaveAttribute('data-carousel-slug', first!);
+  await expect(page.locator('.carousel-card-link').first()).toHaveAttribute('href', /\?from=category$/);
 });
 
-test('carousel botão prev começa desabilitado no índice zero', async ({ page }) => {
+test('categoria mantém leitura e paginação sem JavaScript', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
+  const page = await context.newPage();
   await page.goto('/categorias/tech/');
-  const featuredCount = await page.locator('.feat-card').count();
-  if (featuredCount < 2) test.skip();
-
-  await expect(page.locator('#carousel-prev')).toBeDisabled();
-});
-
-test('carousel avança ao clicar em próximo e habilita prev', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const nextBtn = page.locator('#carousel-next');
-  const prevBtn = page.locator('#carousel-prev');
-  const featuredCount = await page.locator('.feat-card').count();
-  if (featuredCount < 2) test.skip();
-
-  if (await nextBtn.isDisabled()) test.skip();
-
-  if (page.viewportSize()!.width <= 600) await page.getByRole('button', { name: 'Ir para destaque 2', exact: true }).click();
-  else await nextBtn.click();
-  await expect(prevBtn).not.toBeDisabled();
-});
-
-test('carousel volta ao início ao clicar em anterior após avançar', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const nextBtn = page.locator('#carousel-next');
-  const prevBtn = page.locator('#carousel-prev');
-  const featuredCount = await page.locator('.feat-card').count();
-  if (featuredCount < 2) test.skip();
-
-  if (await nextBtn.isDisabled()) test.skip();
-
-  if (page.viewportSize()!.width <= 600) {
-    await page.getByRole('button', { name: 'Ir para destaque 2', exact: true }).click();
-    await page.getByRole('button', { name: 'Ir para destaque 1', exact: true }).click();
-  } else {
-    await nextBtn.click();
-    await prevBtn.click();
-  }
-  await expect(prevBtn).toBeDisabled();
-});
-
-test('carousel dots renderizam e o primeiro começa ativo', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const dots = page.locator('#carousel-dots .dot');
-  const dotCount = await dots.count();
-  if (dotCount === 0) test.skip();
-
-  await expect(dots.first()).toHaveClass(/active/);
-});
-
-// ── Navegação ────────────────────────────────────────────────────────
-
-test('link de post em categoria navega para a página do post', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const postLink = page.locator('a[href^="/posts/"]').first();
-  if (await postLink.count() === 0) test.skip();
-
-  const href = await postLink.getAttribute('href');
-  await page.goto(href!);
-  await expect(page.locator('article')).toBeVisible();
-  await expect(page.locator('h1')).toBeVisible();
-});
-
-// ── Meta / SEO ───────────────────────────────────────────────────────
-
-test('categoria tech tem link canonical apontando para a rota correta', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const canonical = page.locator('link[rel="canonical"]');
-  await expect(canonical).toHaveAttribute('href', /\/categorias\/tech/);
-});
-
-test('categoria tech tem og:title no head', async ({ page }) => {
-  await page.goto('/categorias/tech/');
-  const ogTitle = page.locator('meta[property="og:title"]');
-  await expect(ogTitle).toHaveAttribute('content', /Tech/i);
+  await expect(page.locator('.content-section')).toHaveCount(6);
+  await page.getByRole('link', { name: 'Próxima página' }).click();
+  await expect(page).toHaveURL(/\/categorias\/tech\/pagina\/2\/$/);
+  await expect(page.locator('.content-section')).toHaveCount(2);
+  await expect(page.locator('.post-card-link').first()).toHaveAttribute('href', /\?from=category$/);
+  await context.close();
 });

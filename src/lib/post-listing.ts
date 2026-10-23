@@ -1,7 +1,7 @@
 import type { Post } from '../types/blog';
 
 export const HOME_POSTS_PER_PAGE = 6;
-export const CATEGORY_POSTS_PER_PAGE = 10;
+export const CATEGORY_POSTS_PER_PAGE = 6;
 
 const CATEGORY_IMAGES: Record<string, string> = {
   aleatoriedades: '/aleatoriedades-astronaut-body.webp',

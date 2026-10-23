@@ -62,9 +62,9 @@ O cache retorna posts **ordenados por `publishedAt` decrescente** (mais recente 
 
 A home renderiza um carrossel com todos os posts publicados e, abaixo, uma grade com os seis posts mais recentes. O carrossel usa Fisher–Yates (`src/lib/shuffle.ts`) sem alterar a ordem cronológica da API, embaralha a cada volta e avança a cada seis segundos. Hover, foco, aba oculta e saída da viewport pausam a rotação; movimento reduzido começa pausado. Há setas, pausa e navegação por toque.
 
-`PostFeed.astro` compartilha a grade entre `/` e `/page/[n]/`: três colunas no desktop, duas no tablet e uma no celular. `PostPagination.astro` renderiza números, anterior/próxima, `aria-current`, links reais e estados desabilitados. Não há infinite scroll na home. A leitura, a paginação e o download de PDF têm fallback sem JavaScript.
+`PostFeed.astro` compartilha a grade entre home, arquivo e categorias: três colunas no desktop, duas no tablet e uma no celular. `PostPagination.astro` renderiza números, anterior/próxima, `aria-current`, links reais e estados desabilitados. As páginas iniciais das categorias também usam `PostCarousel.astro`, filtrado por categoria. A leitura, a paginação e o download de PDF têm fallback sem JavaScript.
 
-O tamanho da página é `HOME_POSTS_PER_PAGE = 6`, em `src/lib/post-listing.ts`. Categorias mantêm `CATEGORY_POSTS_PER_PAGE = 10` e seu carregamento progressivo. `/api/posts.json` permanece disponível; seu limite padrão agora é seis, com máximo de vinte.
+O tamanho da página é seis posts tanto na home quanto nas categorias, configurado em `src/lib/post-listing.ts`. `/api/posts.json` permanece disponível; seu limite padrão é seis, com máximo de vinte.
 
 `PostCard.astro` mantém autor, data, progresso de leitura e a ação de lançar ao limbo. `SiteFooter.astro` usa categorias reais e contagens de posts publicados, além dos links institucionais.
 

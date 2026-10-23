@@ -7,7 +7,7 @@ const categories = [
 const posts = Array.from({ length: 14 }, (_, index) => ({
   slug: `artigo-de-teste-${index + 1}`,
   title: `Artigo de teste ${index + 1}: uma nova leitura em órbita`,
-  category: index < 6 ? 'tech' : categories[1 + (index - 6) % (categories.length - 1)].slug,
+  category: index < 8 ? 'tech' : categories[1 + (index - 8) % (categories.length - 1)].slug,
   publishedAt: new Date(Date.UTC(2026, 8, 30 - index)).toISOString(),
   content: `Este artigo apresenta uma leitura verificável sobre tecnologia e as descobertas que fazemos no desenvolvimento de software. O conteúdo é público e serve para validar a navegação e o arquivo do blog.\n\n## Uma descoberta\n\nTexto com **ênfase**, *itálico* e [uma referência](https://example.com).\n\n- Primeiro aprendizado\n- Segundo aprendizado\n\n> Uma ideia para levar na próxima viagem.\n\nÚltimo parágrafo do artigo, com acentuação: à deriva, programação e histórias.`,
   author: { displayName: 'Editorial Devs à Deriva', jobTitle: 'Editorial', photoUrl: '/logo-high-color.webp' },

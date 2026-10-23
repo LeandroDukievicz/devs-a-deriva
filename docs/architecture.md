@@ -46,7 +46,7 @@ O blog usa **modo híbrido** — a distinção é feita por página via `export 
 |---|---|---|
 | `index.astro` | SSR | Lista de posts sempre atualizada |
 | `page/[n].astro` | SSR | Paginação real da home para SEO |
-| `api/posts.json.ts` | SSR | Lotes JSON para infinite scroll e categorias |
+| `api/posts.json.ts` | SSR | Lotes JSON de posts para clientes e integrações |
 | `posts/[slug].astro` | SSR | Novo post aparece sem rebuild |
 | `categorias/[categoria]/pagina/[n].astro` | SSR | Paginação em tempo real |
 | `busca.astro` | SSR | Índice de busca sempre fresco |
@@ -54,7 +54,7 @@ O blog usa **modo híbrido** — a distinção é feita por página via `export 
 | `sitemap.xml.ts` | SSR | Sitemap reflete novos posts |
 | `ai-index.json.ts` | SSR | Índice para bots atualizado |
 | `health.json.ts` | SSR | Versão do commit em runtime |
-| `categorias/[categoria].astro` | Estático | Baseado na constante `CATEGORIES` |
+| `categorias/[categoria].astro` | SSR | Categorias e posts atualizados sem rebuild |
 | Demais páginas | Estático | Conteúdo fixo |
 
 **Resultado:** publicar um post novo faz ele aparecer em **até 30 segundos**, sem rebuild, graças ao cache em memória com TTL de 30s em `src/lib/posts.ts`.
@@ -90,7 +90,7 @@ Blog renderiza e serve ao visitante
 
 ## Listagem de Posts
 
-A home combina um carrossel com todos os posts em ordem aleatória e uma grade cronológica de seis artigos. O carrossel não altera a ordem da coleção original. `/page/2/`, `/page/3/` etc. usam a mesma grade, com links reais, `canonical` único, `rel=prev/next` e navegação sem JavaScript. O carregamento progressivo continua restrito às listagens de categoria.
+A home combina um carrossel com todos os posts em ordem aleatória e uma grade cronológica de seis artigos. Cada categoria usa o mesmo layout, com carrossel filtrado e grade de seis artigos. O carrossel não altera a ordem da coleção original. `/page/2/` e `/categorias/{slug}/pagina/2/` usam a mesma grade, com links reais, `canonical` único, `rel=prev/next` e navegação sem JavaScript.
 
 A montagem de cards/payloads é compartilhada em `src/lib/post-listing.ts`, que centraliza `HOME_POSTS_PER_PAGE`, `CATEGORY_POSTS_PER_PAGE`, fallback de imagens, `sectionId`, `href` e serialização JSON.
 

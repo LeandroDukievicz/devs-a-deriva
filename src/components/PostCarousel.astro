@@ -4,14 +4,16 @@ import { formatDate } from '../lib/posts';
 import { getHomePostHref, getPostImageSrc } from '../lib/post-listing';
 import { shuffle } from '../lib/shuffle';
 
-interface Props { posts: readonly Post[] }
+interface Props { posts: readonly Post[]; origin?: 'home' | 'category'; headingLevel?: 1 | 2 }
 const posts = shuffle(Astro.props.posts);
+const origin = Astro.props.origin ?? 'home';
+const headingLevel = Astro.props.headingLevel ?? 1;
 ---
 
 {posts.length > 0 && (
-  <post-carousel role="region" aria-roledescription="carrossel" aria-labelledby="carousel-heading">
+  <post-carousel role="region" aria-roledescription="carrossel" aria-labelledby="carousel-heading" data-origin={origin}>
     <header class="carousel-header">
-      <h1 id="carousel-heading">Em órbita</h1>
+      {headingLevel === 1 ? <h1 id="carousel-heading" class="carousel-heading">Em órbita</h1> : <h2 id="carousel-heading" class="carousel-heading">Em órbita</h2>}
       <div class="carousel-controls" hidden>
         <button type="button" data-previous aria-label="Artigo anterior" aria-controls="carousel-track">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg>
@@ -29,13 +31,13 @@ const posts = shuffle(Astro.props.posts);
       <div id="carousel-track" class="carousel-track">
         {posts.map((post, index) => (
           <article class="carousel-card" data-carousel-slug={post.slug} role="group" aria-roledescription="slide" aria-label={`${index + 1} de ${posts.length}`}>
-            <a class="carousel-card-link" href={getHomePostHref(post)}>
+            <a class="carousel-card-link" href={origin === 'home' ? getHomePostHref(post) : `/posts/${post.slug}?from=category`}>
               <div class="carousel-image">
                 <img src={getPostImageSrc(post)} alt="" width="400" height="500" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" />
               </div>
               <div class="carousel-copy">
                 <span class="carousel-category">{post.category}</span>
-                <h2>{post.title}</h2>
+                {headingLevel === 1 ? <h2 class="carousel-title">{post.title}</h2> : <h3 class="carousel-title">{post.title}</h3>}
                 <p class="carousel-excerpt">{post.excerpt}</p>
                 <div class="carousel-author">
                   <img src={post.author.photo} alt="" width="38" height="38" loading="lazy" decoding="async" />
@@ -60,7 +62,7 @@ const posts = shuffle(Astro.props.posts);
   [hidden] { display: none !important; }
   .carousel-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid var(--color-star-22); position: relative; }
   .carousel-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 108px; height: 1px; background: var(--color-star); }
-  h1 { margin: 0; color: var(--color-text); font: 600 clamp(1.15rem, 2vw, 1.5rem)/1.3 monospace; }
+  .carousel-heading { margin: 0; color: var(--color-text); font: 600 clamp(1.15rem, 2vw, 1.5rem)/1.3 monospace; }
   .carousel-controls { display: flex; align-items: center; gap: 8px; }
   button { display: grid; place-items: center; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--color-star-25); border-radius: 6px; color: var(--color-star); background: var(--color-bg-70); cursor: pointer; transition: border-color .2s, background .2s; }
   button:hover { background: var(--color-star-10); border-color: var(--color-star); }
@@ -78,7 +80,7 @@ const posts = shuffle(Astro.props.posts);
   .carousel-card-link:hover .carousel-image img { transform: scale(1.035); }
   .carousel-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-width: 0; padding: clamp(20px, 2vw, 30px); }
   .carousel-category { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-accent); font: 500 .65rem/1.3 monospace; letter-spacing: .08em; text-transform: uppercase; }
-  h2 { margin: 0; font: 600 clamp(1rem, 1.4vw, 1.25rem)/1.4 monospace; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .carousel-title { margin: 0; font: 600 clamp(1rem, 1.4vw, 1.25rem)/1.4 monospace; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .carousel-excerpt { margin: 0; color: var(--color-reading-text); opacity: .8; font: .8rem/1.7 monospace; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .carousel-author { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: auto; padding-top: 8px; min-width: 0; }
   .carousel-author > img { flex-shrink: 0; width: 38px; height: 38px; border: 1px solid var(--color-star-25); border-radius: 50%; object-fit: cover; }
@@ -87,8 +89,8 @@ const posts = shuffle(Astro.props.posts);
   time { color: var(--color-reading-text); opacity: .7; font: .65rem/1.4 monospace; }
   .carousel-read-icon { margin-left: auto; flex-shrink: 0; width: 17px; height: 17px; color: var(--color-star); }
   .carousel-position { margin: 16px 0 0; color: var(--color-star); opacity: .65; font: .65rem/1.5 monospace; letter-spacing: .06em; text-align: right; }
-  @media (max-width: 1100px) { .carousel-card { flex-basis: 100%; } .carousel-card-link { height: 330px; } .carousel-copy { padding: 28px; } h2 { font-size: 1.25rem; } .carousel-excerpt { -webkit-line-clamp: 4; } }
-  @media (max-width: 540px) { .carousel-header { margin-bottom: 18px; } .carousel-track { gap: 16px; } .carousel-card-link { grid-template-columns: 36% minmax(0, 1fr); height: 340px; } .carousel-copy { padding: 20px 16px; gap: 12px; } h2 { font-size: 1rem; -webkit-line-clamp: 4; } .carousel-excerpt { font-size: .72rem; -webkit-line-clamp: 3; } .carousel-author > img { width: 28px; height: 28px; } .carousel-author { gap: 7px; } .carousel-author-name { font-size: .62rem; } time { font-size: .58rem; } .carousel-read-icon { display: none; } }
+  @media (max-width: 1100px) { .carousel-card { flex-basis: 100%; } .carousel-card-link { height: 330px; } .carousel-copy { padding: 28px; } .carousel-title { font-size: 1.25rem; } .carousel-excerpt { -webkit-line-clamp: 4; } }
+  @media (max-width: 540px) { .carousel-header { margin-bottom: 18px; } .carousel-track { gap: 16px; } .carousel-card-link { grid-template-columns: 36% minmax(0, 1fr); height: 340px; } .carousel-copy { padding: 20px 16px; gap: 12px; } .carousel-title { font-size: 1rem; -webkit-line-clamp: 4; } .carousel-excerpt { font-size: .72rem; -webkit-line-clamp: 3; } .carousel-author > img { width: 28px; height: 28px; } .carousel-author { gap: 7px; } .carousel-author-name { font-size: .62rem; } time { font-size: .58rem; } .carousel-read-icon { display: none; } }
   @media (prefers-reduced-motion: reduce) { .carousel-card, .carousel-image img, button { transition: none; } }
 </style>
 
@@ -220,7 +222,7 @@ const posts = shuffle(Astro.props.posts);
       track.addEventListener('touchcancel', () => { startX = null; schedule(); }, { signal });
       track.addEventListener('click', (event) => {
         if (dragged) { event.preventDefault(); dragged = false; return; }
-        if ((event.target as Element).closest('a')) sessionStorage.setItem('post-nav-origin', 'home');
+        if ((event.target as Element).closest('a')) sessionStorage.setItem('post-nav-origin', this.dataset.origin ?? 'home');
       }, { signal });
       this.observer = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; schedule(); }, { threshold: .2 });
       this.observer.observe(this);

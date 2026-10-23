@@ -25,7 +25,7 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 
 ### Implementado
 
-- Home com BlackHole canvas, carrossel aleatório de todos os posts e grade cronológica de seis artigos por página
+- Home com BlackHole canvas, carrossel aleatório de todos os posts e grade cronológica de seis artigos por página; categorias seguem o mesmo layout com posts filtrados
 - Paginação numerada com links reais, layout responsivo e navegação sem JavaScript
 - Download de PDF por artigo, com texto selecionável, links, imagens e fontes Unicode
 - Rodapé Explore com categorias e contagens de artigos publicados

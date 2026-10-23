@@ -311,10 +311,6 @@ export async function getPostsByCategory(categorySlug: string): Promise<Post[]> 
   return posts.filter(p => p.categorySlug === categorySlug);
 }
 
-export async function getFeaturedByCategory(categorySlug: string): Promise<Post[]> {
-  return getPostsByCategory(categorySlug);
-}
-
 export function paginatePosts<T>(posts: T[], page: number, pageSize = 10): {
   items: T[];
   hasMore: boolean;

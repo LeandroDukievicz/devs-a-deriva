@@ -34,7 +34,7 @@ Responsabilidades:
 
 ### Categorias
 
-**`categorias/[categoria].astro`** — estático, gerado a partir da constante `CATEGORIES`.
+**`categorias/[categoria].astro`** — SSR, alimentado pelas categorias e posts do dashboard.
 
 **`categorias/[categoria]/pagina/[n].astro`** — SSR, paginação em tempo real. Cada URL (`/categorias/tech/pagina/2`) retorna posts filtrados do dashboard sem rebuild.
 
@@ -159,13 +159,13 @@ Além do `status=PUBLISHED`, `fetchPosts()` filtra posts com `publishedAt` futur
 
 `src/lib/posts.ts` é o adapter do blog para a API pública. Normaliza autor, categoria, HTML renderizado e fornece helpers como `getPost()`, `getPostsByCategory()`, `paginatePosts()` e `searchPosts()`.
 
-`src/lib/post-listing.ts` concentra helpers específicos de listagem: tamanho de página da home (`HOME_POSTS_PER_PAGE = 6`), tamanho de categorias (`CATEGORY_POSTS_PER_PAGE = 10`), fallback de capa, `sectionId`, links de card e payload de `/api/posts.json`.
+`src/lib/post-listing.ts` concentra helpers específicos de listagem: seis posts por página na home e nas categorias, fallback de capa, `sectionId`, links de card e payload de `/api/posts.json`.
 
 ## Home e arquivo paginado
 
 `PostCarousel.astro` exibe todos os artigos publicados em ordem aleatória, com dois cards horizontais no desktop e um em telas menores. O primeiro embaralhamento ocorre no servidor e cada volta gera outra ordem; a coleção cronológica original permanece intacta. O avanço automático ocorre a cada seis segundos, com pausa por hover, foco, aba oculta ou saída da viewport. Movimento reduzido começa pausado. Há controles de anterior, próximo, pausa, teclado e gesto horizontal. Slides fora de exibição usam `inert` e `aria-hidden`; sem JavaScript a faixa continua rolável.
 
-`PostFeed.astro` renderiza seis artigos do mais recente ao mais antigo, em três, duas ou uma coluna. `PostPagination.astro` oferece links reais, anterior/próxima, estado ativo e controles desabilitados nas extremidades. A home e `/page/[n]/` compartilham os mesmos componentes. Categorias mantêm seu carregamento progressivo e a API de posts permanece disponível.
+`PostFeed.astro` renderiza seis artigos do mais recente ao mais antigo, em três, duas ou uma coluna. `PostPagination.astro` oferece links reais, anterior/próxima, estado ativo e controles desabilitados nas extremidades. Home, arquivo e categorias compartilham esses componentes. A primeira página de cada categoria também mostra o carrossel com todos os artigos daquela categoria. A API de posts permanece disponível.
 
 `PostCard.astro` mostra capa, categoria, título, resumo, autor, data e progresso de leitura. A ação de lançar ao limbo continua disponível. `SiteFooter.astro` apresenta Explore, categorias com contagens publicadas e links institucionais.
 
