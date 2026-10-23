@@ -38,9 +38,7 @@ Responsabilidades:
 
 **`categorias/[categoria]/pagina/[n].astro`** — SSR, paginação em tempo real. Cada URL (`/categorias/tech/pagina/2`) retorna posts filtrados do dashboard sem rebuild.
 
-Categorias atuais:
-
-- tech, carreira, livros, música, aleatoriedades, notícias.
+As categorias são carregadas do dashboard e podem ser criadas ou removidas sem alterar o blog. Páginas sem posts exibem um estado vazio, sem carrossel.
 
 ### Posts (`posts/[slug].astro`) — SSR
 

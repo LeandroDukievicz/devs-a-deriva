@@ -3,6 +3,8 @@ import { createServer } from 'node:http';
 const categories = [
   ['tech', 'Tech'], ['carreira', 'Carreira Profissional'], ['livros', 'Livros & Leitura'],
   ['musica', 'Música'], ['aleatoriedades', 'Aleatoriedades'], ['noticias', 'Notícias'],
+  ['curiosidades-tech', 'Curiosidades Tech'], ['sem-categoria', 'Sem Categoria'],
+  ['trilha-de-estudos', 'Trilha de Estudos'],
 ].map(([slug, name]) => ({ slug, name }));
 const posts = Array.from({ length: 14 }, (_, index) => ({
   slug: `artigo-de-teste-${index + 1}`,

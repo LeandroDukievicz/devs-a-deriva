@@ -30,7 +30,7 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - Download de PDF por artigo, com texto selecionável, links, imagens e fontes Unicode
 - Rodapé Explore com categorias e contagens de artigos publicados
 - Páginas individuais de post com hero, metadados, imagem de capa e navegação contextual
-- Seis categorias editoriais (tech, carreira, livros, música, aleatoriedades, notícias)
+- Categorias editoriais gerenciadas pelo dashboard, refletidas automaticamente na navegação e no rodapé
 - Paginação rastreável por URL em `/page/{n}` e `/categorias/{slug}/pagina/{n}` para SEO, sem depender apenas de JavaScript
 - Cards de posts com progresso de leitura em tempo real e estado de conclusão
 - Excerpt extraído do primeiro parágrafo real do post (ignora imagens e headings em markdown)

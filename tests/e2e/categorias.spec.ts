@@ -7,6 +7,9 @@ const categories = [
   { slug: 'livros', label: 'Livros' },
   { slug: 'musica', label: 'Música' },
   { slug: 'noticias', label: 'Notícias' },
+  { slug: 'curiosidades-tech', label: 'Curiosidades Tech' },
+  { slug: 'sem-categoria', label: 'Sem Categoria' },
+  { slug: 'trilha-de-estudos', label: 'Trilha de Estudos' },
 ];
 
 for (const { slug, label } of categories) {
@@ -26,6 +29,10 @@ for (const { slug, label } of categories) {
       .toEqual(categoryPosts.slice(0, 6).map((post: { slug: string }) => post.slug));
     expect(await page.locator('.carousel-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-carousel-slug')).sort()))
       .toEqual(categoryPosts.map((post: { slug: string }) => post.slug).sort());
+    if (categoryPosts.length === 0) {
+      await expect(page.locator('.empty-state')).toBeVisible();
+      await expect(page.locator('post-carousel')).toHaveCount(0);
+    }
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`/categorias/${slug}/$`));
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
@@ -53,7 +60,7 @@ test('categoria com mais de seis posts mantém paginação e links de leitura', 
 test('navegação principal e rodapé abrem categorias com o mesmo layout', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Categorias' }).click();
-  await page.locator('#cat-menu').getByRole('menuitem', { name: 'Tech' }).click();
+  await page.locator('#cat-menu').getByRole('menuitem', { name: 'Tech', exact: true }).click();
   await expect(page).toHaveURL(/\/categorias\/tech\/?$/);
   await expect(page.locator('post-carousel')).toBeVisible();
   await expect(page.locator('.posts-grid')).toBeVisible();
