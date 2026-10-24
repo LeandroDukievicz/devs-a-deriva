@@ -17,6 +17,18 @@
           "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://dashboard.devsaderiva.com.br https://*.r2.dev https://*.cloudflarestorage.com; font-src 'self'; connect-src 'self' https://dashboard.devsaderiva.com.br https://vitals.vercel-insights.com https://www.google-analytics.com; form-action 'self' https://dashboard.devsaderiva.com.br; frame-ancestors 'none'; report-uri /api/csp-report;"
         }
       ]
+    },
+    {
+      "source": "/astronaut-intro-v1.mp4",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/astronaut-intro-poster-v1.webp",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     }
   ]
 }

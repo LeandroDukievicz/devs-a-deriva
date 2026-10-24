@@ -30,7 +30,11 @@ Responsabilidades:
 - renderizar cards com progresso de leitura em tempo real;
 - direcionar o usuário para o conteúdo completo;
 - exibir todos os posts em carrossel aleatório e seis artigos cronológicos por página;
+- mostrar o vídeo de abertura uma vez por dia em telas com pelo menos 600 × 600 CSS px;
+- abrir a home diretamente em telas menores, com movimento reduzido ou quando a reprodução falhar;
 - preservar impacto visual sem comprometer navegação.
+
+`DailyVideoIntro.astro` cobre visualmente a home enquanto o vídeo toca; os posts continuam em SSR por baixo e são revelados ao terminar ou ao pular a abertura. O MP4 só recebe `src` quando a abertura está elegível, e o arquivo versionado é armazenado em cache por um ano.
 
 ### Categorias
 
@@ -95,7 +99,8 @@ Formulário de inscrição com honeypot e consentimento LGPD. O backend do dashb
 | `PostCard.astro` | Card de post com autor, progresso de leitura, ações sociais e excerpt |
 | `SocialIcon.astro` | Ícone de rede social como botão circular estilizado |
 | `Navbar.astro` | Navegação principal com tema |
-| `BlackHole.astro` | Animação canvas do buraco negro na home |
+| `BlackHole.astro` | Animação canvas contínua do buraco negro na home |
+| `DailyVideoIntro.astro` | Abertura diária em vídeo, com controle para pular e fallback de reprodução |
 | `StarBackground.astro` | Fundo estrelado animado |
 | `CategoriaPage.astro` | Layout de listagem por categoria |
 | `Newsletter.astro` | Formulário de newsletter reutilizável |

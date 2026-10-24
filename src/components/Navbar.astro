@@ -18,12 +18,20 @@ const isHomePage = Astro.url.pathname === '/';
   const navSignal = navAbort.signal;
 
   // ── Navbar visibility ────────────────────────────────────────────
-  // On the home page (/), the BlackHole animation fires 'animationComplete'
-  // to reveal the navbar. On every other page we show it immediately.
+  // The daily home presentation fires 'dailyIntroComplete' to reveal the navbar.
+  // On every other page we show it immediately.
   const INTRO_KEY = 'intro_last_shown';
-  const TODAY     = new Date().toISOString().slice(0, 10);
+  const now       = new Date();
+  const TODAY     = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const navbar    = document.querySelector('.navbar') as HTMLElement | null;
   const logoLink  = document.getElementById('nav-logo-link') as HTMLAnchorElement | null;
+  let introSeenToday = false;
+
+  try {
+    introSeenToday = localStorage.getItem(INTRO_KEY) === TODAY;
+  } catch {
+    // The intro component will reveal the site directly when storage is unavailable.
+  }
 
   function showNavbar() {
     navbar?.classList.add('is-visible');
@@ -38,10 +46,10 @@ const isHomePage = Astro.url.pathname === '/';
   window.addEventListener('scroll', syncScrolledNavbar, { passive: true, signal: navSignal });
 
   const isHome = window.location.pathname === '/' || window.location.pathname === '';
-  if (!isHome || localStorage.getItem(INTRO_KEY) === TODAY) {
+  if (!isHome || introSeenToday) {
     showNavbar();
   } else {
-    window.addEventListener('animationComplete', showNavbar, { once: true, signal: navSignal });
+    window.addEventListener('dailyIntroComplete', showNavbar, { once: true, signal: navSignal });
   }
 
   // ── Dropdowns ────────────────────────────────────────────────────
