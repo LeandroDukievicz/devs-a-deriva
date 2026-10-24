@@ -1,3 +1,8 @@
+---
+import introVideoUrl from '../assets/astronaut-intro-v1.mp4';
+import introPosterUrl from '../assets/astronaut-intro-poster-v1.webp';
+---
+
 <div
   id="daily-video-intro"
   role="dialog"
@@ -5,7 +10,7 @@
   aria-label="Apresentação do Devs à Deriva"
   aria-describedby="daily-intro-status"
 >
-  <img class="daily-intro__backdrop" data-intro-poster alt="" aria-hidden="true" />
+  <img class="daily-intro__backdrop" data-intro-poster data-intro-poster-src={introPosterUrl} alt="" aria-hidden="true" />
   <div class="daily-intro__scrim" aria-hidden="true"></div>
   <video
     id="daily-intro-video"
@@ -13,6 +18,7 @@
     muted
     playsinline
     preload="none"
+    data-intro-video-src={introVideoUrl}
     aria-hidden="true"
     tabindex="-1"
   ></video>
@@ -171,8 +177,6 @@
 const INTRO_KEY = 'intro_last_shown';
 const now = new Date();
 const TODAY = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-const VIDEO_URL = '/astronaut-intro-v1.mp4';
-const POSTER_URL = '/astronaut-intro-poster-v1.webp';
 
 const root = document.documentElement;
 const overlay = document.getElementById('daily-video-intro') as HTMLElement;
@@ -183,6 +187,8 @@ const playButton = overlay.querySelector('[data-intro-play]') as HTMLButtonEleme
 const poster = overlay.querySelector('[data-intro-poster]') as HTMLImageElement;
 const progress = overlay.querySelector('[data-intro-progress]') as HTMLElement;
 const progressBar = overlay.querySelector('[role="progressbar"]') as HTMLElement;
+const VIDEO_URL = video.dataset.introVideoSrc ?? '';
+const POSTER_URL = poster.dataset.introPosterSrc ?? '';
 const largeScreen = window.matchMedia('(min-width: 600px) and (min-height: 600px)');
 const interactionAbort = new AbortController();
 

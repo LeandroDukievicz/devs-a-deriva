@@ -192,7 +192,10 @@ test('primeira visita mostra a abertura em vídeo e permite entrar na home', asy
   const page = await context.newPage();
   const introVideoRequests: string[] = [];
   page.on('request', request => {
-    if (request.url().includes('/astronaut-intro-v1.mp4')) introVideoRequests.push(request.url());
+    const url = new URL(request.url());
+    if (url.pathname.includes('astronaut-intro-v1') && url.pathname.endsWith('.mp4')) {
+      introVideoRequests.push(request.url());
+    }
   });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 

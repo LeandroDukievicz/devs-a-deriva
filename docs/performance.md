@@ -83,6 +83,7 @@ Evitar:
 A abertura diária da home usa o MP4 versionado de 1080p apenas em telas com pelo menos 600 × 600 CSS px. Telas menores e usuários com movimento reduzido seguem direto para o conteúdo. O HTML SSR dos posts permanece pronto atrás da abertura; o vídeo não bloqueia a resposta nem a indexação da home.
 
 - Só atribuir `src` ao vídeo quando a abertura for exibida; não solicitar MP4 nem pôster em visitas elegíveis para skip.
+- Importar vídeo e pôster por `src/assets` para gerar URLs com hash; os adaptadores servem esses arquivos com cache imutável de um ano, evitando baixar novamente a apresentação em cada dia de visita.
 - Exibir o MP4 em `object-fit: contain` para preservar o título e o enquadramento em telas verticais; usar um pôster leve como fundo decorativo.
 - Manter botão de pular visível durante o carregamento e a reprodução; erro de mídia deve liberar a home.
 - Usar `muted` e `playsinline`, respeitar `prefers-reduced-motion` e não iniciar áudio.
