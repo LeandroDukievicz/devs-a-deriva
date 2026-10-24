@@ -190,7 +190,22 @@ test('paginação e leitura continuam disponíveis sem JavaScript', async ({ bro
 test('primeira visita mostra a abertura em vídeo e permite entrar na home', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ baseURL, reducedMotion: 'no-preference' });
   const page = await context.newPage();
+  const introVideoRequests: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('/astronaut-intro-v1.mp4')) introVideoRequests.push(request.url());
+  });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  const viewport = page.viewportSize();
+  if (viewport && (viewport.width < 600 || viewport.height < 600)) {
+    await expect(page.locator('#daily-video-intro')).not.toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
+    await expect(page.locator('.post-card-link').first()).toBeVisible();
+    expect(introVideoRequests).toHaveLength(0);
+    await context.close();
+    return;
+  }
+
   await expect(page.locator('#daily-video-intro')).toBeVisible({ timeout: 3000 });
   await expect(page.locator('html')).toHaveAttribute('data-daily-intro-ready', 'true');
   await expect(page.locator('#main-content')).not.toBeVisible();
