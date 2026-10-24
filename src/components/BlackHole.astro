@@ -1,7 +1,4 @@
 ---
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
-
 interface Props {
   /** Posição X do buraco negro como fração da largura da tela (0–1). Padrão: 0.94 */
   bhX?: number;
@@ -13,294 +10,52 @@ interface Props {
 
 const { bhX = 0.94, bhY = 0.08, bhScale = 1.0 } = Astro.props;
 
-const svgRaw = readFileSync(resolve('./public/astronauts.svg'), 'utf-8');
-const svgInline = svgRaw
-  .replace(/<\?xml[^?]*\?>\s*/g, '')
-  .replace(/fill="#000000"/g, 'fill="currentColor"')
-  .replace(/width="[^"]*"/, 'width="324"')
-  .replace(/height="[^"]*"/, 'height="324"');
-
-// Versão com fill branco para uso no canvas (permite colorização via source-atop)
-const svgForCanvas = Buffer.from(
-  svgRaw
-    .replace(/<\?xml[^?]*\?>\s*/g, '')
-    .replace(/fill="#000000"/g, 'fill="white"')
-    .replace(/width="[^"]*"/, 'width="324"')
-    .replace(/height="[^"]*"/, 'height="324"')
-).toString('base64');
-
 ---
 
-<div id="bh-container" class="relative w-full h-screen overflow-hidden" style="background:var(--color-bg);" data-bh-x={bhX} data-bh-y={bhY} data-bh-scale={bhScale}>
-  <canvas id="c" class="block w-full h-full" data-astro-svg={`data:image/svg+xml;base64,${svgForCanvas}`}></canvas>
-  <div id="hero" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none select-none" style="gap: 20px;">
-    <div
-      class="astronaut"
-      style="width: 324px; height: 324px;"
-      set:html={svgInline}
-    />
-  </div>
+<div
+  id="bh-container"
+  class="relative w-full h-screen overflow-hidden"
+  style="background:var(--color-bg);"
+  data-bh-x={bhX}
+  data-bh-y={bhY}
+  data-bh-scale={bhScale}
+>
+  <canvas id="c" class="block w-full h-full" aria-hidden="true"></canvas>
 </div>
 
-<style>
-  :global(#bh-container) {
-    --intro-star: #00d4e8;
-    --intro-accent: #e800d4;
-  }
-
-  :global(.astronaut) {
-    color: var(--intro-star);
-    -webkit-text-fill-color: var(--intro-star);
-    animation: levitate 3.5s ease-in-out infinite;
-  }
-
-  :global(.astronaut svg) {
-    width: 324px;
-    height: 324px;
-  }
-
-  :global(.astronaut svg),
-  :global(.astronaut svg *) {
-    fill: var(--intro-star);
-  }
-
-  @keyframes levitate {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-18px); }
-  }
-
-  @media (max-width: 768px) {
-    :global(.astronaut) {
-      color: var(--intro-star);
-      -webkit-text-fill-color: var(--intro-star);
-      animation: levitate 3.5s ease-in-out infinite;
-    }
-
-    :global(.astronaut svg),
-    :global(.astronaut svg *) {
-      fill: var(--intro-star);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    :global(.astronaut) {
-      animation: none;
-    }
-  }
-
-</style>
-
 <script>
-const INTRO_KEY  = 'intro_last_shown';
-const TODAY      = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-const skipIntro  = localStorage.getItem(INTRO_KEY) === TODAY;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-// Cores fixas da intro. Não dependem dos tokens globais para evitar herança branca no mobile.
-const _css      = getComputedStyle(document.documentElement);
-const _introCss = getComputedStyle(document.getElementById('bh-container') as HTMLElement);
-const COLOR_STAR   = _introCss.getPropertyValue('--intro-star').trim()   || '#00d4e8';
-const COLOR_ACCENT = _introCss.getPropertyValue('--intro-accent').trim() || '#e800d4';
-const COLOR_BG     = _css.getPropertyValue('--color-bg').trim()     || '#020b18';
+const COLOR_BG = getComputedStyle(document.documentElement)
+  .getPropertyValue('--color-bg').trim() || '#020b18';
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
-let W: number, H: number, BH: { x: number; y: number }, RAF: number;
+let W: number, H: number, BH: { x: number; y: number }, RAF = 0;
+let running = false;
 
 const CFG = {
-  bhRadius:      0,
-  diskTilt:     -0.22,
-  lineCount:     320,
+  bhRadius: 0,
+  diskTilt: -0.22,
+  lineCount: 320,
   particleCount: 38,
-  speed:         0.0012,
-  trailLen:      420,
-  ringWidth:     0,
+  speed: 0.0012,
+  trailLen: 420,
+  ringWidth: 0,
 };
 
 let lines: any[] = [];
 let particles: any[] = [];
 let t = 0;
 
-
-const TEXT  = 'Devs à deriva';
-const CHARS = TEXT.split('');
-let glyphs: any[]  = [];
-let textTimer = 0;
-
-const T_FADEIN       = 35;
-const T_IDLE         = 40;
-const T_PULL         = 105;
-const T_STAGGER      = 6;
-const T_RESET        = 25;
-const ASTRO_PULL_DUR = 125;
-
-function totalCycle() {
-  return T_FADEIN + T_IDLE + T_PULL + (CHARS.length * T_STAGGER) + 5 + ASTRO_PULL_DUR + T_RESET;
-}
-
-function initGlyphs() {
-  glyphs = [];
-  const fontSize = Math.min(W, H) * 0.068;
-  ctx.save();
-  ctx.font = `300 ${fontSize}px monospace`;
-
-  // mede largura total do texto para centralizar
-  let totalW = 0;
-  for (const ch of CHARS) totalW += ctx.measureText(ch).width;
-
-  const imgH = 324;
-  const heroH = imgH + 20 + fontSize;
-  const heroTop = H / 2 - heroH / 2;
-  const startX = W / 2 - totalW / 2;
-  const startY = heroTop + imgH + 20 + fontSize * 0.5;
-  let cx = startX;
-  for (let i = 0; i < CHARS.length; i++) {
-    const ch = CHARS[i];
-    const cw = ctx.measureText(ch).width;
-    const ox = cx + cw * 0.5;
-    glyphs.push({
-      ch, ox, oy: startY,
-      x: ox, y: startY,
-      scaleX: 1, scaleY: 1,
-      skewX: 0, skewY: 0,
-      opacity: 0,
-      fontSize,
-      pullStart: T_FADEIN + T_IDLE + i * T_STAGGER,
-    });
-    cx += cw;
-  }
-  ctx.restore();
-  textTimer = 0;
-
-  const hero = document.getElementById('hero') as HTMLElement;
-  if (hero) hero.style.opacity = '1';
-}
-
-function easeInCubic(x: number)  { return x * x * x; }
-function easeInQuint(x: number)  { return x * x * x * x * x; }
-
-function hexToRgb(hex: string) {
-  const value = hex.replace('#', '');
-  return {
-    r: parseInt(value.slice(0, 2), 16),
-    g: parseInt(value.slice(2, 4), 16),
-    b: parseInt(value.slice(4, 6), 16),
-  };
-}
-
-const INTRO_STAR_RGB = hexToRgb(COLOR_STAR);
-const INTRO_ACCENT_RGB = hexToRgb(COLOR_ACCENT);
-
-function introColorAtTimer() {
-  const colorFrac = (Math.sin(textTimer * Math.PI / 180) + 1) / 2;
-  const r = Math.round(INTRO_STAR_RGB.r + (INTRO_ACCENT_RGB.r - INTRO_STAR_RGB.r) * colorFrac);
-  const g = Math.round(INTRO_STAR_RGB.g + (INTRO_ACCENT_RGB.g - INTRO_STAR_RGB.g) * colorFrac);
-  const b = Math.round(INTRO_STAR_RGB.b + (INTRO_ACCENT_RGB.b - INTRO_STAR_RGB.b) * colorFrac);
-  return `rgb(${r},${g},${b})`;
-}
-
-function showLogo() {
-  localStorage.setItem(INTRO_KEY, TODAY);
-  window.dispatchEvent(new CustomEvent('animationComplete'));
-}
-
-let animationDone = false;
-
-function updateGlyphs() {
-  if (animationDone) return;
-  textTimer++;
-
-  if (textTimer >= totalCycle()) {
-    animationDone = true;
-    showLogo();
-    glyphs = [];
-    const hero = document.getElementById('hero') as HTMLElement;
-    if (hero) hero.style.display = 'none';
-    return;
-  }
-
-  for (let i = 0; i < glyphs.length; i++) {
-    const g = glyphs[i];
-
-    if (textTimer <= T_FADEIN) {
-      g.opacity = textTimer / T_FADEIN;
-      g.x = g.ox; g.y = g.oy;
-      g.scaleX = 1; g.scaleY = 1; g.skewX = 0; g.skewY = 0;
-      continue;
-    }
-
-    const sinceIdle = textTimer - T_FADEIN;
-    if (sinceIdle < T_IDLE) {
-      const wave = Math.sin(t * 55 + i * 0.62) * 1.4;
-      g.x = g.ox + wave;
-      g.y = g.oy + Math.cos(t * 38 + i * 0.8) * 1.8;
-      g.opacity = 1;
-      g.scaleX = 1; g.scaleY = 1; g.skewX = 0; g.skewY = 0;
-      continue;
-    }
-
-    const sincePull = textTimer - g.pullStart;
-    if (sincePull < 0) {
-      const wave = Math.sin(t * 55 + i * 0.62) * 1.4;
-      g.x = g.ox + wave;
-      g.y = g.oy + Math.cos(t * 38 + i * 0.8) * 1.8;
-      g.opacity = 1;
-      g.scaleX = 1; g.scaleY = 1; g.skewX = 0; g.skewY = 0;
-      continue;
-    }
-
-    const p = Math.min(1, sincePull / T_PULL);
-
-    const dx  = BH.x - g.ox;
-    const dy  = BH.y - g.oy;
-    const len = Math.sqrt(dx * dx + dy * dy);
-    const nx  = dx / len;
-    const ny  = dy / len;
-
-    const movePow = easeInQuint(p);
-    g.x = g.ox + dx * movePow * 0.92;
-    g.y = g.oy + dy * movePow * 0.92;
-
-    const stretchP = Math.max(0, (p - 0.3) / 0.7);
-    const stretch  = 1 + easeInCubic(stretchP) * 9.0;
-    const squish   = Math.max(0.02, 1 - easeInCubic(stretchP) * 0.97);
-
-    g.scaleX = squish + Math.abs(nx) * (stretch - squish);
-    g.scaleY = squish + Math.abs(ny) * (stretch - squish);
-
-    const skewMag = easeInCubic(Math.max(0, (p - 0.25) / 0.75)) * 1.1;
-    g.skewX = nx * ny * skewMag;
-    g.skewY = 0;
-
-    g.opacity = Math.max(0, 1 - easeInQuint(Math.max(0, (p - 0.55) / 0.45)));
-  }
-}
-
-function drawGlyphs() {
-  for (const g of glyphs) {
-    if (g.opacity <= 0.005) continue;
-    ctx.save();
-    ctx.globalAlpha = g.opacity;
-    ctx.translate(g.x, g.y);
-    ctx.transform(g.scaleX, g.skewY, g.skewX, g.scaleY, 0, 0);
-    ctx.font = `300 ${g.fontSize}px monospace`;
-    ctx.fillStyle = COLOR_STAR;
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(g.ch, 0, 0);
-    ctx.restore();
-  }
-}
-
 function resize() {
-  W = canvas.width  = window.innerWidth;
+  W = canvas.width = window.innerWidth;
   H = canvas.height = window.innerHeight;
-  const container  = document.getElementById('bh-container') as HTMLElement;
-  const fracX  = parseFloat(container?.dataset.bhX     ?? '0.94');
-  const fracY  = parseFloat(container?.dataset.bhY     ?? '0.08');
-  const scale  = parseFloat(container?.dataset.bhScale ?? '1.0');
-  CFG.bhRadius  = Math.min(W, H) * 0.22 * scale;
+  const container = document.getElementById('bh-container') as HTMLElement;
+  const fracX = parseFloat(container?.dataset.bhX ?? '0.94');
+  const fracY = parseFloat(container?.dataset.bhY ?? '0.08');
+  const scale = parseFloat(container?.dataset.bhScale ?? '1.0');
+  CFG.bhRadius = Math.min(W, H) * 0.22 * scale;
   CFG.ringWidth = Math.min(W, H) * 0.012 * scale;
   BH = { x: W * fracX, y: H * fracY };
   init();
@@ -313,51 +68,48 @@ function bhDist(x: number, y: number) {
 function field(x: number, y: number, time: number) {
   const dx = x - BH.x;
   const dy = y - BH.y;
-  const r  = Math.sqrt(dx * dx + dy * dy);
+  const r = Math.sqrt(dx * dx + dy * dy);
   if (r < 2) return { vx: 0, vy: 0 };
 
   const strength = CFG.bhRadius * CFG.bhRadius / (r * r + 0.01);
   const orb = strength * 1.4;
-  const vx_orb =  dy / r * orb;
-  const vy_orb = -dx / r * orb;
+  const vxOrb = dy / r * orb;
+  const vyOrb = -dx / r * orb;
 
-  const diskNx =  Math.cos(CFG.diskTilt + Math.PI / 2);
-  const diskNy =  Math.sin(CFG.diskTilt + Math.PI / 2);
-  const perp   = dx * diskNx + dy * diskNy;
+  const diskNx = Math.cos(CFG.diskTilt + Math.PI / 2);
+  const diskNy = Math.sin(CFG.diskTilt + Math.PI / 2);
+  const perp = dx * diskNx + dy * diskNy;
   const infallScale = Math.exp(-perp * perp / (CFG.bhRadius * CFG.bhRadius * 0.25));
   const infall = -strength * 0.8 * infallScale;
-  const vx_inf = dx / r * infall;
-  const vy_inf = dy / r * infall;
+  const vxInfall = dx / r * infall;
+  const vyInfall = dy / r * infall;
 
   const wave = Math.sin(r * 0.012 - time * 2.8) * 0.12 * infallScale;
-  const wvx  = -dy / r * wave;
-  const wvy  =  dx / r * wave;
+  const waveX = -dy / r * wave;
+  const waveY = dx / r * wave;
 
   return {
-    vx: vx_orb + vx_inf + wvx,
-    vy: vy_orb + vy_inf + wvy,
+    vx: vxOrb + vxInfall + waveX,
+    vy: vyOrb + vyInfall + waveY,
   };
 }
 
 function spawnLine(index: number) {
-  const frac   = index / CFG.lineCount;
+  const frac = index / CFG.lineCount;
   const spread = CFG.bhRadius * 3.2;
-
   const diskDx = Math.cos(CFG.diskTilt);
   const diskDy = Math.sin(CFG.diskTilt);
   const perpDx = -diskDy;
-  const perpDy =  diskDx;
-
-  const along  = (frac - 0.5) * spread * 2.6;
-  const perp   = (Math.random() - 0.5) * CFG.bhRadius * 0.55;
+  const perpDy = diskDx;
+  const along = (frac - 0.5) * spread * 2.6;
+  const perp = (Math.random() - 0.5) * CFG.bhRadius * 0.55;
   const startR = CFG.bhRadius * (1.1 + Math.random() * 2.8);
-
   const x0 = BH.x + diskDx * along - diskDx * startR * 0.5 + perpDx * perp;
   const y0 = BH.y + diskDy * along - diskDy * startR * 0.5 + perpDy * perp;
 
   return {
-    x: x0, y: y0,
-    ox: x0, oy: y0,
+    x: x0,
+    y: y0,
     history: [] as { x: number; y: number }[],
     age: 0,
     maxAge: CFG.trailLen + Math.floor(Math.random() * 324),
@@ -383,127 +135,18 @@ function spawnParticle() {
 }
 
 function init() {
-  lines     = [];
+  lines = [];
   particles = [];
   for (let i = 0; i < CFG.lineCount; i++) {
-    const l = spawnLine(i);
-    l.age = Math.floor(Math.random() * l.maxAge);
-    lines.push(l);
+    const line = spawnLine(i);
+    line.age = Math.floor(Math.random() * line.maxAge);
+    lines.push(line);
   }
   for (let i = 0; i < CFG.particleCount; i++) {
-    const p = spawnParticle();
-    p.age = Math.floor(Math.random() * p.maxAge);
-    particles.push(p);
+    const particle = spawnParticle();
+    particle.age = Math.floor(Math.random() * particle.maxAge);
+    particles.push(particle);
   }
-  initGlyphs();
-}
-
-// ─── Astronaut spaghettification (slice-based) ────────────
-const ASTRO_PULL_START = T_FADEIN + T_IDLE + T_PULL + CHARS.length * T_STAGGER + 5;
-const ASTRO_IMG_SIZE   = 324;
-const ASTRO_SLICES     = 120;
-
-// Offscreen canvas com fill branco para colorização via source-atop
-const astroOffscreen = document.createElement('canvas');
-astroOffscreen.width  = ASTRO_IMG_SIZE;
-astroOffscreen.height = ASTRO_IMG_SIZE;
-const astroOCtx  = astroOffscreen.getContext('2d')!;
-const astroImg   = new Image();
-astroImg.src     = canvas.dataset.astroSvg!;
-let   astroReady = false;
-astroImg.onload  = () => {
-  astroOCtx.drawImage(astroImg, 0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
-  astroReady = true;
-};
-
-function getAstroCenter() {
-  const fontSize = Math.min(W, H) * 0.068;
-  const heroH    = ASTRO_IMG_SIZE + 20 + fontSize;
-  return {
-    x: W / 2,
-    y: H / 2 - heroH / 2 + ASTRO_IMG_SIZE / 2,
-  };
-}
-
-function applyColorToOffscreen() {
-  // Atualiza o offscreen com a cor ciclada — source-atop no offscreen (fundo transparente)
-  // não contamina o canvas principal
-  astroOCtx.clearRect(0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
-  astroOCtx.drawImage(astroImg, 0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
-  astroOCtx.globalCompositeOperation = 'source-atop';
-  astroOCtx.fillStyle = introColorAtTimer();
-  astroOCtx.fillRect(0, 0, ASTRO_IMG_SIZE, ASTRO_IMG_SIZE);
-  astroOCtx.globalCompositeOperation = 'source-over';
-}
-
-function drawAstroSpaghetti(p: number) {
-  if (!astroReady) return;
-
-  applyColorToOffscreen();
-
-  const { x: cx, y: cy } = getAstroCenter();
-  const dx  = BH.x - cx;
-  const dy  = BH.y - cy;
-  const len = Math.sqrt(dx * dx + dy * dy);
-  const ny  = dy / len;
-
-  // Fade global — garante que TUDO desaparece ao fim
-  const globalFade = Math.max(0, 1 - easeInQuint(Math.max(0, (p - 0.78) / 0.22)));
-
-  const sliceH = ASTRO_IMG_SIZE / ASTRO_SLICES;
-
-  for (let i = 0; i < ASTRO_SLICES; i++) {
-    const sliceFrac   = i / ASTRO_SLICES;
-    const sliceWorldY = cy - ASTRO_IMG_SIZE / 2 + sliceH * (i + 0.5);
-    const proj        = ((sliceWorldY - cy) * ny) / (ASTRO_IMG_SIZE / 2);
-    const pullFactor  = (proj + 1) / 2;
-
-    const sliceP   = Math.min(1, p * (0.2 + pullFactor * 1.6));
-    const moveX    = dx * easeInQuint(sliceP);
-    const moveY    = dy * easeInQuint(sliceP);
-
-    const stretchP = Math.max(0, (sliceP - 0.25) / 0.75);
-    const squish   = Math.max(0.01, 1 - easeInCubic(stretchP) * 0.98);
-    const opacity  = Math.max(0, 1 - easeInQuint(Math.max(0, (sliceP - 0.55) / 0.45))) * globalFade;
-
-    if (opacity < 0.005) continue;
-
-    const destX = cx - ASTRO_IMG_SIZE / 2 + moveX;
-    const destY = cy - ASTRO_IMG_SIZE / 2 + sliceH * i + moveY;
-
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.translate(destX + ASTRO_IMG_SIZE / 2, destY + sliceH / 2);
-    ctx.scale(squish, 1);
-    ctx.drawImage(
-      astroOffscreen,
-      0, sliceFrac * ASTRO_IMG_SIZE, ASTRO_IMG_SIZE, sliceH,
-      -ASTRO_IMG_SIZE / 2, -sliceH / 2, ASTRO_IMG_SIZE, sliceH
-    );
-    ctx.restore();
-  }
-}
-
-function updateAstronaut() {
-  const hero = document.getElementById('hero') as HTMLElement;
-  if (!hero) return;
-  const astronaut = hero.querySelector('.astronaut') as HTMLElement | null;
-  const color = introColorAtTimer();
-  if (astronaut) {
-    astronaut.style.color = color;
-    astronaut.style.webkitTextFillColor = color;
-    astronaut.querySelectorAll<SVGElement>('svg, svg *').forEach((node) => {
-      node.style.fill = color;
-    });
-  }
-
-  if (textTimer < ASTRO_PULL_START) {
-    hero.style.opacity = '1';
-    return;
-  }
-
-  // Esconde o HTML e deixa o canvas assumir
-  hero.style.opacity = '0';
 }
 
 function update() {
@@ -512,18 +155,15 @@ function update() {
   for (const line of lines) {
     if (!line.alive) continue;
     line.age++;
-
     const { vx, vy } = field(line.x, line.y, t + line.phase);
     line.history.push({ x: line.x, y: line.y });
     if (line.history.length > 60) line.history.shift();
-
     line.x += vx;
     line.y += vy;
 
     const dist = bhDist(line.x, line.y);
-    const oob  = line.x < -50 || line.x > W + 50 || line.y < -50 || line.y > H + 50;
-
-    if (dist < CFG.bhRadius * 0.98 || oob || line.age > line.maxAge) {
+    const outOfBounds = line.x < -50 || line.x > W + 50 || line.y < -50 || line.y > H + 50;
+    if (dist < CFG.bhRadius * 0.98 || outOfBounds || line.age > line.maxAge) {
       line.alive = false;
     }
   }
@@ -532,21 +172,18 @@ function update() {
     if (!lines[i].alive) lines[i] = spawnLine(i);
   }
 
-  for (const p of particles) {
-    if (!p.alive) continue;
-    p.age++;
-    const { vx, vy } = field(p.x, p.y, t);
-    p.x += vx * 0.6;
-    p.y += vy * 0.6;
-    const dist = bhDist(p.x, p.y);
-    if (dist < CFG.bhRadius * 0.84 || p.age > p.maxAge) p.alive = false;
+  for (const particle of particles) {
+    if (!particle.alive) continue;
+    particle.age++;
+    const { vx, vy } = field(particle.x, particle.y, t);
+    particle.x += vx * 0.6;
+    particle.y += vy * 0.6;
+    const dist = bhDist(particle.x, particle.y);
+    if (dist < CFG.bhRadius * 0.84 || particle.age > particle.maxAge) particle.alive = false;
   }
   for (let i = 0; i < particles.length; i++) {
     if (!particles[i].alive) particles[i] = spawnParticle();
   }
-
-  updateGlyphs();
-  updateAstronaut();
 }
 
 function draw() {
@@ -561,75 +198,70 @@ function draw() {
 
   for (const line of lines) {
     if (!line.alive || line.history.length < 2) continue;
-
-    const hist = line.history;
-    const len  = hist.length;
-
+    const history = line.history;
     ctx.beginPath();
-    ctx.moveTo(hist[0].x, hist[0].y);
-    for (let i = 1; i < len; i++) {
-      ctx.lineTo(hist[i].x, hist[i].y);
-    }
+    ctx.moveTo(history[0].x, history[0].y);
+    for (let i = 1; i < history.length; i++) ctx.lineTo(history[i].x, history[i].y);
     ctx.lineTo(line.x, line.y);
 
     const distHead = bhDist(line.x, line.y);
     const proximity = Math.max(0, Math.min(1, 1 - (distHead - CFG.bhRadius) / (CFG.bhRadius * 1.5)));
     const alpha = line.opacity * (0.5 + proximity * 0.5);
-
     ctx.strokeStyle = `rgba(0,${Math.round(190 + proximity * 55)},${Math.round(210 + proximity * 40)},${alpha})`;
-    ctx.lineWidth   = line.weight * (0.7 + proximity * 0.6);
-    ctx.lineCap     = 'round';
-    ctx.lineJoin    = 'round';
+    ctx.lineWidth = line.weight * (0.7 + proximity * 0.6);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.stroke();
   }
 
-  for (const p of particles) {
-    if (!p.alive) continue;
-    const dist = bhDist(p.x, p.y);
+  for (const particle of particles) {
+    if (!particle.alive) continue;
+    const dist = bhDist(particle.x, particle.y);
     const fade = Math.min(1, (dist - CFG.bhRadius * 0.9) / (CFG.bhRadius * 0.3));
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(0,210,240,${p.opacity * fade})`;
+    ctx.arc(particle.x, particle.y, particle.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,210,240,${particle.opacity * fade})`;
     ctx.fill();
   }
 
   ctx.restore();
-
-  if (!animationDone) {
-    drawGlyphs();
-
-    if (textTimer >= ASTRO_PULL_START) {
-      const p = Math.min(1, (textTimer - ASTRO_PULL_START) / ASTRO_PULL_DUR);
-      drawAstroSpaghetti(p);
-    }
-  }
 }
 
 function loop() {
+  if (document.visibilityState === 'hidden') {
+    running = false;
+    return;
+  }
   update();
   draw();
   RAF = requestAnimationFrame(loop);
 }
 
-window.addEventListener('resize', () => {
+function startLoop() {
+  if (reduceMotion || running || document.visibilityState === 'hidden') return;
+  running = true;
+  RAF = requestAnimationFrame(loop);
+}
+
+function stopLoop() {
+  if (!running) return;
   cancelAnimationFrame(RAF);
-  resize();
-  if (!reduceMotion) loop();
-});
+  running = false;
+}
 
 resize();
+draw();
+startLoop();
 
-function completeIntroImmediately() {
-  animationDone = true;
-  const hero = document.getElementById('hero') as HTMLElement;
-  if (hero) hero.style.display = 'none';
-  showLogo();
-}
+window.addEventListener('resize', () => {
+  stopLoop();
+  resize();
+  draw();
+  startLoop();
+});
 
-if (skipIntro || reduceMotion) {
-  completeIntroImmediately();
-}
-if (!reduceMotion) {
-  loop();
-}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') stopLoop();
+  else startLoop();
+});
 </script>

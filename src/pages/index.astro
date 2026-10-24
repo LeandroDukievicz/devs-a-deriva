@@ -3,6 +3,7 @@ export const prerender = false;
 
 import PageLayout from '../layouts/PageLayout.astro';
 import BlackHole from '../components/BlackHole.astro';
+import DailyVideoIntro from '../components/DailyVideoIntro.astro';
 import PostCarousel from '../components/PostCarousel.astro';
 import PostFeed from '../components/PostFeed.astro';
 import { HOME_POSTS_PER_PAGE } from '../lib/post-listing';
@@ -15,9 +16,11 @@ const totalPages = Math.max(1, Math.ceil(posts.length / HOME_POSTS_PER_PAGE));
 <PageLayout title="Devs à Deriva">
   <Fragment slot="head">
     {totalPages > 1 && <link rel="next" href="https://devsaderiva.com.br/page/2/" />}
+    <script is:inline src="/daily-intro-bootstrap.js"></script>
   </Fragment>
   <BlackHole />
-  <main id="main-content" class="page-overlay">
+  <DailyVideoIntro />
+  <main id="main-content" class="page-overlay" tabindex="-1">
     <div id="home-content" class="home-content">
       <PostCarousel posts={posts} />
       <PostFeed posts={posts.slice(0, HOME_POSTS_PER_PAGE)} totalPages={totalPages} />

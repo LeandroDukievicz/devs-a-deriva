@@ -1,0 +1,302 @@
+<div
+  id="daily-video-intro"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Apresentação do Devs à Deriva"
+  aria-describedby="daily-intro-status"
+>
+  <img class="daily-intro__backdrop" data-intro-poster alt="" aria-hidden="true" />
+  <div class="daily-intro__scrim" aria-hidden="true"></div>
+  <video
+    id="daily-intro-video"
+    class="daily-intro__video"
+    muted
+    playsinline
+    preload="none"
+    aria-hidden="true"
+    tabindex="-1"
+  ></video>
+
+  <div class="daily-intro__controls">
+    <p id="daily-intro-status" role="status" aria-live="polite">Preparando a apresentação…</p>
+    <div class="daily-intro__progress" role="progressbar" aria-label="Progresso da apresentação" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span data-intro-progress></span>
+    </div>
+    <div class="daily-intro__actions">
+      <button type="button" data-intro-play hidden>Reproduzir apresentação</button>
+      <button type="button" data-intro-skip>Pular abertura</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  #daily-video-intro {
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    display: none;
+    place-items: center;
+    overflow: hidden;
+    background: #020b18;
+    color: #f4f8ff;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 280ms ease, visibility 280ms ease;
+  }
+
+  :global(html[data-daily-intro='pending']) #daily-video-intro,
+  #daily-video-intro.is-closing {
+    display: grid;
+  }
+
+  :global(html[data-daily-intro='pending'] body > :not(#daily-video-intro)) {
+    visibility: hidden;
+  }
+
+  :global(html[data-daily-intro='pending']) #daily-video-intro {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #daily-video-intro.is-closing {
+    opacity: 0;
+    visibility: visible;
+    pointer-events: none;
+  }
+
+  .daily-intro__backdrop,
+  .daily-intro__scrim,
+  .daily-intro__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .daily-intro__backdrop {
+    object-fit: cover;
+    filter: blur(24px) brightness(0.42);
+    transform: scale(1.08);
+  }
+
+  .daily-intro__scrim {
+    z-index: 1;
+    background: linear-gradient(180deg, rgb(2 11 24 / 0.18), transparent 40%, rgb(2 11 24 / 0.72));
+  }
+
+  .daily-intro__video {
+    z-index: 2;
+    object-fit: contain;
+  }
+
+  .daily-intro__controls {
+    position: absolute;
+    z-index: 3;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: max(20px, env(safe-area-inset-left));
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    pointer-events: none;
+    text-align: center;
+  }
+
+  #daily-intro-status {
+    margin: 0;
+    font: 500 0.85rem/1.4 system-ui, sans-serif;
+    text-shadow: 0 1px 12px #020b18;
+  }
+
+  .daily-intro__progress {
+    width: min(320px, 72vw);
+    height: 3px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.25);
+  }
+
+  .daily-intro__progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: #65e6f3;
+    transition: width 120ms linear;
+  }
+
+  .daily-intro__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    pointer-events: auto;
+  }
+
+  .daily-intro__actions button {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid rgb(255 255 255 / 0.55);
+    border-radius: 999px;
+    background: rgb(2 11 24 / 0.76);
+    color: #fff;
+    font: 600 0.9rem/1.2 system-ui, sans-serif;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .daily-intro__actions button:hover {
+    border-color: #65e6f3;
+    background: rgb(2 11 24 / 0.94);
+  }
+
+  .daily-intro__actions button:focus-visible {
+    outline: 3px solid #65e6f3;
+    outline-offset: 3px;
+  }
+
+  .daily-intro__actions button[hidden] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #daily-video-intro,
+    .daily-intro__progress span {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+const INTRO_KEY = 'intro_last_shown';
+const now = new Date();
+const TODAY = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+const VIDEO_URL = '/astronaut-intro-v1.mp4';
+const POSTER_URL = '/astronaut-intro-poster-v1.webp';
+
+const root = document.documentElement;
+const overlay = document.getElementById('daily-video-intro') as HTMLElement;
+const video = document.getElementById('daily-intro-video') as HTMLVideoElement;
+const status = document.getElementById('daily-intro-status') as HTMLElement;
+const skipButton = overlay.querySelector('[data-intro-skip]') as HTMLButtonElement;
+const playButton = overlay.querySelector('[data-intro-play]') as HTMLButtonElement;
+const poster = overlay.querySelector('[data-intro-poster]') as HTMLImageElement;
+const progress = overlay.querySelector('[data-intro-progress]') as HTMLElement;
+const progressBar = overlay.querySelector('[role="progressbar"]') as HTMLElement;
+const largeScreen = window.matchMedia('(min-width: 600px) and (min-height: 600px)');
+const interactionAbort = new AbortController();
+
+let completed = false;
+let previousOverflow = '';
+const backgroundState: Array<{ element: HTMLElement; inert: boolean; ariaHidden: string | null }> = [];
+
+function markIntroSeen() {
+  try {
+    localStorage.setItem(INTRO_KEY, TODAY);
+  } catch {
+    // A storage restriction must not prevent the site from opening.
+  }
+}
+
+function setBackgroundInert() {
+  for (const child of Array.from(document.body.children) as HTMLElement[]) {
+    if (child === overlay) continue;
+    backgroundState.push({
+      element: child,
+      inert: child.inert,
+      ariaHidden: child.getAttribute('aria-hidden'),
+    });
+    child.inert = true;
+    child.setAttribute('aria-hidden', 'true');
+  }
+
+  previousOverflow = document.documentElement.style.overflow;
+  document.documentElement.style.overflow = 'hidden';
+}
+
+function restoreBackground() {
+  for (const state of backgroundState.splice(0)) {
+    state.element.inert = state.inert;
+    if (state.ariaHidden === null) state.element.removeAttribute('aria-hidden');
+    else state.element.setAttribute('aria-hidden', state.ariaHidden);
+  }
+  document.documentElement.style.overflow = previousOverflow;
+}
+
+function completeIntro() {
+  if (completed) return;
+  completed = true;
+  interactionAbort.abort();
+  markIntroSeen();
+  root.removeAttribute('data-daily-intro-ready');
+  video.pause();
+  if (!video.ended) {
+    video.removeAttribute('src');
+    video.load();
+  }
+  overlay.classList.add('is-closing');
+  root.removeAttribute('data-daily-intro');
+
+  window.setTimeout(() => {
+    restoreBackground();
+    overlay.classList.remove('is-closing');
+    window.dispatchEvent(new CustomEvent('dailyIntroComplete'));
+    document.getElementById('main-content')?.focus({ preventScroll: true });
+  }, 300);
+}
+
+async function playIntro() {
+  try {
+    await video.play();
+    if (completed) return;
+    markIntroSeen();
+    playButton.hidden = true;
+    status.textContent = 'Apresentação em andamento.';
+  } catch {
+    if (completed) return;
+    playButton.hidden = false;
+    status.textContent = 'A reprodução automática não foi permitida. Você pode reproduzir ou pular a abertura.';
+  }
+}
+
+function updateProgress() {
+  const percent = Number.isFinite(video.duration) && video.duration > 0
+    ? Math.min(100, Math.round((video.currentTime / video.duration) * 100))
+    : 0;
+  progress.style.width = `${percent}%`;
+  progressBar.setAttribute('aria-valuenow', String(percent));
+}
+
+if (root.dataset.dailyIntro !== 'pending') {
+  markIntroSeen();
+  window.dispatchEvent(new CustomEvent('dailyIntroComplete'));
+} else {
+  root.dataset.dailyIntroReady = 'true';
+  setBackgroundInert();
+  poster.src = POSTER_URL;
+  skipButton.focus({ preventScroll: true });
+
+  skipButton.addEventListener('click', completeIntro, { once: true, signal: interactionAbort.signal });
+  playButton.addEventListener('click', () => void playIntro(), { signal: interactionAbort.signal });
+  video.addEventListener('ended', completeIntro, { once: true, signal: interactionAbort.signal });
+  video.addEventListener('error', completeIntro, { once: true, signal: interactionAbort.signal });
+  video.addEventListener('playing', () => {
+    status.textContent = 'Apresentação em andamento.';
+    playButton.hidden = true;
+  }, { signal: interactionAbort.signal });
+  video.addEventListener('waiting', () => {
+    status.textContent = 'A apresentação está carregando. Você pode pular a abertura a qualquer momento.';
+  }, { signal: interactionAbort.signal });
+  video.addEventListener('timeupdate', updateProgress, { signal: interactionAbort.signal });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') completeIntro();
+  }, { signal: interactionAbort.signal });
+  largeScreen.addEventListener('change', (event) => {
+    if (!event.matches) completeIntro();
+  }, { signal: interactionAbort.signal });
+
+  video.src = VIDEO_URL;
+  video.load();
+  void playIntro();
+}
+</script>
