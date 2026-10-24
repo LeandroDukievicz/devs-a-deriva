@@ -198,6 +198,9 @@ test('primeira visita mostra a abertura em vídeo e permite entrar na home', asy
     }
   });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const introPosterUrl = await page.locator('[data-intro-poster]').getAttribute('data-intro-poster-src');
+  expect(introPosterUrl).toContain('astronaut-intro-poster-v1');
+  expect(introPosterUrl).toMatch(/\.webp(?:\?|$)/);
 
   const viewport = page.viewportSize();
   if (viewport && (viewport.width < 600 || viewport.height < 600)) {
