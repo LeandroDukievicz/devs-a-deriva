@@ -179,23 +179,17 @@ const { dashboardUrl, postSlug } = Astro.props;
   }
 
   .newsletter-input-wrap {
-    display: flex;
-    align-items: stretch;
-    border: 1px solid var(--color-star-40);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .newsletter-input-wrap:focus-within {
-    border-color: var(--color-star);
-    box-shadow: 0 0 14px var(--color-star-22);
+    display: grid;
+    gap: 10px;
   }
 
   .newsletter-input {
-    flex: 1;
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
     background: transparent;
-    border: none;
+    border: 1px solid var(--color-star-40);
+    border-radius: 8px;
     outline: none;
     padding: 12px 16px;
     font-family: monospace;
@@ -203,6 +197,11 @@ const { dashboardUrl, postSlug } = Astro.props;
     color: var(--color-text);
     letter-spacing: 0.04em;
     min-width: 0;
+  }
+
+  .newsletter-input:focus-visible {
+    border-color: var(--color-star);
+    box-shadow: 0 0 14px var(--color-star-22);
   }
 
   .newsletter-input::placeholder {
@@ -214,11 +213,12 @@ const { dashboardUrl, postSlug } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 44px;
     gap: 8px;
     padding: 12px 20px;
     background: var(--color-star-10);
-    border: none;
-    border-left: 1px solid var(--color-star-22);
+    border: 1px solid var(--color-star-22);
+    border-radius: 8px;
     color: var(--color-star);
     font-family: monospace;
     font-size: 0.7rem;
