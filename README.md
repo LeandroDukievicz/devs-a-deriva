@@ -44,6 +44,7 @@ A diferença está na experiência: o conteúdo não vive em um template neutro.
 - SEO completo: canonical, Open Graph, JSON-LD, sitemap.xml dinâmico, robots.txt
 - AEO/GEO: `llms.txt`, `llms-full.txt`, `/ai-index.json` e `/docs.json`
 - Healthcheck em `/health.json` com versão do commit (SSR)
+- PWA instalável na tela inicial: manifesto, ícones `maskable`, service worker com cache em runtime e página offline
 - Headers de segurança: CSP enforced com `script-src` hash-based (sem `'unsafe-inline'`), CSP report-only para hardening progressivo, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
 - Rollback automático no VPS se o smoke test pós-deploy falhar
 - Deploy dual Vercel + VPS com detecção automática de adapter
@@ -88,7 +89,7 @@ Internet → Vercel CDN
 ```txt
 devs-a-deriva/
 ├── .github/workflows/   # Pipeline CI/CD (ci.yml)
-├── public/              # Assets estáticos, llms.txt, robots.txt
+├── public/              # Assets estáticos, llms.txt, robots.txt, manifesto e service worker do PWA
 ├── src/
 │   ├── components/      # Componentes Astro reutilizáveis
 │   ├── layouts/         # Layouts base da aplicação
@@ -160,6 +161,7 @@ npm run preview
 | `npm run test:e2e` | Testes e2e Playwright (roda localmente). |
 | `npm run test:ci` | Suite completa CI (ci:check + e2e + security). |
 | `npm run lighthouse` | Lighthouse CI contra o `dist/` estático. |
+| `npm run icons:pwa` | Regera os ícones do PWA a partir de `public/helmet.svg`. |
 | `BASE_URL=https://... npm run smoke:test` | Smoke test contra ambiente publicado. |
 
 ## Variáveis de Ambiente

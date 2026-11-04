@@ -1,0 +1,359 @@
+---
+/**
+ * PwaInstall — registra o service worker e oferece a instalação do app.
+ *
+ * O convite só aparece quando o caminho está livre: nunca durante a intro
+ * diária da home, nunca junto do aviso de cookies, nunca se o app já estiver
+ * instalado ou se a pessoa já tiver dispensado. No iOS, onde o Safari não
+ * dispara `beforeinstallprompt`, o banner vira instrução em vez de botão.
+ */
+---
+
+<aside id="pwa-install" class="pwa-install" aria-label="Instalar o app Devs à Deriva" hidden>
+  <span class="pwa-install__icon" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+      <path d="M12 7v7" />
+      <path d="m9 11 3 3 3-3" />
+      <path d="M10.5 18.5h3" />
+    </svg>
+  </span>
+
+  <div class="pwa-install__body">
+    <p class="pwa-install__title">Instalar o Devs à Deriva</p>
+    <p class="pwa-install__text" id="pwa-install-text">
+      Abre direto da tela inicial e funciona mesmo sem conexão.
+    </p>
+  </div>
+
+  <button type="button" id="pwa-install-accept" class="pwa-install__cta">Instalar</button>
+
+  <button type="button" id="pwa-install-dismiss" class="pwa-install__close" aria-label="Dispensar convite de instalação">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="m6 6 12 12M18 6 6 18" />
+    </svg>
+  </button>
+</aside>
+
+<style>
+  .pwa-install {
+    position: fixed;
+    bottom: 28px;
+    left: 28px;
+    z-index: 170;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: min(420px, calc(100vw - 56px));
+    padding: 14px 16px;
+    border: 1px solid var(--color-star-22);
+    border-radius: 8px;
+    background: var(--color-bg-95);
+    box-shadow: 0 18px 45px rgb(0 0 0 / 0.42), 0 0 24px var(--color-star-08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--color-text);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .pwa-install[hidden] {
+    display: none;
+  }
+
+  .pwa-install.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .pwa-install__icon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-star);
+    filter: drop-shadow(0 0 6px var(--color-star-40));
+  }
+
+  .pwa-install__icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .pwa-install__body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .pwa-install__title {
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-star);
+  }
+
+  .pwa-install__text {
+    margin: 5px 0 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    opacity: 0.78;
+  }
+
+  .pwa-install__cta {
+    flex: 0 0 auto;
+    padding: 9px 15px;
+    border: 1px solid var(--color-star);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-star);
+    font-family: monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pwa-install__cta:hover,
+  .pwa-install__cta:focus-visible {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 14px var(--color-accent-30);
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* No iOS não existe prompt nativo: o banner vira instrução, sem botão. */
+  .pwa-install[data-mode='manual'] .pwa-install__cta {
+    display: none;
+  }
+
+  .pwa-install__close {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-text);
+    opacity: 0.55;
+    cursor: pointer;
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .pwa-install__close svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .pwa-install__close:hover,
+  .pwa-install__close:focus-visible {
+    color: var(--color-accent);
+    opacity: 1;
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Na largura do celular o texto não cabe entre o ícone e o botão:
+     o convite vira duas linhas, com o botão ocupando a segunda inteira. */
+  @media (max-width: 768px) {
+    .pwa-install {
+      right: 16px;
+      bottom: 16px;
+      left: 16px;
+      width: auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        'icon body close'
+        'cta cta cta';
+      gap: 12px;
+      align-items: center;
+    }
+
+    .pwa-install__icon {
+      grid-area: icon;
+    }
+
+    .pwa-install__body {
+      grid-area: body;
+    }
+
+    .pwa-install__close {
+      grid-area: close;
+    }
+
+    .pwa-install__cta {
+      grid-area: cta;
+      width: 100%;
+    }
+  }
+
+  /* Abaixo de 480px o atalho de admin ocupa o canto inferior esquerdo. */
+  @media (max-width: 480px) {
+    .pwa-install {
+      bottom: 68px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pwa-install {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  type InstallPromptEvent = Event & {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  };
+
+  const DISMISSED_KEY = 'dda-pwa-dismissed-v1';
+  const COOKIE_CONSENT_KEY = 'dda-cookie-consent-v1';
+  const INTRO_KEY = 'intro_last_shown';
+
+  const banner = document.getElementById('pwa-install');
+  const acceptButton = document.getElementById('pwa-install-accept');
+  const dismissButton = document.getElementById('pwa-install-dismiss');
+  const text = document.getElementById('pwa-install-text');
+
+  // ── Service worker ──────────────────────────────────────────────
+  // Só em produção: em dev o cache atrapalharia o HMR do Vite.
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+        .catch(() => {
+          // Sem service worker o site segue normal — só não fica offline.
+        });
+    });
+  }
+
+  // ── Convite de instalação ───────────────────────────────────────
+  let deferredPrompt: InstallPromptEvent | null = null;
+  let revealed = false;
+
+  function readFlag(key: string, expected: string) {
+    try {
+      return localStorage.getItem(key) === expected;
+    } catch {
+      return false;
+    }
+  }
+
+  function remember() {
+    try {
+      localStorage.setItem(DISMISSED_KEY, 'true');
+    } catch {
+      // Sem storage o convite volta na próxima visita; tudo bem.
+    }
+  }
+
+  function isInstalled() {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.matchMedia('(display-mode: minimal-ui)').matches;
+    return standalone || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  }
+
+  /** iOS só instala pelo Safari — os outros navegadores lá são WebKit sem o menu. */
+  function isIosSafari() {
+    const ua = navigator.userAgent;
+    const iosDevice = /iPad|iPhone|iPod/.test(ua)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const safari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+    return iosDevice && safari;
+  }
+
+  function hide() {
+    banner?.classList.remove('is-visible');
+    if (banner) banner.hidden = true;
+  }
+
+  function show() {
+    if (!banner || revealed || isInstalled() || readFlag(DISMISSED_KEY, 'true')) return;
+    revealed = true;
+    banner.hidden = false;
+    requestAnimationFrame(() => banner.classList.add('is-visible'));
+  }
+
+  /** Na home o convite espera a intro diária terminar, igual à navbar. */
+  function afterIntro(run: () => void) {
+    const isHome = window.location.pathname === '/' || window.location.pathname === '';
+    if (!isHome) {
+      run();
+      return;
+    }
+
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (readFlag(INTRO_KEY, today)) run();
+    else window.addEventListener('dailyIntroComplete', run, { once: true });
+  }
+
+  /** Um banner por vez: o de cookies tem prioridade. */
+  function afterCookieNotice(run: () => void) {
+    if (readFlag(COOKIE_CONSENT_KEY, 'accepted')) {
+      run();
+      return;
+    }
+
+    document
+      .getElementById('cookie-consent-accept')
+      ?.addEventListener('click', () => window.setTimeout(run, 500), { once: true });
+  }
+
+  function invite(mode: 'prompt' | 'manual') {
+    if (!banner) return;
+    banner.dataset.mode = mode;
+    if (mode === 'manual' && text) {
+      text.textContent = 'No Safari, toque em Compartilhar e depois em "Adicionar à Tela de Início".';
+    }
+    afterIntro(() => afterCookieNotice(show));
+  }
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    // Segura o prompt nativo pra oferecer na hora certa, pelo nosso botão.
+    event.preventDefault();
+    deferredPrompt = event as InstallPromptEvent;
+    invite('prompt');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    remember();
+    hide();
+  });
+
+  acceptButton?.addEventListener('click', async () => {
+    const promptEvent = deferredPrompt;
+    if (!promptEvent) return;
+
+    // O evento só vale uma vez; Chrome dispara outro se a pessoa recusar.
+    deferredPrompt = null;
+    hide();
+    await promptEvent.prompt();
+    await promptEvent.userChoice;
+  });
+
+  dismissButton?.addEventListener('click', () => {
+    deferredPrompt = null;
+    remember();
+    hide();
+  });
+
+  if (isIosSafari() && !isInstalled() && !readFlag(DISMISSED_KEY, 'true')) {
+    invite('manual');
+  }
+</script>
