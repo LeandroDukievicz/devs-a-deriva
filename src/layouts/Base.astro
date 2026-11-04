@@ -4,6 +4,7 @@ import '../styles/tokens.css';
 import ThemeProvider from '../components/ThemeProvider.astro';
 import Navbar from '../components/Navbar.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import PwaInstall from '../components/PwaInstall.astro';
 import Analytics from '@vercel/analytics/astro';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -86,6 +87,15 @@ const adminSvgInline = adminRaw
     <meta name="twitter:image" content={ogImage} />
 
     <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- PWA: instalável na tela inicial (ver src/components/PwaInstall.astro) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#020b18" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Devs à Deriva" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- AEO/GEO: recursos para AI crawlers -->
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs summary" />
@@ -160,6 +170,8 @@ const adminSvgInline = adminRaw
         <button id="cookie-consent-accept" type="button">Entendi</button>
       </aside>
     )}
+
+    <PwaInstall />
   </body>
 </html>
 

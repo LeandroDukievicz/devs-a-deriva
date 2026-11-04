@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#020b18" />
+    <title>Sem conexão — Devs à Deriva</title>
+    <link rel="icon" type="image/svg+xml" href="/helmet.svg" />
+
+    <!--
+      Fallback offline do service worker (public/sw.js).
+
+      Tudo é inline de propósito: sem rede não dá pra contar com o CSS do
+      build, cujo nome tem hash e pode nem estar em cache. Sem JavaScript
+      também — assim a página não depende de hash de CSP pra funcionar.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020b18;
+        --star: #00d4e8;
+        --accent: #e800d4;
+        --text: #e8f4f8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 32px 16px;
+        background-image:
+          repeating-linear-gradient(0deg, transparent 0 7px, rgb(0 212 232 / 0.04) 7px 8px),
+          repeating-linear-gradient(90deg, transparent 0 7px, rgb(0 212 232 / 0.04) 7px 8px),
+          radial-gradient(ellipse at 50% 0%, rgb(232 0 212 / 0.1), transparent 65%);
+      }
+
+      main {
+        width: min(100%, 540px);
+        text-align: center;
+      }
+
+      img {
+        width: 96px;
+        height: 96px;
+        opacity: 0.9;
+        filter: drop-shadow(0 0 18px rgb(0 212 232 / 0.35));
+      }
+
+      h1 {
+        margin: 26px 0 0;
+        font-size: clamp(1.35rem, 5vw, 1.9rem);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+      }
+
+      .signal {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--star);
+        font-size: 0.68rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+
+      p {
+        margin: 18px auto 0;
+        max-width: 42ch;
+        color: #d5d5d5;
+        font-size: 0.88rem;
+        line-height: 1.65;
+        opacity: 0.82;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 32px;
+      }
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 20px;
+        border: 1px solid var(--star);
+        border-radius: 6px;
+        color: var(--star);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+      }
+
+      a:hover,
+      a:focus-visible {
+        color: var(--accent);
+        border-color: var(--accent);
+        box-shadow: 0 0 14px rgb(232 0 212 / 0.3);
+        outline: none;
+      }
+
+      .hint {
+        margin-top: 28px;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        opacity: 0.5;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        a {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/helmet.svg" alt="" width="96" height="96" />
+      <h1>
+        <span class="signal">Sinal perdido</span>
+        Você está à deriva, sem conexão
+      </h1>
+      <p>
+        Não deu pra alcançar a nave. As páginas que você já visitou continuam
+        disponíveis — o resto volta assim que a internet voltar.
+      </p>
+      <div class="actions">
+        <a href="/">Ir para a home</a>
+      </div>
+      <p class="hint">Devs à Deriva</p>
+    </main>
+  </body>
+</html>

@@ -74,6 +74,39 @@ Cada post oferece `PostPdfDownload.astro`, com link nativo e feedback de geraç�
 
 `src/lib/post-pdf.ts` usa pdfmake no servidor com fontes Unicode embutidas em memória. Preserva texto selecionável, títulos, ênfase, listas, links, imagens, autor, data e URL original. Imagens são convertidas com Sharp, com limite de tamanho, timeout, concorrência de quatro e lista de hosts permitidos. Falhas em imagens preservam o download do texto. Não há Chromium nem serviço externo para gerar PDFs em produção.
 
+## PWA — app instalável
+
+O blog é instalável na tela inicial. Três peças, todas estáticas em `public/`:
+
+| Arquivo | Papel |
+|---|---|
+| `manifest.webmanifest` | Nome, escopo `/`, `display: standalone`, cores do tema, ícones e atalhos |
+| `sw.js` | Service worker com cache em runtime |
+| `offline.html` | Fallback de navegação sem rede, autossuficiente (CSS inline, zero JavaScript) |
+
+`PwaInstall.astro` registra o service worker **só em produção** — em desenvolvimento o cache atrapalharia o HMR. Para testar localmente: `npm run build && npm run preview`.
+
+O mesmo componente oferece o convite de instalação. Ele segura o `beforeinstallprompt` e só aparece quando o caminho está livre: nunca durante a intro diária da home, nunca junto do aviso de cookies, nunca se o app já estiver instalado ou se a pessoa já tiver dispensado (`dda-pwa-dismissed-v1`). No iOS, que não dispara o evento, o banner vira a instrução de "Adicionar à Tela de Início".
+
+### Estratégias de cache do service worker
+
+| Requisição | Estratégia | Motivo |
+|---|---|---|
+| Navegação (HTML) | network-first | O HTML vem do SSR; sem rede cai na última versão vista e depois em `/offline.html` |
+| `/_astro/*` | cache-first | Os nomes têm hash, o conteúdo nunca muda |
+| Imagens e fontes | stale-while-revalidate | Resposta instantânea, atualização em segundo plano |
+| Resto | direto pra rede | Sem interceptação |
+
+Nunca entram em cache: `/api/`, `/admin/`, `/sw.js`, `/health.json`, `/ai-index.json`, `/sitemap.xml`, `/rss.xml` e `/posts/*/pdf`. Também passam direto requisições que não são GET, de outra origem, de vídeo/áudio ou com header `Range` — cachear resposta parcial (206) quebraria o player.
+
+Os caches de páginas (40) e imagens (60) têm teto de entradas e descartam as mais antigas. Ao mudar a lógica do worker, suba `CACHE_VERSION` em `public/sw.js`: o `activate` apaga tudo que não pertence à versão corrente.
+
+### Ícones e CSP
+
+`npm run icons:pwa` regera `public/icons/` a partir de `public/helmet.svg` (ícones `any` e `maskable` de 192 e 512, mais o `apple-touch-icon`). A saída é versionada; o build não depende do script.
+
+A CSP de `nginx.conf` e `vercel.json` precisa de `worker-src 'self'` e `manifest-src 'self'`. Essas diretivas ficam **depois** de `script-src` — `scripts/update-csp-hashes.mjs` reescreve exatamente aquele trecho no postbuild.
+
 ## Testes de navegador
 
 `npm run test:e2e` inicia um dashboard de fixtures na porta 3001 e o Astro na 4322. Os projetos Chromium desktop e mobile validam o fluxo completo sem gravar dados reais. `PLAYWRIGHT_BASE_URL` permite apontar explicitamente para outro ambiente; `PLAYWRIGHT_CHANNEL=chrome` usa o Chrome instalado localmente. O CI instala Chromium e exige os testes antes do deploy.
@@ -142,4 +175,5 @@ npm run check:seo        # checa meta tags, canonical, JSON-LD em dist/client/
 npm run check:links      # checa links internos em dist/client/
 npm run check:security   # npm audit + scan de segredos
 npm run lighthouse       # Lighthouse CI contra dist/client/
+npm run icons:pwa        # regera os ícones do PWA a partir de public/helmet.svg
 ```
