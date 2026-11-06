@@ -36,6 +36,13 @@ test('avisa quando o HTML ultrapassa o limite do blog do Énóis', async ({ page
   await expect(page.getByLabel('HTML do post')).toHaveValue(/aaaaaa/);
 });
 
+test('oferece o HTML também nos artigos mais antigos publicados', async ({ page }) => {
+  await page.goto('/posts/artigo-de-teste-14');
+  await page.getByRole('button', { name: 'Gerar HTML para o Énóis' }).click();
+  await expect(page.getByLabel('HTML do post')).toHaveValue(/Artigo de teste 14/);
+  await expect(page.getByLabel('HTML do post')).toHaveValue(/Último parágrafo do artigo/);
+});
+
 test('mantém o HTML selecionável quando a área de transferência falha', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
